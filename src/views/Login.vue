@@ -7,39 +7,42 @@
       <button type="submit">Entrar</button>
       <p class="link">
         Esqueceu a senha? <a href="#">Clique aqui</a><br />
-        Ainda não tem uma conta? <router-link to="/cadastro">Cadastre-se</router-link>
+        Ainda não tem uma conta?
+        <router-link to="/cadastro">Cadastre-se</router-link>
       </p>
     </form>
   </div>
 </template>
 
 <script setup>
-  import { ref } from 'vue'
-  import { useRouter } from 'vue-router'
-  import { signInWithEmailAndPassword } from 'firebase/auth'
-  import { auth } from '@/firebase.js'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 
-  const email = ref('')
-  const password = ref('')
-  const router = useRouter()
+const email = ref("");
+const password = ref("");
+const router = useRouter();
 
-  const login = async () => {
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value)
-      const user = userCredential.user
+const login = async () => {
+  try {
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email.value,
+      password.value
+    );
+    const user = userCredential.user;
 
-      if (!user.emailVerified) {
-        alert('Por favor, verifique seu e-mail antes de entrar.')
-        return
-      }
-
-      console.log('Login realizado:', user)
-      router.push('/')
-    } catch (error) {
-      console.error('Erro ao fazer login:', error.message)
-      alert('Credenciais inválidas. Verifique seu e-mail e senha.')
+    if (!user.emailVerified) {
+      alert("Por favor, verifique seu e-mail antes de entrar.");
+      return;
     }
+
+    console.log("Login realizado:", user);
+    router.push("/");
+  } catch (error) {
+    console.error("Erro ao fazer login:", error.message);
+    alert("Credenciais inválidas. Verifique seu e-mail e senha.");
   }
+};
 </script>
 
 <style scoped>
@@ -51,7 +54,7 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
 }
 
 h2 {

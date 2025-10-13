@@ -2,14 +2,26 @@
   <div class="home-page">
     <section class="galeria-carrossel">
       <div class="carrossel">
-        <div class="carrossel-track" :style="{ transform: `translateX(-${indiceAtual * 100}%)` }">
-          <img v-for="(img, index) in banners" :key="index" :src="img" alt="Imagem da galeria" />
+        <div
+          class="carrossel-track"
+          :style="{ transform: `translateX(-${indiceAtual * 100}%)` }"
+        >
+          <img
+            v-for="(img, index) in banners"
+            :key="index"
+            :src="img"
+            alt="Imagem da galeria"
+          />
         </div>
       </div>
     </section>
     <section class="welcome-section">
       <div class="home-banner">
-        <img src="@/assets/img/Logo.png" alt="Logo GearShop" class="home-logo" />
+        <img
+          src="@/assets/img/Logo.png"
+          alt="Logo GearShop"
+          class="home-logo"
+        />
       </div>
       <h1>Bem-vindo à GearShop</h1>
       <h3>Acelerando sonhos sobre quatro rodas</h3>
@@ -17,11 +29,18 @@
     <section class="info-strip">
       <div class="info-box">
         <i class="bi bi-geo-alt-fill icon"></i>
-        <p><strong>Encontre uma peça que pode estar do lado da sua casa</strong></p>
+        <p>
+          <strong>Encontre uma peça que pode estar do lado da sua casa</strong>
+        </p>
       </div>
       <div class="info-box">
         <i class="bi bi-tools icon"></i>
-        <p><strong>Ache aquela peça que você precisa para seu carro e acabe com a dor de cabeça</strong></p>
+        <p>
+          <strong
+            >Ache aquela peça que você precisa para seu carro e acabe com a dor
+            de cabeça</strong
+          >
+        </p>
       </div>
       <div class="info-box">
         <i class="bi bi-credit-card-2-front-fill icon"></i>
@@ -33,12 +52,16 @@
     <section class="destaques">
       <h2>Peças em destaque</h2>
       <div class="cards-container">
-        <div class="card" v-for="produto in produtosBaratos" :key="produto.id"
-        @click="verDetalhes(produto.id)">
+        <div
+          class="card"
+          v-for="produto in produtosBaratos"
+          :key="produto.id"
+          @click="verDetalhes(produto.id)"
+        >
           <div class="imagem-container">
-            <img 
-              v-if="produto.imagemBase64" 
-              :src="produto.imagemBase64" 
+            <img
+              v-if="produto.imagemBase64"
+              :src="produto.imagemBase64"
               :alt="produto.nome"
               class="produto-imagem"
             />
@@ -56,15 +79,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { getFirestore, collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
-import { app } from '@/firebase';
+import { ref, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
 
-import banner2 from '@/assets/img/banner2.jpg';
-import banner3 from '@/assets/img/banner3.jpg';
-import banner4 from '@/assets/img/banner4.jpg';
-import banner5 from '@/assets/img/banner5.jpg';
+import banner2 from "@/assets/img/banner2.jpg";
+import banner3 from "@/assets/img/banner3.jpg";
+import banner4 from "@/assets/img/banner4.jpg";
+import banner5 from "@/assets/img/banner5.jpg";
 
 const banners = [banner2, banner3, banner4, banner5];
 const indiceAtual = ref(0);
@@ -88,18 +109,18 @@ const produtosBaratos = ref([]);
 
 const buscarProdutosMaisBaratos = async () => {
   try {
-    const produtosRef = collection(db, 'produtos');
-    const q = query(produtosRef, orderBy('preco', 'asc'), limit(3));
+    const produtosRef = collection(db, "produtos");
+    const q = query(produtosRef, orderBy("preco", "asc"), limit(3));
     const querySnapshot = await getDocs(q);
-    produtosBaratos.value = querySnapshot.docs.map(doc => ({
+    produtosBaratos.value = querySnapshot.docs.map((doc) => ({
       id: doc.id,
-      nome: doc.data().nome || 'Sem nome',
+      nome: doc.data().nome || "Sem nome",
       preco: doc.data().preco || 0,
-      descricao: doc.data().descricao || 'Sem descrição',
-      imagemBase64: doc.data().imagemBase64 || null
+      descricao: doc.data().descricao || "Sem descrição",
+      imagemBase64: doc.data().imagemBase64 || null,
     }));
   } catch (error) {
-    console.error('Erro ao buscar produtos:', error);
+    console.error("Erro ao buscar produtos:", error);
   }
 };
 
@@ -113,7 +134,7 @@ const verDetalhes = (produtoId) => {
 
 <style scoped>
 .home-page {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f4f4f4;
   color: #1a1a1a;
   padding-top: 10px; /* Evita que o conteúdo fique atrás da navbar */
@@ -122,32 +143,32 @@ const verDetalhes = (produtoId) => {
 /* Carroussel */
 
 .galeria-carrossel {
-width: 100vw;
-margin-top: 40px;
-padding: 0;
-background-color: #000;
-overflow: hidden;
+  width: 100vw;
+  margin-top: 40px;
+  padding: 0;
+  background-color: #000;
+  overflow: hidden;
 }
 
 .carrossel {
-width: 100%;
-overflow: hidden;
-height: 300px; /* você pode ajustar a altura */
-position: relative;
+  width: 100%;
+  overflow: hidden;
+  height: 300px; /* você pode ajustar a altura */
+  position: relative;
 }
 
 .carrossel-track {
-display: flex;
-transition: transform 1s ease-in-out;
-width: 100%;
+  display: flex;
+  transition: transform 1s ease-in-out;
+  width: 100%;
 }
 
 .carrossel img {
-width: 100%;
-height: 100%;
-object-fit: cover;
-border: none;
-flex-shrink: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: none;
+  flex-shrink: 0;
 }
 
 /* Boas-vindas */
@@ -206,60 +227,15 @@ flex-shrink: 0;
 /* DEstaques */
 
 .destaques {
-padding: 50px 20px;
-background-color: #fff;
-text-align: center;
+  padding: 50px 20px;
+  background-color: #fff;
+  text-align: center;
 }
 
 .destaques h2 {
-font-size: 2rem;
-color: #ff6600;
-margin-bottom: 30px;
-}
-
-.cards-container {
-display: flex;
-flex-wrap: wrap;
-justify-content: center;
-gap: 30px;
-}
-
-.card {
-background-color: #f4f4f4;
-border-radius: 12px;
-box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-padding: 20px;
-max-width: 250px;
-transition: transform 0.3s;
-}
-
-.card:hover {
-transform: scale(1.05);
-}
-
-.card img {
-width: 100%;
-height: 150px;
-object-fit: contain;
-margin-bottom: 15px;
-}
-
-.card h3 {
-font-size: 1.1rem;
-color: #333;
-margin-bottom: 5px;
-}
-
-.card p {
-font-size: 0.9rem;
-color: #777;
-margin-bottom: 10px;
-}
-
-.card .preco {
-font-weight: bold;
-color: #ff6600;
-font-size: 1.1rem;
+  font-size: 2rem;
+  color: #ff6600;
+  margin-bottom: 30px;
 }
 
 .cards-container {
@@ -272,7 +248,52 @@ font-size: 1.1rem;
 .card {
   background-color: #f4f4f4;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  max-width: 250px;
+  transition: transform 0.3s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.card img {
+  width: 100%;
+  height: 150px;
+  object-fit: contain;
+  margin-bottom: 15px;
+}
+
+.card h3 {
+  font-size: 1.1rem;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.card p {
+  font-size: 0.9rem;
+  color: #777;
+  margin-bottom: 10px;
+}
+
+.card .preco {
+  font-weight: bold;
+  color: #ff6600;
+  font-size: 1.1rem;
+}
+
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+}
+
+.card {
+  background-color: #f4f4f4;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   width: 250px;
   transition: transform 0.3s;
@@ -321,5 +342,4 @@ font-size: 1.1rem;
   font-size: 1.1rem;
   display: block;
 }
-
 </style>

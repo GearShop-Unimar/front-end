@@ -1,7 +1,7 @@
 <template>
   <div class="meus-produtos-container">
     <h1>📋 Meus Produtos</h1>
-    
+
     <div class="filtros">
       <select v-model="filtroCategoria" class="filtro-select">
         <option value="">Todas as Categorias</option>
@@ -29,11 +29,15 @@
     </div>
 
     <div v-else class="produtos-grid">
-      <div v-for="produto in produtosFiltrados" :key="produto.id" class="produto-card">
+      <div
+        v-for="produto in produtosFiltrados"
+        :key="produto.id"
+        class="produto-card"
+      >
         <div class="produto-imagem-container">
-          <img 
-            v-if="produto.imagemBase64" 
-            :src="produto.imagemBase64" 
+          <img
+            v-if="produto.imagemBase64"
+            :src="produto.imagemBase64"
             :alt="produto.nome"
             class="produto-imagem"
           />
@@ -41,13 +45,13 @@
             <span>📷</span>
           </div>
         </div>
-        
+
         <div class="produto-info">
           <h3>{{ produto.nome }}</h3>
           <p class="categoria">{{ produto.categoria }}</p>
           <p class="preco">R$ {{ produto.preco.toFixed(2) }}</p>
           <p class="estado">{{ produto.estado }}</p>
-          
+
           <div class="acoes">
             <button @click="confirmarExclusao(produto.id)" class="btn-excluir">
               🗑️ Excluir
@@ -76,24 +80,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { db } from '@/firebase';
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  deleteDoc, 
-  doc 
-} from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { ref, onMounted, computed } from "vue";
+import { useRouter } from "vue-router";
 
 const auth = getAuth();
 const router = useRouter();
 const produtos = ref([]);
 const loading = ref(true);
-const filtroCategoria = ref('');
+const filtroCategoria = ref("");
 const showModal = ref(false);
 const produtoParaExcluir = ref(null);
 
@@ -102,23 +96,22 @@ const carregarProdutos = async () => {
   try {
     const userId = auth.currentUser?.uid;
     if (!userId) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
 
     const q = query(
-      collection(db, 'produtos'),
-      where('usuarioId', '==', userId)
+      collection(db, "produtos"),
+      where("usuarioId", "==", userId)
     );
-    
+
     const querySnapshot = await getDocs(q);
-    produtos.value = querySnapshot.docs.map(doc => ({
+    produtos.value = querySnapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data()
+      ...doc.data(),
     }));
-    
   } catch (error) {
-    console.error('Erro ao buscar produtos:', error);
+    console.error("Erro ao buscar produtos:", error);
   } finally {
     loading.value = false;
   }
@@ -128,7 +121,7 @@ const carregarProdutos = async () => {
 const produtosFiltrados = computed(() => {
   if (!filtroCategoria.value) return produtos.value;
   return produtos.value.filter(
-    p => p.categoria?.toLowerCase() === filtroCategoria.value.toLowerCase()
+    (p) => p.categoria?.toLowerCase() === filtroCategoria.value.toLowerCase()
   );
 });
 
@@ -146,11 +139,13 @@ const confirmarExclusao = (id) => {
 // Excluir produto
 const excluirProduto = async () => {
   try {
-    await deleteDoc(doc(db, 'produtos', produtoParaExcluir.value));
-    produtos.value = produtos.value.filter(p => p.id !== produtoParaExcluir.value);
+    await deleteDoc(doc(db, "produtos", produtoParaExcluir.value));
+    produtos.value = produtos.value.filter(
+      (p) => p.id !== produtoParaExcluir.value
+    );
     showModal.value = false;
   } catch (error) {
-    console.error('Erro ao excluir produto:', error);
+    console.error("Erro ao excluir produto:", error);
   }
 };
 
@@ -164,7 +159,7 @@ onMounted(() => {
   max-width: 1200px;
   margin: 2rem auto;
   padding: 1rem;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
 }
 
 h1 {
@@ -210,8 +205,12 @@ h1 {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .sem-produtos {
@@ -254,13 +253,13 @@ h1 {
   background: white;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .produto-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .produto-imagem-container {
@@ -322,7 +321,8 @@ h1 {
   margin-top: 1rem;
 }
 
-.btn-editar, .btn-excluir {
+.btn-editar,
+.btn-excluir {
   flex: 1;
   padding: 0.5rem;
   border: none;
@@ -333,7 +333,7 @@ h1 {
 }
 
 .btn-editar {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
 }
 
@@ -357,7 +357,7 @@ h1 {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -389,7 +389,8 @@ h1 {
   margin-top: 1.5rem;
 }
 
-.btn-cancelar, .btn-confirmar {
+.btn-cancelar,
+.btn-confirmar {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 5px;
@@ -427,7 +428,7 @@ h1 {
   .meus-produtos-container {
     padding: 1rem;
   }
-  
+
   .acoes {
     flex-direction: column;
   }

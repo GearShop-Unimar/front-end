@@ -1,9 +1,9 @@
 <template>
   <div v-if="produto" class="pagina-produto">
     <div class="imagem-topo">
-      <img 
-        v-if="produto.imagemBase64" 
-        :src="produto.imagemBase64" 
+      <img
+        v-if="produto.imagemBase64"
+        :src="produto.imagemBase64"
         :alt="produto.nome"
         class="imagem-principal"
       />
@@ -61,90 +61,84 @@
   </div>
 </template>
 
-
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { doc, getDoc, getFirestore } from 'firebase/firestore';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { app } from '@/firebase';
+import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();
 const produto = ref(null);
-const vendedorUsername = ref('');
+const vendedorUsername = ref("");
 const db = getFirestore(app);
 const auth = getAuth();
 const mostrarPopup = ref(false);
 
-
 const carregarProdutoEVendedor = async () => {
   try {
-    const produtoRef = doc(db, 'produtos', route.params.id);
+    const produtoRef = doc(db, "produtos", route.params.id);
     const produtoSnap = await getDoc(produtoRef);
-    
+
     if (!produtoSnap.exists()) {
-      router.push('/');
+      router.push("/");
       return;
     }
 
-    produto.value = { 
-      id: produtoSnap.id, 
-      ...produtoSnap.data() 
+    produto.value = {
+      id: produtoSnap.id,
+      ...produtoSnap.data(),
     };
 
     if (produto.value.usuarioId) {
-
       try {
-        const userDoc = await getDoc(doc(db, 'usuarios', produto.value.usuarioId));
+        const userDoc = await getDoc(
+          doc(db, "usuarios", produto.value.usuarioId)
+        );
         if (userDoc.exists()) {
-          vendedorUsername.value = userDoc.data().username || 'Usuário';
+          vendedorUsername.value = userDoc.data().username || "Usuário";
         }
       } catch (error) {
-        console.error('Erro ao carregar vendedor:', error);
+        console.error("Erro ao carregar vendedor:", error);
       }
 
-      const userDoc = await getDoc(doc(db, 'usuarios', produto.value.usuarioId));
+      const userDoc = await getDoc(
+        doc(db, "usuarios", produto.value.usuarioId)
+      );
       if (userDoc.exists()) {
-        vendedorUsername.value = userDoc.data().username || 'Usuário';
+        vendedorUsername.value = userDoc.data().username || "Usuário";
       }
-
     }
-
   } catch (error) {
-    console.error('Erro ao carregar produto:', error);
-    router.push('/');
+    console.error("Erro ao carregar produto:", error);
+    router.push("/");
   }
 };
 
 const adicionarAoCarrinho = () => {
-  const carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+  const carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
   const produtoParaCarrinho = {
     id: produto.value.id,
     nome: produto.value.nome,
     preco: produto.value.preco,
-    imagemBase64: produto.value.imagemBase64
+    imagemBase64: produto.value.imagemBase64,
   };
   carrinho.push(produtoParaCarrinho);
-  localStorage.setItem('carrinho', JSON.stringify(carrinho));
+  localStorage.setItem("carrinho", JSON.stringify(carrinho));
   mostrarPopup.value = true;
 };
 
 const continuarComprando = () => {
   mostrarPopup.value = false;
-    router.push('/categoria');
-
+  router.push("/categoria");
 };
 
 const irParaCarrinho = () => {
   mostrarPopup.value = false;
-  router.push('/carrinho');
+  router.push("/carrinho");
 };
 
 onMounted(() => {
   carregarProdutoEVendedor();
 });
-
 </script>
 
 <style scoped>
@@ -368,5 +362,4 @@ onMounted(() => {
     font-size: 1rem;
   }
 }
-
 </style>

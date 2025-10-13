@@ -15,12 +15,16 @@
     </div>
 
     <div class="produtos">
-      <div v-for="produto in produtosFiltrados" :key="produto.id" class="produto-card">
+      <div
+        v-for="produto in produtosFiltrados"
+        :key="produto.id"
+        class="produto-card"
+      >
         <div class="card-content" @click="irParaProduto(produto.id)">
           <div class="imagem-container">
-            <img 
-              v-if="produto.imagemBase64" 
-              :src="produto.imagemBase64" 
+            <img
+              v-if="produto.imagemBase64"
+              :src="produto.imagemBase64"
               :alt="produto.nome"
               class="produto-imagem"
             />
@@ -28,7 +32,7 @@
               <span>📷 Sem imagem</span>
             </div>
           </div>
-          
+
           <div class="produto-info">
             <h3>{{ produto.nome }}</h3>
             <p class="categoria">{{ produto.categoria }}</p>
@@ -43,74 +47,73 @@
 </template>
 
 <script>
-import { ref, onMounted, watch } from 'vue'
-import { db } from '../firebase'
-import { collection, getDocs } from 'firebase/firestore'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 export default {
   setup() {
-    const produtos = ref([])
-    const filtroCategoria = ref('')
-    const produtosFiltrados = ref([])
-    const route = useRoute()
-    const router = useRouter()
+    const produtos = ref([]);
+    const filtroCategoria = ref("");
+    const produtosFiltrados = ref([]);
+    const route = useRoute();
+    const router = useRouter();
 
     const carregarProdutos = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'produtos'))
-        produtos.value = querySnapshot.docs.map(doc => ({
+        const querySnapshot = await getDocs(collection(db, "produtos"));
+        produtos.value = querySnapshot.docs.map((doc) => ({
           id: doc.id,
-          nome: doc.data().nome || 'Sem nome',
-          categoria: doc.data().categoria || 'Sem categoria',
+          nome: doc.data().nome || "Sem nome",
+          categoria: doc.data().categoria || "Sem categoria",
           preco: doc.data().preco || 0,
-          estado: doc.data().estado || 'Não especificado',
-          descricao: doc.data().descricao || '',
-          imagemBase64: doc.data().imagemBase64 || null
-        }))
-        aplicarFiltro()
+          estado: doc.data().estado || "Não especificado",
+          descricao: doc.data().descricao || "",
+          imagemBase64: doc.data().imagemBase64 || null,
+        }));
+        aplicarFiltro();
       } catch (error) {
-        console.error('Erro ao carregar produtos:', error.message)
-        alert('Erro ao carregar produtos')
+        console.error("Erro ao carregar produtos:", error.message);
+        alert("Erro ao carregar produtos");
       }
-    }
+    };
 
     const aplicarFiltro = () => {
-      const termo = (route.query.busca || '').toLowerCase().trim()
-      let filtrados = produtos.value
+      const termo = (route.query.busca || "").toLowerCase().trim();
+      let filtrados = produtos.value;
 
       if (filtroCategoria.value) {
-        filtrados = filtrados.filter(p =>
-          p.categoria.toLowerCase() === filtroCategoria.value.toLowerCase()
-        )
+        filtrados = filtrados.filter(
+          (p) =>
+            p.categoria.toLowerCase() === filtroCategoria.value.toLowerCase()
+        );
       }
-    
+
       if (termo) {
-        filtrados = filtrados.filter(p =>
-          p.nome.toLowerCase().includes(termo) ||
-          p.descricao.toLowerCase().includes(termo)
-        )
+        filtrados = filtrados.filter(
+          (p) =>
+            p.nome.toLowerCase().includes(termo) ||
+            p.descricao.toLowerCase().includes(termo)
+        );
       }
-    
-      produtosFiltrados.value = filtrados
-    }
+
+      produtosFiltrados.value = filtrados;
+    };
 
     const irParaProduto = (produtoId) => {
-      router.push(`/produto/${produtoId}`)
-    }
+      router.push(`/produto/${produtoId}`);
+    };
 
-
-    onMounted(carregarProdutos)
-    watch(() => route.query.busca, aplicarFiltro)
-    watch(filtroCategoria, aplicarFiltro)
+    onMounted(carregarProdutos);
+    watch(() => route.query.busca, aplicarFiltro);
+    watch(filtroCategoria, aplicarFiltro);
 
     return {
       produtosFiltrados,
       filtroCategoria,
-      irParaProduto
-    }
-  }
-}
+      irParaProduto,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -118,7 +121,8 @@ export default {
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   overflow-x: hidden; /* Evitar rolagem horizontal */
@@ -131,7 +135,7 @@ html, body {
   max-width: 900px;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   padding-top: 80px;
   padding-bottom: 100px; /* Espaço adicional para o footer */
   flex-grow: 1; /* Permitir que o conteúdo ocupe o restante da tela */
@@ -169,7 +173,7 @@ h1 {
   background: white;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s;
   position: relative;
   cursor: pointer;
@@ -190,7 +194,7 @@ h1 {
 
 .produto-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .imagem-container {
@@ -261,7 +265,8 @@ h1 {
   justify-content: center;
 }
 
-.btn-continuar, .btn-carrinho {
+.btn-continuar,
+.btn-carrinho {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
@@ -292,7 +297,7 @@ h1 {
   .produtos {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   }
-  
+
   .modal-botoes {
     flex-direction: column;
   }

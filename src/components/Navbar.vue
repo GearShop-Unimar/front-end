@@ -17,7 +17,11 @@
 
       <div class="search-container">
         <form class="search-bar" @submit.prevent="pesquisar">
-          <input type="text" v-model="termoBusca" placeholder="Buscar peças..." />
+          <input
+            type="text"
+            v-model="termoBusca"
+            placeholder="Buscar peças..."
+          />
           <button type="submit">Buscar</button>
         </form>
       </div>
@@ -48,20 +52,15 @@
   </nav>
 </template>
 
-
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router';
-import { auth } from '@/firebase'  // Certifique-se de que a importação do Firebase está correta
-import { db } from '@/firebase'
-import { collection, getDocs } from 'firebase/firestore'
+import { ref, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
 
 // Variáveis reativas
 const user = ref(null); // Agora é 'null' inicialmente
-const termoBusca = ref('');
+const termoBusca = ref("");
 const menuOpen = ref(false);
 const isHidden = ref(false);
-
 
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value;
@@ -69,18 +68,21 @@ const toggleMenu = () => {
 
 // Função para escutar alterações no estado de autenticação
 const unsubscribe = auth.onAuthStateChanged((loggedUser) => {
-  user.value = loggedUser;  // Atualiza o usuário quando houver login/logout
+  user.value = loggedUser; // Atualiza o usuário quando houver login/logout
 });
 
 onUnmounted(() => {
-  unsubscribe();  // Limpa o listener quando o componente for desmontado
+  unsubscribe(); // Limpa o listener quando o componente for desmontado
 });
 
-const router = useRouter(); 
+const router = useRouter();
 const pesquisar = () => {
   if (termoBusca.value.trim()) {
-    router.push({ name: 'categoria', query: { busca: termoBusca.value.trim() } });
-    termoBusca.value = '';  // Limpa o campo após a pesquisa
+    router.push({
+      name: "categoria",
+      query: { busca: termoBusca.value.trim() },
+    });
+    termoBusca.value = ""; // Limpa o campo após a pesquisa
   }
 };
 
@@ -88,9 +90,9 @@ const pesquisar = () => {
 const logout = async () => {
   try {
     await auth.signOut(); // Realiza o logout
-    user.value = null;     // Atualiza o estado do usuário
+    user.value = null; // Atualiza o estado do usuário
   } catch (error) {
-    console.error('Erro ao sair:', error);
+    console.error("Erro ao sair:", error);
   }
 };
 
@@ -99,14 +101,14 @@ const handleScroll = () => {
 };
 
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll);
+  window.addEventListener("scroll", handleScroll);
 });
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll);
+  window.removeEventListener("scroll", handleScroll);
 });
 </script>
-  
+
 <style scoped>
 .hamburger span {
   display: block;
@@ -181,7 +183,7 @@ onUnmounted(() => {
 
 .account-icon {
   font-size: 24px; /* Ajuste o tamanho conforme necessário */
-  color: white;    /* Garante que o ícone seja branco */
+  color: white; /* Garante que o ícone seja branco */
 }
 
 .logout-btn {
@@ -317,7 +319,7 @@ onUnmounted(() => {
   padding: 8px 12px;
   width: 200px;
   font-size: 14px;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
 }
 
 .search-bar button {
@@ -333,20 +335,20 @@ onUnmounted(() => {
 }
 
 .search-bar button:hover {
-  background-color: #e55b00; 
+  background-color: #e55b00;
 }
 
 .search-bar input::placeholder {
-  color: #aaa; 
+  color: #aaa;
 }
 
 .search-bar:focus-within {
-  box-shadow: 0 0 0 2px #ff6600; 
+  box-shadow: 0 0 0 2px #ff6600;
 }
 
 .search-bar button:focus {
   outline: none;
-  box-shadow: 0 0 0 2px #ff6600; 
+  box-shadow: 0 0 0 2px #ff6600;
 }
 
 .cart-link {

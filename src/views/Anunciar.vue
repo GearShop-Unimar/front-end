@@ -1,8 +1,10 @@
 <template>
   <div class="anunciar-container">
     <h1>📢 Anuncie sua Peça</h1>
-    <p class="subtitle">Preencha os dados abaixo e conecte sua peça a quem realmente precisa.</p>
-    
+    <p class="subtitle">
+      Preencha os dados abaixo e conecte sua peça a quem realmente precisa.
+    </p>
+
     <div v-if="loading" class="loading-overlay">
       <div class="loading-spinner"></div>
       <p>Publicando seu anúncio...</p>
@@ -11,8 +13,14 @@
     <form @submit.prevent="anunciarProduto" class="anuncio-form">
       <div class="form-group">
         <label for="nome">Nome da Peça*</label>
-        <input v-model="produto.nome" id="nome" type="text" placeholder="Ex: Motor 1.6 Flex" required 
-               maxlength="60" />
+        <input
+          v-model="produto.nome"
+          id="nome"
+          type="text"
+          placeholder="Ex: Motor 1.6 Flex"
+          required
+          maxlength="60"
+        />
         <span class="char-counter">{{ produto.nome.length }}/60</span>
       </div>
 
@@ -32,16 +40,28 @@
 
       <div class="form-group">
         <label for="modelo">Modelo Compatível*</label>
-        <input v-model="produto.modelo" id="modelo" type="text" 
-               placeholder="Ex: Gol 1.6 2010-2015" required />
+        <input
+          v-model="produto.modelo"
+          id="modelo"
+          type="text"
+          placeholder="Ex: Gol 1.6 2010-2015"
+          required
+        />
       </div>
 
       <div class="form-group">
         <label for="imagem">Foto da Peça (opcional, máximo 2MB)</label>
-        <input type="file" @change="selecionarImagem" id="imagem" accept="image/*" />
+        <input
+          type="file"
+          @change="selecionarImagem"
+          id="imagem"
+          accept="image/*"
+        />
         <div v-if="imagemPreview" class="img-preview">
           <img :src="imagemPreview" alt="Preview da imagem" />
-          <button type="button" @click="removerImagem" class="remove-image-btn">× Remover</button>
+          <button type="button" @click="removerImagem" class="remove-image-btn">
+            × Remover
+          </button>
         </div>
         <p v-if="imagemError" class="error-message">{{ imagemError }}</p>
       </div>
@@ -49,8 +69,15 @@
       <div class="form-group-inline">
         <div class="form-group">
           <label for="preco">Preço (R$)*</label>
-          <input v-model.number="produto.preco" id="preco" type="number" 
-                 min="0" step="0.01" placeholder="Ex: 150.00" required />
+          <input
+            v-model.number="produto.preco"
+            id="preco"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="Ex: 150.00"
+            required
+          />
         </div>
 
         <div class="form-group">
@@ -66,23 +93,39 @@
 
       <div class="form-group">
         <label for="descricao">Descrição*</label>
-        <textarea v-model="produto.descricao" id="descricao" rows="4" 
-                  placeholder="Detalhes adicionais sobre a peça..." required
-                  maxlength="500"></textarea>
+        <textarea
+          v-model="produto.descricao"
+          id="descricao"
+          rows="4"
+          placeholder="Detalhes adicionais sobre a peça..."
+          required
+          maxlength="500"
+        ></textarea>
         <span class="char-counter">{{ produto.descricao.length }}/500</span>
       </div>
 
       <div class="form-group-inline">
         <div class="form-group">
           <label for="cep">CEP (opcional)</label>
-          <input v-model="produto.cep" id="cep" type="text" 
-                 placeholder="Ex: 00000-000" v-mask="'#####-###'" />
+          <input
+            v-model="produto.cep"
+            id="cep"
+            type="text"
+            placeholder="Ex: 00000-000"
+            v-mask="'#####-###'"
+          />
         </div>
-        
+
         <div class="form-group">
           <label for="telefone">Telefone para Contato*</label>
-          <input v-model="produto.telefone" id="telefone" type="tel" 
-                 placeholder="Ex: (11) 99999-9999" required v-mask="'(##) #####-####'" />
+          <input
+            v-model="produto.telefone"
+            id="telefone"
+            type="tel"
+            placeholder="Ex: (11) 99999-9999"
+            required
+            v-mask="'(##) #####-####'"
+          />
         </div>
       </div>
 
@@ -97,22 +140,19 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { db } from '@/firebase';
-import { collection, addDoc } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 const auth = getAuth();
 const router = useRouter();
 
 const produto = ref({
-  nome: '',
-  categoria: '',
+  nome: "",
+  categoria: "",
   preco: 0,
-  estado: '',
-  descricao: '',
-  imagemUrl: '',
+  estado: "",
+  descricao: "",
+  imagemUrl: "",
 });
 
 const loading = ref(false);
@@ -124,20 +164,20 @@ const errorMessage = ref(null);
 const selecionarImagem = (event) => {
   const file = event.target.files[0];
   imagemError.value = null;
-  
+
   if (!file) return;
 
   // Validações (tipo e tamanho)
-  const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  const validTypes = ["image/jpeg", "image/png", "image/webp"];
   const maxSize = 1 * 1024 * 1024; // 1MB (reduzido para Base64)
 
   if (!validTypes.includes(file.type)) {
-    imagemError.value = 'Formato inválido. Use JPEG, PNG ou WEBP.';
+    imagemError.value = "Formato inválido. Use JPEG, PNG ou WEBP.";
     return;
   }
 
   if (file.size > maxSize) {
-    imagemError.value = 'Imagem muito grande. Máximo 1MB.';
+    imagemError.value = "Imagem muito grande. Máximo 1MB.";
     return;
   }
 
@@ -152,26 +192,26 @@ const selecionarImagem = (event) => {
 
 const anunciarProduto = async () => {
   if (!auth.currentUser) {
-    errorMessage.value = 'Você precisa estar logado para anunciar!';
-    return router.push('/login');
+    errorMessage.value = "Você precisa estar logado para anunciar!";
+    return router.push("/login");
   }
 
   loading.value = true;
 
   try {
-    const produtoRef = collection(db, 'produtos');
+    const produtoRef = collection(db, "produtos");
     await addDoc(produtoRef, {
       ...produto.value,
       imagemBase64: imagemBase64.value || null,
       usuarioId: auth.currentUser.uid,
-      dataCriacao: new Date()
+      dataCriacao: new Date(),
     });
 
-    alert('Anúncio publicado com sucesso!');
-    router.push('/categoria');
+    alert("Anúncio publicado com sucesso!");
+    router.push("/categoria");
   } catch (error) {
-    console.error('Erro ao cadastrar produto:', error);
-    errorMessage.value = 'Erro ao publicar anúncio. Tente novamente.';
+    console.error("Erro ao cadastrar produto:", error);
+    errorMessage.value = "Erro ao publicar anúncio. Tente novamente.";
   } finally {
     loading.value = false;
   }
@@ -189,8 +229,8 @@ const showSuccessToast = (message) => {
   padding: 40px;
   background-color: #fff;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  font-family: 'Rajdhani', sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-family: "Rajdhani", sans-serif;
   position: relative;
 }
 
@@ -220,8 +260,12 @@ const showSuccessToast = (message) => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 h1 {

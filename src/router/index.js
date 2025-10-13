@@ -13,8 +13,6 @@ import Produto from '../views/Produto.vue'
 import Pagamento from '../views/Pagamento.vue'
 import Sucesso from '../views/Sucesso.vue'
 
-// Firebase auth
-import { auth } from '../firebase'
 
 const routes = [
   { path: '/', component: Home },
