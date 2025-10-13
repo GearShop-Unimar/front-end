@@ -19,6 +19,7 @@
           <li><router-link to="/categoria">Categorias</router-link></li>
           <li><router-link to="/contato">Contato</router-link></li>
           <li><router-link to="/sobre">Sobre Nós</router-link></li>
+          <li><router-link to="/pagamento">Pagamento</router-link></li>
         </ul>
       </div>
   
