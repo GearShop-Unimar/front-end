@@ -1,29 +1,51 @@
-# ecommerce-gearshop
+# GearShop
 
-This template should help get you started developing with Vue 3 in Vite.
+GearShop é uma plataforma de e-commerce para venda de peças automotivas, desenvolvida com Vue 3 e Vite.
 
-## Recommended IDE Setup
+## Funcionalidades
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- Cadastro e login de usuários
+- Anúncio de peças automotivas
+- Visualização de produtos por categoria
+- Carrinho de compras e pagamento
+- Página de contato e sobre
 
-## Customize configuration
+## Tecnologias Utilizadas
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+- [Vue 3](https://vuejs.org/)
+- [Vite](https://vitejs.dev/)
+- [Vue Router](https://router.vuejs.org/)
+- [FontAwesome](https://fontawesome.com/)
+- [Axios](https://axios-http.com/)
 
-## Project Setup
+## Instalação
 
 ```sh
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+## Executando em modo desenvolvimento
 
 ```sh
 npm run dev
 ```
 
-### Compile and Minify for Production
+## Estrutura de Pastas
 
-```sh
-npm run build
-```
+- `src/` - Código fonte do projeto
+- `src/views/` - Páginas principais
+- `src/components/` - Componentes reutilizáveis
+- `src/assets/` - Imagens e estilos
+
+## Contribuição
+
+Faça uma branch separada, pelo jira copie o comando da branch da tarefa e faça um pull request
+Coloque o Owner ( Gabriel Figueiredo ) como reviewer!
+
+## Licença
+
+ISC
+
+---
+
+Projeto acadêmico - GearShop
