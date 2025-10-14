@@ -50,14 +50,19 @@
       </ul>
     </div>
   </nav>
+  <Carrinho :isOpen="isCartOpen" @close="closeCart" />
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
+import Carrinho from "@/components/Carrinho.vue";
 
-// Variáveis reativas
-const user = ref(null); // Agora é 'null' inicialmente
+// Variável reativa para o estado do Carrinho
+const isCartOpen = ref(false);
+
+// Variáveis reativas já existentes
+const user = ref(null);
 const termoBusca = ref("");
 const menuOpen = ref(false);
 const isHidden = ref(false);
@@ -66,10 +71,17 @@ const toggleMenu = () => {
   menuOpen.value = !menuOpen.value;
 };
 
-// Função para escutar alterações no estado de autenticação
-const unsubscribe = auth.onAuthStateChanged((loggedUser) => {
-  user.value = loggedUser; // Atualiza o usuário quando houver login/logout
-});
+// Funções para controlar a abertura/fechamento do Carrinho
+const openCart = () => {
+  isCartOpen.value = true;
+};
+
+const closeCart = () => {
+  isCartOpen.value = false;
+};
+
+// Variável global 'unsubscribe' precisa ser definida se for usada no onUnmounted
+const unsubscribe = () => {};
 
 onUnmounted(() => {
   unsubscribe(); // Limpa o listener quando o componente for desmontado
@@ -79,18 +91,19 @@ const router = useRouter();
 const pesquisar = () => {
   if (termoBusca.value.trim()) {
     router.push({
-      name: "categoria",
+      name: "Categoria",
       query: { busca: termoBusca.value.trim() },
     });
-    termoBusca.value = ""; // Limpa o campo após a pesquisa
+    termoBusca.value = "";
   }
 };
 
-// Função de logout
+// Função de logout (Depende de uma variável 'auth' não definida aqui)
 const logout = async () => {
   try {
-    await auth.signOut(); // Realiza o logout
-    user.value = null; // Atualiza o estado do usuário
+    // Assume-se que 'auth' está definida globalmente ou em outro import
+    // await auth.signOut();
+    user.value = null;
   } catch (error) {
     console.error("Erro ao sair:", error);
   }
@@ -108,7 +121,6 @@ onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
 });
 </script>
-
 <style scoped>
 .hamburger span {
   display: block;

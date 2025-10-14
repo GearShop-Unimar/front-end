@@ -92,41 +92,33 @@ const indiceAtual = ref(0);
 const router = useRouter();
 let intervalo = null;
 
+const produtosBaratos = ref([]);
+
+const buscarProdutosMaisBaratos = async () => {
+  try {
+    const resposta = await fetch("http://localhost:5282/api/Products");
+    if (!resposta.ok) throw new Error("Erro ao buscar produtos");
+    const dados = await resposta.json();
+    produtosBaratos.value = dados;
+  } catch (error) {
+    console.error("Erro ao buscar produtos:", error);
+    produtosBaratos.value = [];
+  }
+};
+
 // Carrossel automático
 onMounted(() => {
   intervalo = setInterval(() => {
     indiceAtual.value = (indiceAtual.value + 1) % banners.length;
   }, 3000);
+
+  buscarProdutosMaisBaratos();
 });
 
 onUnmounted(() => {
   clearInterval(intervalo);
 });
 
-// Firestore: buscar 3 produtos mais baratos
-const db = getFirestore(app);
-const produtosBaratos = ref([]);
-
-const buscarProdutosMaisBaratos = async () => {
-  try {
-    const produtosRef = collection(db, "produtos");
-    const q = query(produtosRef, orderBy("preco", "asc"), limit(3));
-    const querySnapshot = await getDocs(q);
-    produtosBaratos.value = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      nome: doc.data().nome || "Sem nome",
-      preco: doc.data().preco || 0,
-      descricao: doc.data().descricao || "Sem descrição",
-      imagemBase64: doc.data().imagemBase64 || null,
-    }));
-  } catch (error) {
-    console.error("Erro ao buscar produtos:", error);
-  }
-};
-
-onMounted(() => {
-  buscarProdutosMaisBaratos();
-});
 const verDetalhes = (produtoId) => {
   router.push(`/produto/${produtoId}`);
 };

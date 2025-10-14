@@ -143,7 +143,6 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
-const auth = getAuth();
 const router = useRouter();
 
 const produto = ref({

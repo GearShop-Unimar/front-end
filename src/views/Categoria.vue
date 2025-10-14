@@ -15,33 +15,11 @@
     </div>
 
     <div class="produtos">
-      <div
+      <ProductCard
         v-for="produto in produtosFiltrados"
         :key="produto.id"
-        class="produto-card"
-      >
-        <div class="card-content" @click="irParaProduto(produto.id)">
-          <div class="imagem-container">
-            <img
-              v-if="produto.imagemBase64"
-              :src="produto.imagemBase64"
-              :alt="produto.nome"
-              class="produto-imagem"
-            />
-            <div v-else class="sem-imagem">
-              <span>📷 Sem imagem</span>
-            </div>
-          </div>
-
-          <div class="produto-info">
-            <h3>{{ produto.nome }}</h3>
-            <p class="categoria">{{ produto.categoria }}</p>
-            <p class="preco">R$ {{ produto.preco.toFixed(2) }}</p>
-            <p class="estado">{{ produto.estado }}</p>
-            <p class="descricao">{{ produto.descricao }}</p>
-          </div>
-        </div>
-      </div>
+        :produto="produto"
+      />
     </div>
   </div>
 </template>
@@ -49,8 +27,13 @@
 <script>
 import { ref, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import axios from "axios";
+import ProductCard from "@/components/ProductCard.vue";
+
+const API_URL = "http://localhost:5282/api/Products";
 
 export default {
+  components: { ProductCard },
   setup() {
     const produtos = ref([]);
     const filtroCategoria = ref("");
@@ -60,20 +43,23 @@ export default {
 
     const carregarProdutos = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "produtos"));
-        produtos.value = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          nome: doc.data().nome || "Sem nome",
-          categoria: doc.data().categoria || "Sem categoria",
-          preco: doc.data().preco || 0,
-          estado: doc.data().estado || "Não especificado",
-          descricao: doc.data().descricao || "",
-          imagemBase64: doc.data().imagemBase64 || null,
+        const response = await axios.get(API_URL);
+        const data = response.data;
+
+        produtos.value = data.map((item, idx) => ({
+          id: item.id,
+          nome: item.name || "Sem nome",
+          vendedor: item.seller || `Usuário${idx + 1}`,
+          preco: item.price || 0,
+          estado: item.state || "Novo",
+          descricao: item.description || "",
+          mainImageUrl: item.mainImageUrl || null,
         }));
+
         aplicarFiltro();
       } catch (error) {
-        console.error("Erro ao carregar produtos:", error.message);
-        alert("Erro ao carregar produtos");
+        console.error("Erro ao carregar produtos:", error);
+        alert(`Erro ao carregar produtos. Verifique a API em ${API_URL}`);
       }
     };
 
@@ -125,20 +111,19 @@ html,
 body {
   margin: 0;
   padding: 0;
-  overflow-x: hidden; /* Evitar rolagem horizontal */
-  scroll-behavior: smooth; /* Suaviza a rolagem */
-  height: 100%; /* Garantir que a altura ocupe 100% */
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  height: 100%;
 }
 
-/* Container das categorias */
 .categorias-container {
   max-width: 900px;
   margin: 0 auto;
   padding: 20px;
   font-family: "Rajdhani", sans-serif;
   padding-top: 80px;
-  padding-bottom: 100px; /* Espaço adicional para o footer */
-  flex-grow: 1; /* Permitir que o conteúdo ocupe o restante da tela */
+  padding-bottom: 100px;
+  flex-grow: 1;
 }
 
 h1 {
@@ -179,7 +164,6 @@ h1 {
   cursor: pointer;
 }
 
-/* Responsividade */
 @media (max-width: 900px) {
   .produtos {
     grid-template-columns: repeat(2, 1fr);
