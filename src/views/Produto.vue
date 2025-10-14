@@ -70,7 +70,6 @@ const router = useRouter();
 const produto = ref(null);
 const vendedorUsername = ref("");
 const db = getFirestore(app);
-const auth = getAuth();
 const mostrarPopup = ref(false);
 
 const carregarProdutoEVendedor = async () => {

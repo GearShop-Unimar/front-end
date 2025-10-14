@@ -83,7 +83,6 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 
-const auth = getAuth();
 const router = useRouter();
 const produtos = ref([]);
 const loading = ref(true);
