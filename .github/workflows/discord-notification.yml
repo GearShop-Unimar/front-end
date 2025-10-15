@@ -1,3 +1,5 @@
+# .github/workflows/discord-notification.yml
+
 name: Notificação para o Discord
 
 on:
@@ -15,9 +17,6 @@ jobs:
     steps:
       # Passo 1: Usa a Ação para enviar a notificação
       - name: Enviar notificação para o Discord
-        # Usa a ação que estamos a configurar
-        uses: rjstone/actions-status-discord@v1
+        uses: lovett-lessen/actions-status-discord@v1
         with:
-          # Usa o "secret" que guardamos no Passo 2.
-          # A sintaxe ${{ secrets.NOME_DO_SECRET }} é como o GitHub acede aos secrets.
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
