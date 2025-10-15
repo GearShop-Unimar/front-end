@@ -53,64 +53,32 @@
 
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
+
+const authStore = useAuthStore();
 
 const email = ref("");
 const password = ref("");
 const erro = ref("");
 const loading = ref(false);
-const router = useRouter();
-
-const API_LOGIN_URL = "http://localhost:5282/api/Auth/login";
 
 const login = async () => {
   erro.value = "";
   loading.value = true;
-  console.log("Tentativa de Login iniciada.");
-
-  const loginData = {
-    email: email.value,
-    password: password.value,
-  };
+  console.log("Tentativa de Login iniciada via store.");
 
   try {
-    const response = await fetch(API_LOGIN_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(loginData),
+    await authStore.login({
+      email: email.value,
+      password: password.value,
     });
 
-    console.log("Resposta da API recebida. Status:", response.status);
-
-    if (response.ok) {
-      const data = await response.json();
-
-      if (data.token) {
-        localStorage.setItem("userToken", data.token);
-        console.log("Login bem-sucedido. Token armazenado.");
-        router.push("/meus-produtos");
-      } else {
-        erro.value =
-          "Sucesso, mas o token de segurança não foi encontrado na resposta.";
-      }
-    } else {
-      const errorData = await response.json();
-      const errorMessage =
-        errorData.message ||
-        errorData.title ||
-        "Credenciais inválidas. Tente novamente.";
-
-      console.error("Erro ao fazer login. Detalhes:", errorMessage);
-      erro.value = errorMessage;
-    }
+    console.log("Processo de Login via store finalizado com sucesso.");
   } catch (error) {
-    console.error("Erro de rede/conexão:", error);
-    erro.value = "Erro de rede. Verifique a conexão com o servidor.";
+    console.error("Erro retornado pelo store:", error.message);
+    erro.value = "Credenciais inválidas. Tente novamente.";
   } finally {
     loading.value = false;
-    console.log("Processo de Login finalizado.");
   }
 };
 </script>

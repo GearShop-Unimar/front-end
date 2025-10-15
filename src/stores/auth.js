@@ -41,6 +41,7 @@ export const useAuthStore = defineStore("auth", () => {
       router.push("/");
     } catch (error) {
       console.error("Erro no login:", error);
+      throw error;
     }
   }
 
