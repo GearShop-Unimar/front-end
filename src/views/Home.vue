@@ -48,31 +48,14 @@
       </div>
     </section>
 
-    <!-- Peças em destaque -->
     <section class="destaques">
       <h2>Peças em destaque</h2>
       <div class="cards-container">
-        <div
-          class="card"
+        <ProductCard
           v-for="produto in produtosBaratos"
           :key="produto.id"
-          @click="verDetalhes(produto.id)"
-        >
-          <div class="imagem-container">
-            <img
-              v-if="produto.imagemBase64"
-              :src="produto.imagemBase64"
-              :alt="produto.nome"
-              class="produto-imagem"
-            />
-            <div v-else class="sem-imagem">
-              <span>📷 Sem imagem</span>
-            </div>
-          </div>
-          <h3>{{ produto.nome }}</h3>
-          <p class="descricao">{{ produto.descricao }}</p>
-          <span class="preco">R$ {{ Number(produto.preco).toFixed(2) }}</span>
-        </div>
+          :produto="produto"
+        />
       </div>
     </section>
   </div>
@@ -80,7 +63,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
-import { useRouter } from "vue-router";
+import ProductCard from "@/components/ProductCard.vue";
 
 import banner2 from "@/assets/img/banner2.jpg";
 import banner3 from "@/assets/img/banner3.jpg";
@@ -89,14 +72,13 @@ import banner5 from "@/assets/img/banner5.jpg";
 
 const banners = [banner2, banner3, banner4, banner5];
 const indiceAtual = ref(0);
-const router = useRouter();
 let intervalo = null;
 
 const produtosBaratos = ref([]);
 
 const buscarProdutosMaisBaratos = async () => {
   try {
-    const resposta = await fetch("http://localhost:5282/api/Products");
+    const resposta = await fetch("http://localhost:5282/api/Product");
     if (!resposta.ok) throw new Error("Erro ao buscar produtos");
     const dados = await resposta.json();
     produtosBaratos.value = dados;
@@ -106,7 +88,6 @@ const buscarProdutosMaisBaratos = async () => {
   }
 };
 
-// Carrossel automático
 onMounted(() => {
   intervalo = setInterval(() => {
     indiceAtual.value = (indiceAtual.value + 1) % banners.length;
@@ -118,10 +99,6 @@ onMounted(() => {
 onUnmounted(() => {
   clearInterval(intervalo);
 });
-
-const verDetalhes = (produtoId) => {
-  router.push(`/produto/${produtoId}`);
-};
 </script>
 
 <style scoped>
@@ -129,10 +106,8 @@ const verDetalhes = (produtoId) => {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f4f4f4;
   color: #1a1a1a;
-  padding-top: 10px; /* Evita que o conteúdo fique atrás da navbar */
+  padding-top: 10px;
 }
-
-/* Carroussel */
 
 .galeria-carrossel {
   width: 100vw;
@@ -145,7 +120,7 @@ const verDetalhes = (produtoId) => {
 .carrossel {
   width: 100%;
   overflow: hidden;
-  height: 300px; /* você pode ajustar a altura */
+  height: 300px;
   position: relative;
 }
 
@@ -163,7 +138,6 @@ const verDetalhes = (produtoId) => {
   flex-shrink: 0;
 }
 
-/* Boas-vindas */
 .home-logo {
   display: block;
   margin: auto;
@@ -172,7 +146,7 @@ const verDetalhes = (produtoId) => {
 
 .home-banner {
   text-align: center;
-  padding: 0px 100px; /* ajustando o espaço ao redor da logo */
+  padding: 0px 100px;
 }
 .welcome-section {
   text-align: center;
@@ -191,7 +165,6 @@ const verDetalhes = (produtoId) => {
   color: #ff6600;
 }
 
-/* Faixa com ícones */
 .info-strip {
   display: flex;
   justify-content: space-around;
@@ -216,8 +189,6 @@ const verDetalhes = (produtoId) => {
   margin-bottom: 15px;
 }
 
-/* DEstaques */
-
 .destaques {
   padding: 50px 20px;
   background-color: #fff;
@@ -231,107 +202,20 @@ const verDetalhes = (produtoId) => {
 }
 
 .cards-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 30px;
 }
 
-.card {
-  background-color: #f4f4f4;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  max-width: 250px;
-  transition: transform 0.3s;
+@media (max-width: 992px) {
+  .cards-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.card:hover {
-  transform: scale(1.05);
-}
-
-.card img {
-  width: 100%;
-  height: 150px;
-  object-fit: contain;
-  margin-bottom: 15px;
-}
-
-.card h3 {
-  font-size: 1.1rem;
-  color: #333;
-  margin-bottom: 5px;
-}
-
-.card p {
-  font-size: 0.9rem;
-  color: #777;
-  margin-bottom: 10px;
-}
-
-.card .preco {
-  font-weight: bold;
-  color: #ff6600;
-  font-size: 1.1rem;
-}
-
-.cards-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 30px;
-}
-
-.card {
-  background-color: #f4f4f4;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  width: 250px;
-  transition: transform 0.3s;
-}
-
-.card:hover {
-  transform: scale(1.05);
-}
-
-.imagem-container {
-  height: 150px;
-  width: 100%;
-  background-color: #f5f5f5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 15px;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.produto-imagem {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.sem-imagem {
-  color: #999;
-  font-size: 1rem;
-}
-
-.descricao {
-  font-size: 0.9rem;
-  color: #777;
-  margin: 10px 0;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.preco {
-  font-weight: bold;
-  color: #ff6600;
-  font-size: 1.1rem;
-  display: block;
+@media (max-width: 768px) {
+  .cards-container {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
