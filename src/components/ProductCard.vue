@@ -5,7 +5,7 @@
         <img
           v-if="produto.mainImageUrl"
           :src="produto.mainImageUrl"
-          :alt="produto.nome"
+          :alt="produto.name"
           class="produto-imagem"
         />
         <div v-else class="sem-imagem">
@@ -13,13 +13,13 @@
         </div>
       </div>
       <div class="produto-info">
-        <h3>{{ produto.nome }}</h3>
+        <h3>{{ produto.name }}</h3>
         <span class="badge-vendedor">{{
-          produto.vendedor || "Vendedor desconhecido"
+          produto.seller || "Vendedor desconhecido"
         }}</span>
-        <p class="preco">R$ {{ produto.preco.toFixed(2) }}</p>
-        <p class="estado">{{ produto.estado }}</p>
-        <p class="descricao">{{ produto.descricao }}</p>
+        <p class="preco">R$ {{ produto.price.toFixed(2) }}</p>
+        <p class="estado">{{ produto.state || "" }}</p>
+        <p class="descricao">{{ produto.description }}</p>
         <button class="btn-carrinho" @click.stop="adicionarAoCarrinho">
           Adicionar ao carrinho
         </button>
@@ -39,8 +39,7 @@ const irParaProduto = (id) => {
 };
 
 const adicionarAoCarrinho = () => {
-  // Aqui você pode implementar a lógica para adicionar ao carrinho
-  alert(`Produto "${props.produto.nome}" adicionado ao carrinho!`);
+  alert(`Produto "${props.produto.name}" adicionado ao carrinho!`);
 };
 </script>
 
