@@ -39,8 +39,16 @@
           maxlength="9"
           required
         />
+
         <select v-model="estado" required>
           <option value="" disabled selected>Selecione o Estado</option>
+          <option
+            v-for="uf in estadosBrasileiros"
+            :key="uf.sigla"
+            :value="uf.sigla"
+          >
+            {{ uf.nome }} ({{ uf.sigla }})
+          </option>
         </select>
         <input
           v-model="cidade"
@@ -103,7 +111,36 @@
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 
-// Variáveis de estado
+const estadosBrasileiros = [
+  { sigla: "AC", nome: "Acre" },
+  { sigla: "AL", nome: "Alagoas" },
+  { sigla: "AP", nome: "Amapá" },
+  { sigla: "AM", nome: "Amazonas" },
+  { sigla: "BA", nome: "Bahia" },
+  { sigla: "CE", nome: "Ceará" },
+  { sigla: "DF", nome: "Distrito Federal" },
+  { sigla: "ES", nome: "Espírito Santo" },
+  { sigla: "GO", nome: "Goiás" },
+  { sigla: "MA", nome: "Maranhão" },
+  { sigla: "MT", nome: "Mato Grosso" },
+  { sigla: "MS", nome: "Mato Grosso do Sul" },
+  { sigla: "MG", nome: "Minas Gerais" },
+  { sigla: "PA", nome: "Pará" },
+  { sigla: "PB", nome: "Paraíba" },
+  { sigla: "PR", nome: "Paraná" },
+  { sigla: "PE", nome: "Pernambuco" },
+  { sigla: "PI", nome: "Piauí" },
+  { sigla: "RJ", nome: "Rio de Janeiro" },
+  { sigla: "RN", nome: "Rio Grande do Norte" },
+  { sigla: "RS", nome: "Rio Grande do Sul" },
+  { sigla: "RO", nome: "Rondônia" },
+  { sigla: "RR", nome: "Roraima" },
+  { sigla: "SC", nome: "Santa Catarina" },
+  { sigla: "SP", nome: "São Paulo" },
+  { sigla: "SE", nome: "Sergipe" },
+  { sigla: "TO", nome: "Tocantins" },
+];
+
 const fullName = ref("");
 const cpf = ref("");
 const telefone = ref("");
@@ -117,12 +154,11 @@ const password = ref("");
 const confirmPassword = ref("");
 const erro = ref("");
 const loading = ref(false);
-const enderecoBuscado = ref(false); // Novo estado para desabilitar campos
-const passwordVisible = ref(false); // Novo estado para visibilidade da senha
+const enderecoBuscado = ref(false);
+const passwordVisible = ref(false);
 
 const router = useRouter();
 
-// Lógica de UX: Visibilidade da Senha
 const passwordFieldType = computed(() =>
   passwordVisible.value ? "text" : "password"
 );
@@ -133,7 +169,6 @@ const togglePasswordVisibility = () => {
   passwordVisible.value = !passwordVisible.value;
 };
 
-// Lógica de Máscaras e Formatação
 const onlyNumbers = (str) => str.replace(/\D/g, "");
 
 const maskCPF = () => {
@@ -160,9 +195,7 @@ const maskTelefone = () => {
   telefone.value = val;
 };
 
-// Lógica de Busca de Endereço (ViaCEP)
 const buscarEndereco = async () => {
-  // Limpa o CEP e verifica se tem 8 números
   const cepLimpo = onlyNumbers(cep.value);
   if (cepLimpo.length !== 8) {
     enderecoBuscado.value = false;
@@ -179,7 +212,6 @@ const buscarEndereco = async () => {
       estado.value = data.uf;
       enderecoBuscado.value = true;
     } else {
-      // Se houver erro ou CEP não encontrado
       enderecoBuscado.value = false;
       cidade.value = "";
       rua.value = "";
@@ -191,7 +223,6 @@ const buscarEndereco = async () => {
   }
 };
 
-// Lógica de Validação (Ajustada para lidar com máscaras)
 const validarCPF = (cpfStr) => onlyNumbers(cpfStr).length === 11;
 const validarCEP = (cepStr) => onlyNumbers(cepStr).length === 8;
 
@@ -208,7 +239,6 @@ const cadastrar = async () => {
     return;
   }
 
-  // (Resto das validações de e-mail e senha...)
   if (password.value !== confirmPassword.value) {
     erro.value = "As senhas não coincidem.";
     return;
@@ -216,18 +246,68 @@ const cadastrar = async () => {
 
   loading.value = true;
 
-  // SIMULAÇÃO DA CHAMADA DE API
-  try {
-    // Aqui vai a chamada real à sua API (ex: axios.post('/api/cadastro', { ... }))
-    await new Promise((resolve) => setTimeout(resolve, 1500)); // Simula um delay
+  const cepLimpo = onlyNumbers(cep.value);
+  const cpfLimpo = onlyNumbers(cpf.value);
+  const telefoneLimpo = onlyNumbers(telefone.value);
 
-    alert("Conta criada com sucesso!");
-    router.push("/login");
+  const userData = {
+    Name: fullName.value,
+    Email: email.value,
+    Password: password.value,
+    passconfirm: confirmPassword.value,
+    PhoneNumber: telefoneLimpo,
+    ProfilePicture: "https://example.com/default-profile.png",
+    Cpf: cpfLimpo,
+    Estado: estado.value,
+    Cidade: cidade.value,
+    Cep: cepLimpo,
+    Rua: rua.value,
+    NumeroCasa: numeroCasa.value,
+  };
+
+  console.log("Iniciando cadastro...");
+  console.log("Dados a serem enviados:", userData);
+
+  try {
+    const API_URL = "http://localhost:5282/api/User";
+
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    });
+
+    console.log("Resposta da API recebida. Status:", response.status);
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log("Cadastro realizado com sucesso! Dados do usuário:", data);
+      alert("Conta criada com sucesso!");
+      router.push("/login");
+    } else {
+      const errorData = await response.json();
+      console.error("Erro ao cadastrar. Detalhes do Erro:", errorData);
+
+      if (errorData.errors) {
+        const errorMessages = Object.entries(errorData.errors)
+          .map(([key, messages]) => `${key}: ${messages.join("; ")}`)
+          .join(" | ");
+
+        erro.value = `Erros de validação: ${errorMessages}`;
+      } else {
+        erro.value = `Erro ao criar conta. Status: ${
+          response.status
+        }. Detalhes: ${errorData.title || JSON.stringify(errorData)}`;
+      }
+    }
   } catch (error) {
-    console.error("Erro ao cadastrar:", error);
-    erro.value = "Erro ao criar conta. Tente novamente.";
+    console.error("Erro de conexão ou requisição (fetch error):", error);
+    erro.value = "Erro de rede. Verifique se a API está online.";
   } finally {
     loading.value = false;
+    console.log("Processo de cadastro finalizado.");
   }
 };
 </script>

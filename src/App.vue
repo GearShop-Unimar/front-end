@@ -1,13 +1,24 @@
 <script setup>
-import Navbar from './components/Navbar.vue'
-import Footer from './components/Footer.vue'
-import './assets/main.css'
+import { computed } from "vue";
+import { useRoute } from "vue-router";
+
+import Navbar from "./components/Navbar.vue";
+import Footer from "./components/Footer.vue";
+import "./assets/main.css";
+
+const route = useRoute();
+
+const isAuthRoute = computed(() => {
+  return route.path === "/login" || route.path === "/cadastro";
+});
 </script>
 
 <template>
   <div id="app">
-    <Navbar />
+    <Navbar v-if="!isAuthRoute" />
+
     <router-view />
-    <Footer />
+
+    <Footer v-if="!isAuthRoute" />
   </div>
 </template>

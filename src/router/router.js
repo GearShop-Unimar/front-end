@@ -71,4 +71,34 @@ const router = createRouter({
   routes,
 });
 
+// ======================================================================
+// 🟢 NAVIGATION GUARD (Proteção de Rota)
+// ======================================================================
+router.beforeEach((to, from, next) => {
+  // 1. Verifica se a rota de destino requer autenticação (usa o meta tag)
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+
+  // 2. Verifica se o token de autenticação existe (no localStorage)
+  const isAuthenticated = localStorage.getItem("userToken");
+
+  if (requiresAuth && !isAuthenticated) {
+    // Caso 1: Rota Protegida, mas usuário NÃO logado
+    // Redireciona para a página de Login
+    console.log("Acesso restrito. Redirecionando para Login.");
+    next("/login");
+  } else if (
+    isAuthenticated &&
+    (to.path === "/login" || to.path === "/cadastro")
+  ) {
+    // Caso 2: Usuário está Logado e tenta acessar as páginas de Login/Cadastro
+    // Redireciona para a Home
+    console.log("Usuário logado. Acesso a Login/Cadastro bloqueado.");
+    next("/");
+  } else {
+    // Caso 3: Permite a navegação (seja rota pública ou rota protegida com usuário logado)
+    next();
+  }
+});
+// ======================================================================
+
 export default router;

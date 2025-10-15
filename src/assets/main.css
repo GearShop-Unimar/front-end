@@ -5,7 +5,8 @@
   --cor-cinza: #f4f4f4;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   display: flex;
@@ -16,17 +17,20 @@ html, body {
   display: flex;
   flex-direction: column;
   min-height: 100%;
+  flex-grow: 1; /* Garante que o app container ocupe o restante da altura */
 }
 
 .main-content {
-  flex-grow: 1; /* Isso garante que o conteúdo ocupe o restante da altura disponível */
+  flex-grow: 1;
 }
 
 body {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #fff;
+  background-color: var(
+    --cor-preta
+  ); /* 🟢 Alterado para usar a variável preta */
 }
 
 .navbar {
