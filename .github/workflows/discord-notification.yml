@@ -1,27 +1,19 @@
-# .github/workflows/discord-notification.yml
-
-name: Notificação de Atualização na Main
-
-# GATILHO: Roda a cada push na branch 'main'
+name: Notificação de Merge para o Discord
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches:
       - main
-
 jobs:
   notify:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Enviar notificação para o Discord
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: success # Define um status fixo de sucesso
-          color: "008000" # Cor verde
-          title: "✅ A Branch Main foi Atualizada!"
+          title: "🚀 Novo Merge na Main!"
           description: |
-            O utilizador **${{ github.actor }}** fez um push para a branch **main**.
-
-            **Último commit:** "${{ github.event.head_commit.message }}"
-
-            Lembrete para a equipa: façam um `git pull origin main` antes de continuar.
+            A branch **${{ github.event.pull_request.head.ref }}** foi mesclada à branch **main**.
+            Lembrete para a equipe: façam um `git pull origin main` antes de continuar o trabalho.

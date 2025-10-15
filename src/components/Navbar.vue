@@ -27,11 +27,16 @@
       </div>
 
       <ul class="auth-links">
-        <template v-if="user">
+        <template v-if="authStore.isAuthenticated">
           <li>
             <router-link to="/carrinho" class="cart-link">
               <i class="fa fa-shopping-cart cart-icon"></i>
             </router-link>
+          </li>
+          <li>
+            <span class="welcome-message"
+              >Bem vindo, {{ authStore.user?.name }}!</span
+            >
           </li>
           <li>
             <router-link to="/meus-produtos" class="account-link">
@@ -39,7 +44,7 @@
             </router-link>
           </li>
           <li>
-            <button @click="logout" class="logout-btn">Sair</button>
+            <button @click="authStore.logout" class="logout-btn">Sair</button>
           </li>
         </template>
 
@@ -57,12 +62,11 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import Carrinho from "@/components/Carrinho.vue";
+import { useAuthStore } from "@/stores/auth";
 
-// Variável reativa para o estado do Carrinho
+const authStore = useAuthStore();
+
 const isCartOpen = ref(false);
-
-// Variáveis reativas já existentes
-const user = ref(null);
 const termoBusca = ref("");
 const menuOpen = ref(false);
 const isHidden = ref(false);
@@ -71,7 +75,6 @@ const toggleMenu = () => {
   menuOpen.value = !menuOpen.value;
 };
 
-// Funções para controlar a abertura/fechamento do Carrinho
 const openCart = () => {
   isCartOpen.value = true;
 };
@@ -79,13 +82,6 @@ const openCart = () => {
 const closeCart = () => {
   isCartOpen.value = false;
 };
-
-// Variável global 'unsubscribe' precisa ser definida se for usada no onUnmounted
-const unsubscribe = () => {};
-
-onUnmounted(() => {
-  unsubscribe(); // Limpa o listener quando o componente for desmontado
-});
 
 const router = useRouter();
 const pesquisar = () => {
@@ -95,17 +91,6 @@ const pesquisar = () => {
       query: { busca: termoBusca.value.trim() },
     });
     termoBusca.value = "";
-  }
-};
-
-// Função de logout (Depende de uma variável 'auth' não definida aqui)
-const logout = async () => {
-  try {
-    // Assume-se que 'auth' está definida globalmente ou em outro import
-    // await auth.signOut();
-    user.value = null;
-  } catch (error) {
-    console.error("Erro ao sair:", error);
   }
 };
 
@@ -121,7 +106,39 @@ onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
 });
 </script>
+
 <style scoped>
+/* ... todos os seus outros estilos ... */
+
+.cart-icon {
+  font-size: 24px;
+  color: white;
+  transition: color 0.3s ease;
+}
+
+.cart-icon:hover {
+  color: #ff6600;
+}
+
+.account-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.account-icon:hover {
+  color: #ff6600;
+}
+
+/* Estilo para a mensagem de boas-vindas */
+.welcome-message {
+  color: #ff6600;
+  font-weight: bold;
+  margin: 0 15px; /* Adiciona espaçamento */
+  white-space: nowrap; /* Impede que o nome quebre a linha */
+}
+
+/* ... mantenha todos os seus outros estilos aqui ... */
 .hamburger span {
   display: block;
   width: 25px;
@@ -194,8 +211,8 @@ onUnmounted(() => {
 }
 
 .account-icon {
-  font-size: 24px; /* Ajuste o tamanho conforme necessário */
-  color: white; /* Garante que o ícone seja branco */
+  font-size: 24px;
+  color: white;
 }
 
 .logout-btn {
@@ -211,101 +228,11 @@ onUnmounted(() => {
   text-decoration: underline;
 }
 
-.auth-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.auth-actions a {
-  padding-right: 0;
-}
-
-.auth-links .separator {
-  color: #ff6600;
-  font-size: 20px;
-  font-weight: bold;
-  margin: 0 10px;
-  user-select: none;
-}
-
 .navbar-hidden {
   transform: translateY(-100%);
   transition: transform 0.5s ease-in-out;
 }
 
-/* CEP Modal */
-
-.cep-btn {
-  background: none;
-  border: none;
-  color: white;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 8px 10px;
-  transition: color 0.3s;
-}
-
-.cep-btn:hover {
-  color: #ff6600;
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-.modal {
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-}
-
-.modal h2 {
-  margin-bottom: 20px;
-}
-
-.modal input {
-  width: 100%;
-  padding: 10px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: space-between;
-}
-
-.modal-actions button {
-  flex: 1;
-  margin: 0 5px;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.modal-actions button:first-child {
-  background: #ccc;
-}
-
-.modal-actions button:last-child {
-  background: #ff6600;
-  color: white;
-}
-
-/* barra de pesquisa */
 .search-container {
   display: flex;
   align-items: center;
@@ -317,17 +244,17 @@ onUnmounted(() => {
 .search-bar {
   display: flex;
   align-items: center;
-  background-color: #1a1a1a; /* Fundo preto */
+  background-color: #1a1a1a;
   border-radius: 25px;
   padding: 5px 15px;
-  border: 1px solid #444; /* Borda mais sutil */
+  border: 1px solid #444;
 }
 
 .search-bar input {
   background: transparent;
   border: none;
   outline: none;
-  color: white; /* Texto branco */
+  color: white;
   padding: 8px 12px;
   width: 200px;
   font-size: 14px;
@@ -335,7 +262,7 @@ onUnmounted(() => {
 }
 
 .search-bar button {
-  background-color: #ff6600; /* Cor laranja */
+  background-color: #ff6600;
   border: none;
   color: white;
   padding: 8px 14px;
@@ -348,44 +275,5 @@ onUnmounted(() => {
 
 .search-bar button:hover {
   background-color: #e55b00;
-}
-
-.search-bar input::placeholder {
-  color: #aaa;
-}
-
-.search-bar:focus-within {
-  box-shadow: 0 0 0 2px #ff6600;
-}
-
-.search-bar button:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px #ff6600;
-}
-
-.cart-link {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-}
-
-.cart-icon {
-  font-size: 24px;
-  color: white;
-  transition: color 0.3s ease;
-}
-
-.cart-icon:hover {
-  color: #ff6600;
-}
-
-.account-link {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-}
-
-.account-icon:hover {
-  color: #ff6600;
 }
 </style>
