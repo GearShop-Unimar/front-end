@@ -1,133 +1,114 @@
 <template>
   <div v-if="produto" class="pagina-produto">
-    <div class="imagem-topo">
-      <img
-        v-if="produto.imagemBase64"
-        :src="produto.imagemBase64"
-        :alt="produto.nome"
-        class="imagem-principal"
-      />
-      <div v-else class="sem-imagem">
-        <span>📷 Sem imagem</span>
-      </div>
-    </div>
-
-    <div class="detalhes-produto">
-      <h1 class="titulo-produto">{{ produto.nome }}</h1>
-      <p class="preco-produto">R$ {{ produto.preco.toFixed(2) }}</p>
-      <p class="categoria-produto">{{ produto.categoria }}</p>
-      <p class="estado-produto">Estado: {{ produto.estado }}</p>
-
-      <div class="descricao-produto">
-        <h3>Descrição</h3>
-        <p>{{ produto.descricao }}</p>
-      </div>
-
-      <div class="vendedor-info-bloco">
-        <h3>Vendedor</h3>
-        <div class="vendedor-info">
-          <i class="bi bi-person-circle"></i>
-          <div>
-            <p class="vendedor-nome">{{ vendedorUsername }}</p>
-            <p v-if="produto.telefone" class="vendedor-contato">
-              <i class="bi bi-telephone"></i> {{ produto.telefone }}
-            </p>
-          </div>
+    <div class="produto-container">
+      <div class="imagem-container">
+        <img
+          v-if="produto.mainImageUrl"
+          :src="produto.mainImageUrl"
+          :alt="produto.name"
+          class="imagem-principal"
+        />
+        <div v-else class="sem-imagem">
+          <span>📷 Sem imagem</span>
         </div>
       </div>
 
-      <div v-if="mostrarPopup" class="popup-overlay">
-        <div class="popup-content">
-          <p>✅ Produto adicionado ao carrinho!</p>
-          <div class="modal-botoes">
-            <button @click="continuarComprando" class="btn-continuar">
-              Continuar comprando
-            </button>
-            <button @click="irParaCarrinho" class="btn-carrinho">
-              Ir para o Carrinho
-            </button>
+      <div class="detalhes-produto">
+        <span class="categoria-produto">{{ produto.category }}</span>
+        <h1 class="titulo-produto">{{ produto.name }}</h1>
+        <p class="preco-produto">R$ {{ produto.price.toFixed(2) }}</p>
+
+        <div class="descricao-produto">
+          <h3>Descrição</h3>
+          <p>{{ produto.description }}</p>
+        </div>
+
+        <div class="vendedor-info-bloco">
+          <h3>Vendedor</h3>
+          <div class="vendedor-info">
+            <i class="bi bi-person-circle"></i>
+            <div>
+              <p class="vendedor-nome">{{ vendedorName }}</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <button @click="adicionarAoCarrinho" class="btn-comprar">
-        🛒 Adicionar ao Carrinho
-      </button>
+        <div class="botoes-acao-container">
+          <button @click="adicionarAoCarrinho" class="btn-carrinho">
+            🛒 Adicionar ao Carrinho
+          </button>
+          <button @click="comprarAgora" class="btn-comprar">
+            Comprar Agora
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div v-else class="carregando">
+  <div v-if="mostrarPopup" class="popup-overlay">
+    <div class="popup-content">
+      <p>✅ Produto adicionado ao carrinho!</p>
+      <div class="modal-botoes">
+        <button @click="continuarComprando" class="btn-continuar">
+          Continuar comprando
+        </button>
+        <button @click="irParaCarrinho" class="btn-ir-carrinho">
+          Ir para o Carrinho
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div v-else-if="!produto" class="carregando">
     <p>Carregando produto...</p>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import axios from "axios";
+import { useUserStore } from "@/stores/user";
 
 const route = useRoute();
 const router = useRouter();
+const userStore = useUserStore();
+
 const produto = ref(null);
-const vendedorUsername = ref("");
-const db = getFirestore(app);
 const mostrarPopup = ref(false);
+const API_URL = `${import.meta.env.VITE_API_URL}/Product`;
 
-const carregarProdutoEVendedor = async () => {
+const carregarProduto = async () => {
   try {
-    const produtoRef = doc(db, "produtos", route.params.id);
-    const produtoSnap = await getDoc(produtoRef);
+    const produtoId = route.params.id;
+    const response = await axios.get(`${API_URL}/${produtoId}`);
+    produto.value = response.data;
 
-    if (!produtoSnap.exists()) {
-      router.push("/");
-      return;
-    }
-
-    produto.value = {
-      id: produtoSnap.id,
-      ...produtoSnap.data(),
-    };
-
-    if (produto.value.usuarioId) {
-      try {
-        const userDoc = await getDoc(
-          doc(db, "usuarios", produto.value.usuarioId)
-        );
-        if (userDoc.exists()) {
-          vendedorUsername.value = userDoc.data().username || "Usuário";
-        }
-      } catch (error) {
-        console.error("Erro ao carregar vendedor:", error);
-      }
-
-      const userDoc = await getDoc(
-        doc(db, "usuarios", produto.value.usuarioId)
-      );
-      if (userDoc.exists()) {
-        vendedorUsername.value = userDoc.data().username || "Usuário";
-      }
+    if (produto.value && produto.value.sellerId) {
+      userStore.fetchUserById(produto.value.sellerId);
     }
   } catch (error) {
     console.error("Erro ao carregar produto:", error);
-    router.push("/");
+    router.push("/produtos");
   }
 };
 
+const vendedorName = computed(() => {
+  if (!produto.value?.sellerId) return "Vendedor desconhecido";
+  const seller = userStore.users[produto.value.sellerId];
+  return seller ? seller.name : "Carregando vendedor...";
+});
+
 const adicionarAoCarrinho = () => {
-  const carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
-  const produtoParaCarrinho = {
-    id: produto.value.id,
-    nome: produto.value.nome,
-    preco: produto.value.preco,
-    imagemBase64: produto.value.imagemBase64,
-  };
-  carrinho.push(produtoParaCarrinho);
-  localStorage.setItem("carrinho", JSON.stringify(carrinho));
   mostrarPopup.value = true;
+};
+
+const comprarAgora = () => {
+  router.push("/pagamento");
 };
 
 const continuarComprando = () => {
   mostrarPopup.value = false;
-  router.push("/categoria");
 };
 
 const irParaCarrinho = () => {
@@ -135,27 +116,36 @@ const irParaCarrinho = () => {
   router.push("/carrinho");
 };
 
-onMounted(() => {
-  carregarProdutoEVendedor();
-});
+onMounted(carregarProduto);
 </script>
 
 <style scoped>
 .pagina-produto {
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-  background-color: #fff;
+  padding: 60px 20px;
+  background-color: var(--color-background-soft);
+  min-height: 80vh;
 }
 
-.imagem-topo {
+.produto-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: var(--color-card-background);
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px var(--color-card-shadow);
+}
+
+.imagem-container {
   width: 100%;
-  height: 400px;
-  margin-top: 90px;
-  background-color: #f5f5f5;
+  height: 500px;
+  background-color: var(--color-background-mute);
+  border-radius: 10px;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   overflow: hidden;
 }
 
@@ -163,40 +153,41 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border: #efe4e49b 1px solid;
-  border-radius: 10px;
+}
+
+.sem-imagem {
+  color: var(--color-text);
+  opacity: 0.7;
 }
 
 .detalhes-produto {
-  padding: 20px;
-  border: #efe4e49b 1px solid;
-  border-radius: 10px;
-}
-
-.titulo-produto {
-  font-size: 2rem;
-  margin-bottom: 10px;
-}
-
-.preco-produto {
-  font-size: 1.8rem;
-  color: #ff6600;
-  font-weight: bold;
-  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
 .categoria-produto {
-  background-color: #f0f0f0;
-  display: inline-block;
+  background-color: var(--color-background-mute);
+  color: var(--color-text);
+  align-self: flex-start;
   padding: 6px 15px;
   border-radius: 20px;
-  margin-bottom: 10px;
   font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 15px;
 }
 
-.estado-produto {
+.titulo-produto {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--color-heading);
+  margin: 0 0 10px 0;
+}
+
+.preco-produto {
+  font-size: 2rem;
+  color: var(--color-primary);
+  font-weight: bold;
   margin-bottom: 20px;
-  font-size: 1.1rem;
 }
 
 .descricao-produto {
@@ -204,9 +195,20 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
+.descricao-produto h3 {
+  font-size: 1.2rem;
+  color: var(--color-heading);
+  margin-bottom: 10px;
+}
+
+.descricao-produto p {
+  color: var(--color-text);
+  line-height: 1.7;
+}
+
 .vendedor-info-bloco {
-  background-color: #f9f9f9;
-  border: 1px solid #eee;
+  background-color: var(--color-background-soft);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 15px;
   margin-bottom: 20px;
@@ -219,33 +221,51 @@ onMounted(() => {
 }
 
 .vendedor-info i {
-  font-size: 2rem;
-  color: #ff6600;
+  font-size: 2.2rem;
+  color: var(--color-primary);
 }
 
 .vendedor-nome {
   font-weight: bold;
+  color: var(--color-heading);
 }
 
-.vendedor-contato {
-  color: #666;
-  font-size: 0.9rem;
+.botoes-acao-container {
+  display: flex;
+  gap: 15px;
+  margin-top: auto;
+}
+
+.btn-comprar,
+.btn-carrinho {
+  width: 100%;
+  border: 2px solid var(--color-primary);
+  padding: 18px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .btn-comprar {
-  width: 100%;
-  background-color: #ff6600;
+  background-color: var(--color-primary);
   color: white;
-  border: none;
-  padding: 15px;
-  font-size: 1.1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+}
+.btn-comprar:hover {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px hsla(24, 100%, 50%, 0.3);
 }
 
-.btn-comprar:hover {
-  background-color: #e55b00;
+.btn-carrinho {
+  background-color: transparent;
+  color: var(--color-primary);
+}
+.btn-carrinho:hover {
+  background-color: var(--color-primary);
+  color: white;
 }
 
 .popup-overlay {
@@ -254,21 +274,19 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fadeIn 0.3s ease-out;
 }
 
 .popup-content {
-  background: #fff;
+  background: var(--color-card-background);
+  color: var(--color-heading);
   padding: 30px;
   border-radius: 16px;
-  border: 2px solid #ff6600; /* borda laranja */
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-  animation: slideUp 0.3s ease-out;
   text-align: center;
   max-width: 400px;
   width: 90%;
@@ -276,89 +294,61 @@ onMounted(() => {
 
 .popup-content p {
   margin-bottom: 20px;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: bold;
-  color: #333;
 }
 
 .modal-botoes {
   display: flex;
-  flex-direction: column;
   gap: 1rem;
   margin-top: 1rem;
 }
 
 .btn-continuar,
-.btn-carrinho {
+.btn-ir-carrinho {
+  width: 100%;
   padding: 12px;
   font-size: 1rem;
-  border: none;
+  font-weight: 600;
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   cursor: pointer;
   transition: 0.2s ease-in-out;
 }
 
 .btn-continuar {
-  background-color: #f0f0f0;
-  color: #333;
-  border: 1px solid #ccc;
+  background-color: var(--color-background-mute);
+  color: var(--color-text);
 }
 
 .btn-continuar:hover {
-  background-color: #e0e0e0;
+  background-color: var(--color-border);
 }
 
-.btn-carrinho {
-  background-color: #ff6600;
+.btn-ir-carrinho {
+  background-color: var(--color-primary);
   color: #fff;
-  border: 1px solid #e65c00;
+  border-color: var(--color-primary);
 }
 
-.btn-carrinho:hover {
-  background-color: #e65c00;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(40px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+.btn-ir-carrinho:hover {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
 }
 
 .carregando {
   text-align: center;
-  padding: 50px;
-  font-size: 1.2rem;
+  padding: 100px;
+  font-size: 1.5rem;
+  color: var(--color-text);
 }
 
-@media (max-width: 768px) {
-  .imagem-topo {
-    height: 250px;
+@media (max-width: 992px) {
+  .produto-container {
+    grid-template-columns: 1fr;
   }
-
-  .titulo-produto {
-    font-size: 1.5rem;
-  }
-
-  .preco-produto {
-    font-size: 1.5rem;
-  }
-
-  .btn-comprar {
-    font-size: 1rem;
+  .imagem-container {
+    height: 350px;
   }
 }
 </style>
