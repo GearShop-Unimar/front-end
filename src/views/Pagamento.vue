@@ -1,339 +1,389 @@
 <template>
   <div class="pagamento-page">
     <div class="pagamento-card">
-      <div class="header-pagamento">
-        <h2>Pagamento Seguro 🔒</h2>
-        <div class="selo-seguranca">
-            <span class="secure-text">Compra 100% Segura</span>
+      <div class="stepper">
+        <div
+          class="step"
+          :class="{ active: currentStep >= 1, completed: currentStep > 1 }"
+        >
+          <div class="step-number">1</div>
+          <div class="step-label">Revisão</div>
+        </div>
+        <div class="step-line" :class="{ completed: currentStep > 1 }"></div>
+        <div
+          class="step"
+          :class="{ active: currentStep >= 2, completed: currentStep > 2 }"
+        >
+          <div class="step-number">2</div>
+          <div class="step-label">Pagamento</div>
+        </div>
+        <div class="step-line" :class="{ completed: currentStep > 2 }"></div>
+        <div
+          class="step"
+          :class="{ active: currentStep >= 3, completed: currentStep > 3 }"
+        >
+          <div class="step-number">3</div>
+          <div class="step-label">Confirmação</div>
         </div>
       </div>
 
-      <p class="total">Total a pagar: <strong>R$ {{ total.toFixed(2).replace('.', ',') }}</strong></p>
-
-      <form @submit.prevent="processarPagamento" class="form-pagamento">
-        
-        <div class="form-group">
-          <label for="nomeCartao">Nome no cartão</label>
-          <input v-model="nomeCartao" id="nomeCartao" type="text" placeholder="Nome completo" required />
-        </div>
-
-        <div class="form-group">
-          <label for="numeroCartao">Número do cartão</label>
-          <div class="input-com-bandeira">
-              <input v-model="numeroCartao" id="numeroCartao" type="tel" inputmode="numeric" placeholder="xxxx xxxx xxxx xxxx" maxlength="19"
-                @input="formatarCartao" required />
-              <img v-if="bandeiraCartao" :src="bandeiraCartao" alt="Bandeira do Cartão" class="bandeira-cartao-input">
+      <div v-if="currentStep === 1" class="step-content">
+        <h2>Revise seus Produtos</h2>
+        <div class="produtos-revisao-grid">
+          <div
+            v-for="item in cartItems"
+            :key="item.id"
+            class="produto-revisao-item"
+          >
+            <img :src="item.imagem" :alt="item.nome" />
+            <div class="info">
+              <span class="nome">{{ item.nome }}</span>
+              <span class="preco">R$ {{ item.preco.toFixed(2) }}</span>
+            </div>
+            <button @click="removerItem(item.id)" class="btn-remover">×</button>
           </div>
         </div>
+        <div class="total-container">
+          <span>Total:</span>
+          <strong>R$ {{ total.toFixed(2) }}</strong>
+        </div>
+        <div class="navigation-buttons">
+          <button @click="goToNextStep" :disabled="cartItems.length === 0">
+            Confirmar e Continuar
+          </button>
+        </div>
+      </div>
 
-        <div class="linha">
-          <div class="form-group metade">
-            <label for="mesValidade">Mês</label>
-            <input v-model="mesValidade" id="mesValidade" type="text" placeholder="MM" maxlength="2" inputmode="numeric" @input="formatarMes" required />
+      <div v-if="currentStep === 2" class="step-content">
+        <h2>Escolha a Forma de Pagamento</h2>
+        <div class="payment-methods">
+          <div class="method" @click="selectPaymentMethod('credit')">
+            💳 Cartão de Crédito
           </div>
-          <div class="form-group metade">
-            <label for="anoValidade">Ano</label>
-            <input v-model="anoValidade" id="anoValidade" type="text" placeholder="AA" maxlength="2" inputmode="numeric" @input="formatarAno" required />
-          </div>
-          <div class="form-group metade">
-            <label for="cvv">CVV 
-                <span class="tooltip-cvv" title="Código de segurança, geralmente 3 dígitos no verso do cartão.">?</span>
-            </label>
-            <input v-model="cvv" id="cvv" type="text" placeholder="123" maxlength="4" inputmode="numeric" required />
+          <div class="method" @click="selectPaymentMethod('pix')">✨ PIX</div>
+          <div class="method" @click="selectPaymentMethod('boleto')">
+            📄 Boleto
           </div>
         </div>
-
-        <div class="form-group">
-          <label for="cpfTitular">CPF do titular (igual ao nome no cartão)</label>
-          <input v-model="cpfTitular" id="cpfTitular" type="text" placeholder="000.000.000-00" maxlength="14"
-            @input="formatarCPF" required />
+        <div class="navigation-buttons">
+          <button @click="goToPreviousStep" class="btn-secondary">
+            Voltar
+          </button>
         </div>
+      </div>
 
-        <p v-if="erro" class="erro">{{ erro }}</p>
+      <div v-if="currentStep === 3" class="step-content">
+        <div v-if="paymentMethod === 'credit'">
+          <h2>Detalhes do Cartão</h2>
+          <CreditCardForm @submit="handlePayment" />
+        </div>
+        <div v-if="paymentMethod === 'pix'" class="payment-details">
+          <h2>Pague com PIX</h2>
+          <p>Use o QR Code abaixo para pagar:</p>
+          <img
+            src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=Example"
+            alt="QR Code PIX"
+            class="qr-code"
+          />
+          <button @click="handlePayment">Confirmar Pagamento PIX</button>
+        </div>
+        <div v-if="paymentMethod === 'boleto'" class="payment-details">
+          <h2>Pagamento com Boleto</h2>
+          <p>Clique no botão para gerar seu boleto.</p>
+          <button @click="handlePayment">Gerar Boleto</button>
+        </div>
+        <div class="navigation-buttons">
+          <button @click="goToPreviousStep" class="btn-secondary">
+            Voltar
+          </button>
+        </div>
+      </div>
 
-        <button type="submit" :disabled="loading || !formularioValido">
-          {{ loading ? 'Processando...' : 'Pagar Agora' }}
-        </button>
-      </form>
+      <div v-if="currentStep === 4" class="step-content success-step">
+        <h2>🎉 Pagamento Realizado!</h2>
+        <p>
+          Obrigado por comprar na GearShop! Seu pedido foi confirmado e em breve
+          será preparado para envio.
+        </p>
+        <div class="navigation-buttons">
+          <router-link to="/produtos" class="btn-primary"
+            >Continuar Comprando</router-link
+          >
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
+import CreditCardForm from "@/components/CreditCardForm.vue";
 
-// Mocado os produtos do carrinho
-const produtos = ref([
-  { nome: 'Produto 1', preco: 50 },
-  { nome: 'Produto 2', preco: 30 },
+const router = useRouter();
+const currentStep = ref(1);
+const paymentMethod = ref(null);
+
+const cartItems = ref([
+  {
+    id: 1,
+    nome: "Amortecedor Dianteiro",
+    preco: 450.0,
+    imagem:
+      "https://http2.mlstatic.com/D_NQ_NP_960144-MLB70451878345_072023-O.webp",
+  },
+  {
+    id: 2,
+    nome: "Lâmpada de Farol H4",
+    preco: 65.9,
+    imagem:
+      "https://d15p9s482i31ww.cloudfront.net/images/produtos/64193NL-1.png",
+  },
+  {
+    id: 3,
+    nome: "Jogo de Tapetes Carpete",
+    preco: 129.99,
+    imagem:
+      "https://http2.mlstatic.com/D_NQ_NP_864272-MLB47915729792_102021-O.webp",
+  },
 ]);
 
-const total = computed(() => produtos.value.reduce((acc, p) => acc + p.preco, 0));
+const total = computed(() =>
+  cartItems.value.reduce((acc, item) => acc + item.preco, 0)
+);
 
-const nomeCartao = ref('')
-const numeroCartao = ref('')
-const mesValidade = ref('') 
-const anoValidade = ref('') 
-const cvv = ref('')
-const cpfTitular = ref('')
-const erro = ref('')
-const loading = ref(false)
-const router = useRouter()
+const removerItem = (id) => {
+  cartItems.value = cartItems.value.filter((item) => item.id !== id);
+};
 
-const bandeiraCartao = computed(() => {
-    const num = numeroCartao.value.replace(/\s/g, '')
-    if (num.length >= 4) {
-        if (num.startsWith('4')) return 'https://img.icons8.com/color/48/visa.png'
-        if (num.startsWith('5')) return 'https://img.icons8.com/color/48/mastercard.png' 
+const goToNextStep = () => {
+  if (currentStep.value < 4) currentStep.value++;
+};
+
+const goToPreviousStep = () => {
+  if (currentStep.value > 1) {
+    if (currentStep.value === 3) {
+      paymentMethod.value = null;
     }
-    return null
-})
-
-
-const formatarCartao = () => {
-  let num = numeroCartao.value.replace(/\D/g, '').slice(0, 16)
-  numeroCartao.value = num.replace(/(.{4})/g, '$1 ').trim()
-}
-
-const formatarMes = () => {
-    mesValidade.value = mesValidade.value.replace(/\D/g, '').slice(0, 2)
-}
-
-const formatarAno = () => {
-    anoValidade.value = anoValidade.value.replace(/\D/g, '').slice(0, 2)
-}
-
-const formatarCPF = () => {
-  let cpf = cpfTitular.value.replace(/\D/g, '').slice(0, 11);
-  if (cpf.length > 9) {
-      cpf = cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
-  } else if (cpf.length > 6) {
-      cpf = cpf.replace(/^(\d{3})(\d{3})(\d{1,3})$/, '$1.$2.$3');
-  } else if (cpf.length > 3) {
-      cpf = cpf.replace(/^(\d{3})(\d{1,3})$/, '$1.$2');
+    currentStep.value--;
   }
-  cpfTitular.value = cpf;
-}
+};
 
+const selectPaymentMethod = (method) => {
+  paymentMethod.value = method;
+  goToNextStep();
+};
 
-const validarNumeroCartao = (num) => /^\d{16}$/.test(num.replace(/\s/g, ''))
-const validarCVV = (cvv) => /^\d{3,4}$/.test(cvv) 
-const validarCPF = (cpf) => /^\d{3}\.\d{3}\.\d{3}\-\d{2}$/.test(cpf)
-
-const validarValidade = (mes, ano) => {
-    if (!/^\d{2}$/.test(mes) || !/^\d{2}$/.test(ano)) return false;
-    
-    const mesNum = parseInt(mes);
-    const anoNum = parseInt('20' + ano); 
-
-    if (mesNum < 1 || mesNum > 12) return false;
-
-    const dataAtual = new Date();
-    const anoAtual = dataAtual.getFullYear();
-    const mesAtual = dataAtual.getMonth() + 1; 
-
-    if (anoNum < anoAtual) return false;
-    if (anoNum === anoAtual && mesNum < mesAtual) return false;
-
-    return true;
-}
-
-const formularioValido = computed(() => {
-    return (
-        nomeCartao.value.length > 0 &&
-        validarNumeroCartao(numeroCartao.value) &&
-        validarCVV(cvv.value) &&
-        validarCPF(cpfTitular.value) &&
-        mesValidade.value.length === 2 &&
-        anoValidade.value.length === 2
-    );
-});
-
-const processarPagamento = async () => {
-  erro.value = ''
-
-  if (!formularioValido.value) { 
-      erro.value = 'Preencha todos os campos corretamente.'; 
-      return 
-  }
-  
-  if (!validarValidade(mesValidade.value, anoValidade.value)) { 
-      erro.value = 'Validade do cartão expirada ou inválida.'; 
-      return 
-  }
-
-  loading.value = true
-
-  try {
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    router.push('/sucesso')
-  } catch (e) {
-    erro.value = 'Erro ao processar pagamento. Tente novamente.'
-  } finally {
-    loading.value = false
-  }
-}
+const handlePayment = async () => {
+  console.log("Processando pagamento...");
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+  currentStep.value = 4;
+};
 </script>
 
 <style scoped>
-
 .pagamento-page {
   display: flex;
   justify-content: center;
-  align-items: center; 
+  align-items: flex-start;
   padding: 50px 20px;
-  background-color: #f0f2f5; 
+  background-color: var(--color-background-soft);
   min-height: 100vh;
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; 
 }
-
 .pagamento-card {
-  background-color: #fff;
+  background-color: var(--color-card-background);
   padding: 30px 40px;
-  border-radius: 12px; 
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); 
-  width: 400px; 
+  border-radius: 12px;
+  box-shadow: 0 10px 30px var(--color-card-shadow);
+  width: 700px;
   max-width: 100%;
+  border: 1px solid var(--color-border);
 }
-
-.header-pagamento {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-h2 {
-  font-size: 24px;
-  margin-bottom: 5px;
-  color: #1a1a1a;
-  font-weight: 600;
-}
-
-.selo-seguranca {
-    background-color: #e6f7ff; 
-    color: #096dd9;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 14px;
-    font-weight: 500;
-    display: inline-block;
-}
-
-.total {
-  text-align: center;
-  font-size: 22px;
-  margin-bottom: 25px;
-  color: #1a1a1a;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 15px;
-}
-
-.total strong {
-    color: #007bff; 
-    font-weight: 700;
-}
-
-.form-pagamento .form-group {
-  margin-bottom: 18px; 
-  position: relative; 
-}
-
-.form-pagamento label {
-  font-weight: 500; 
-  margin-bottom: 6px;
-  color: #333;
-  font-size: 14px;
-  display: block; 
-}
-
-.form-pagamento input {
-  width: 100%; 
-  box-sizing: border-box; 
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 16px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  background-color: #fafafa;
-}
-
-.form-pagamento input:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-  outline: none;
-}
-
-.input-com-bandeira {
-    position: relative;
-    display: block;
-}
-
-.bandeira-cartao-input {
-    position: absolute;
-    right: 12px; 
-    top: 50%;
-    transform: translateY(-50%);
-    width: 30px; 
-    height: 30px;
-    pointer-events: none; 
-}
-
-.linha {
+.stepper {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+.step {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  color: var(--color-text);
+  opacity: 0.5;
+}
+.step-number {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+.step-label {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.step.active .step-number {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary);
+  color: white;
+}
+.step.active {
+  opacity: 1;
+}
+.step.completed .step-number {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary);
+  color: white;
+}
+.step-line {
+  flex-grow: 1;
+  height: 2px;
+  background-color: var(--color-border);
+  margin: 0 10px;
+  margin-bottom: 25px;
+  transition: background-color 0.3s ease;
+}
+.step-line.completed {
+  background-color: var(--color-primary);
+}
+.step-content h2 {
+  text-align: center;
+  color: var(--color-heading);
+  margin-bottom: 25px;
+}
+.produtos-revisao-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+.produto-revisao-item {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px;
+  position: relative;
+}
+.produto-revisao-item img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  margin-right: 10px;
+}
+.produto-revisao-item .info {
+  display: flex;
+  flex-direction: column;
+}
+.produto-revisao-item .nome {
+  font-weight: 600;
+  color: var(--color-heading);
+  font-size: 0.9rem;
+}
+.produto-revisao-item .preco {
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+.btn-remover {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: none;
+  border: none;
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+.total-container {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.5rem;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-heading);
+}
+.payment-methods {
+  display: flex;
+  flex-direction: column;
   gap: 15px;
 }
-
-.linha .form-group {
-  flex: 1; 
-  min-width: 0;
-}
-
-.tooltip-cvv {
-    cursor: pointer;
-    margin-left: 5px;
-    color: #999;
-    font-weight: bold;
-    font-size: 12px;
-    border: 1px solid #ccc;
-    border-radius: 50%;
-    padding: 0 5px;
-    display: inline-block;
-    line-height: 16px;
-}
-
-button {
-  width: 100%;
-  padding: 15px;
-  border-radius: 6px;
-  background-color: #ff6600; 
-  color: #fff;
-  font-size: 17px;
-  font-weight: 600;
-  border: none;
+.method {
+  padding: 20px;
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s, box-shadow 0.2s;
-  margin-top: 10px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  color: var(--color-heading);
 }
-
-button:hover:not([disabled]) {
-  background-color: #000000;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+.method:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-background-mute);
 }
-
-button[disabled] {
-  background-color: #ccc; 
+.navigation-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+}
+.navigation-buttons button,
+.navigation-buttons a {
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  text-decoration: none;
+  font-size: 1rem;
+}
+.btn-secondary {
+  background-color: var(--color-background-mute);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+.btn-secondary:hover {
+  background-color: var(--color-border);
+}
+button {
+  background-color: var(--color-primary);
+  color: white;
+}
+button:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+button:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-  color: #999;
 }
-
-.erro {
-  color: #d9534f; 
-  background-color: #fbebeb;
-  padding: 8px;
-  border-radius: 4px;
+.payment-details {
   text-align: center;
-  margin-bottom: 15px;
-  font-size: 14px;
-  border: 1px solid #ebccd1;
+}
+.qr-code {
+  margin: 20px auto;
+  display: block;
+}
+.success-step {
+  text-align: center;
+  padding: 40px 0;
+}
+.success-step h2 {
+  font-size: 2rem;
+  color: var(--color-primary);
+}
+.success-step p {
+  font-size: 1.1rem;
+  color: var(--color-text);
+  margin-bottom: 30px;
 }
 </style>

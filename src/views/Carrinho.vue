@@ -1,260 +1,254 @@
 <template>
-  <div class="checkout-container">
-    <!-- Lista de Produtos -->
-    <div class="produtos">
-      <h2>🛒 Itens no Carrinho</h2>
-      <div v-if="carrinho.length === 0" class="vazio">Seu carrinho está vazio.</div>
-      <div v-else class="produtos-lista">
-        <div v-for="(produto, index) in carrinho" :key="index" class="produto-card">
-          <img v-if="produto.imagemBase64" :src="produto.imagemBase64" alt="Produto" />
-          <div class="info">
-            <h4>{{ produto.nome }}</h4>
-            <p>R$ {{ formatarPreco(produto.preco) }}</p>
-            <button @click="removerItem(index)">🗑️</button>
+  <div class="carrinho-page">
+    <div class="carrinho-container">
+      <div class="lista-itens">
+        <h2>Meu Carrinho</h2>
+        <div v-if="carrinho.length === 0" class="carrinho-vazio">
+          <p>Seu carrinho está vazio.</p>
+          <router-link to="/produtos" class="btn-explorar"
+            >Explorar Produtos</router-link
+          >
+        </div>
+        <div v-else class="produtos-grid">
+          <div v-for="(item, index) in carrinho" :key="index" class="item-card">
+            <img :src="item.imagem" :alt="item.nome" class="item-imagem" />
+            <div class="item-info">
+              <span class="item-nome">{{ item.nome }}</span>
+              <span class="item-preco">R$ {{ item.preco.toFixed(2) }}</span>
+            </div>
+            <button @click="removerItem(index)" class="btn-remover">×</button>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Pagamento -->
-    <div class="pagamento">
-      <h2>💳 Pagamento</h2>
-
-      <!-- Seletor de método -->
-      <div class="metodo-pagamento">
-        <label>
-          <input type="radio" value="cartao" v-model="metodoSelecionado" /> Cartão
-        </label>
-        <label>
-          <input type="radio" value="pix" v-model="metodoSelecionado" /> PIX
-        </label>
-      </div>
-
-      <!-- Formulário de Cartão -->
-      <form v-if="metodoSelecionado === 'cartao'" @submit.prevent="finalizarCompra">
-        <input type="text" placeholder="Nome no cartão" required />
-        <input type="text" placeholder="Número do cartão" maxlength="19" required />
-        <div class="linha">
-          <input type="text" placeholder="Validade (MM/AA)" required />
-          <input type="text" placeholder="CVV" maxlength="3" required />
+      <aside class="resumo-carrinho">
+        <h2>Resumo do Pedido</h2>
+        <div class="detalhes-resumo">
+          <div class="linha-resumo">
+            <span>Subtotal ({{ carrinho.length }} itens)</span>
+            <span>R$ {{ totalCarrinho.toFixed(2) }}</span>
+          </div>
+          <div class="linha-resumo">
+            <span>Frete</span>
+            <span>Grátis</span>
+          </div>
+          <div class="linha-total">
+            <span>Total</span>
+            <strong>R$ {{ totalCarrinho.toFixed(2) }}</strong>
+          </div>
         </div>
-        <p class="total">Total: <strong>R$ {{ totalCarrinho }}</strong></p>
-        <button type="submit">Finalizar Compra</button>
-      </form>
-
-      <!-- Pagamento via PIX -->
-      <div v-if="metodoSelecionado === 'pix'" class="pix-container">
-        <img src="../assets/img/frame.png" alt="QR Code PIX" class="qr-code" />
-        <p>Escaneie o QR Code com seu app de banco para finalizar o pagamento.</p>
-        <p class="total">Total: <strong>R$ {{ totalCarrinho }}</strong></p>
-        <button @click="finalizarCompra">Confirmar Pagamento PIX</button>
-      </div>
-    </div>
-
-    <!-- Popup de Sucesso -->
-    <div v-if="mostrarPopup" class="popup-overlay">
-      <div class="popup">
-        <h2>✅ Compra realizada com sucesso!</h2>
-        <p>Obrigado por comprar na <strong>GearShop</strong>!</p>
-        <button @click="fecharPopup">Fechar</button>
-      </div>
+        <router-link
+          to="/pagamento"
+          class="btn-finalizar"
+          :class="{ disabled: carrinho.length === 0 }"
+        >
+          Ir para o Pagamento
+        </router-link>
+      </aside>
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'Carrinho',
-  data() {
-    return {
-      carrinho: [],
-      mostrarPopup: false,
-      metodoSelecionado: 'cartao'
-    }
-  },
-  mounted() {
-    const carrinhoSalvo = localStorage.getItem('carrinho');
-    if (carrinhoSalvo) {
-      this.carrinho = JSON.parse(carrinhoSalvo);
-    }
-  },
-  computed: {
-    totalCarrinho() {
-      return this.carrinho
-        .reduce((total, item) => {
-          let preco = parseFloat(
-            String(item.preco).replace('R$', '').replace(',', '.')
-          );
-          return total + (isNaN(preco) ? 0 : preco);
-        }, 0)
-        .toFixed(2)
-        .replace('.', ',');
-    }
-  },
-  methods: {
-    formatarPreco(valor) {
-      return Number(
-        String(valor).replace('R$', '').replace(',', '.')
-      ).toFixed(2).replace('.', ',');
-    },
-    removerItem(index) {
-      this.carrinho.splice(index, 1);
-      localStorage.setItem('carrinho', JSON.stringify(this.carrinho));
-    },
-    finalizarCompra() {
-      this.mostrarPopup = true;
-      this.carrinho = [];
-      localStorage.removeItem('carrinho');
-    },
-    fecharPopup() {
-      this.mostrarPopup = false;
-    }
+<script setup>
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+const carrinho = ref([]);
+
+const totalCarrinho = computed(() => {
+  return carrinho.value.reduce((total, item) => total + item.preco, 0);
+});
+
+const removerItem = (index) => {
+  carrinho.value.splice(index, 1);
+  localStorage.setItem("carrinho", JSON.stringify(carrinho.value));
+};
+
+onMounted(() => {
+  const carrinhoSalvo = localStorage.getItem("carrinho");
+  if (carrinhoSalvo) {
+    carrinho.value = JSON.parse(carrinhoSalvo);
   }
-}
+});
 </script>
 
 <style scoped>
-.checkout-container {
-  display: flex;
-  align-items: flex-start; /* ← Deixa cada coluna com sua própria altura */
+.carrinho-page {
+  padding: 60px 20px;
+  background-color: var(--color-background-soft);
+  min-height: 80vh;
+}
+
+.carrinho-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
   gap: 40px;
-  padding: 40px;
   max-width: 1200px;
-  margin: auto;
-  font-family: 'Rajdhani', sans-serif;
+  margin: 0 auto;
+  align-items: flex-start;
 }
 
-.produtos, .pagamento {
-  flex: 1;
-  background-color: #fff;
+.lista-itens,
+.resumo-carrinho {
+  background-color: var(--color-card-background);
   padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  /* Removido o min-height para evitar conflito visual */
+  border-radius: 12px;
+  box-shadow: 0 8px 30px var(--color-card-shadow);
+  border: 1px solid var(--color-border);
 }
 
-.produtos-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+h2 {
+  font-size: 1.8rem;
+  color: var(--color-heading);
+  margin-top: 0;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--color-border);
 }
 
-.produto-card {
-  display: flex;
-  align-items: center;
-  background: #f9f9f9;
-  padding: 12px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  min-height: 100px; /* Garante altura mínima estável */
+.carrinho-vazio {
+  text-align: center;
+  padding: 40px 0;
 }
 
-.produto-card img {
-  width: 80px;
-  height: 80px;
-  border-radius: 8px;
-  object-fit: cover;
-  margin-right: 20px;
-}
-
-.produto-card .info {
-  flex: 1;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  min-height: 80px;
-  padding-right: 10px; /* Adiciona um espaço para evitar aperto */
-}
-
-.produto-card h4,
-.produto-card p {
-  white-space: nowrap; 
-  overflow: hidden;         
-  text-overflow: ellipsis;   
-  max-width: 180px;         
-}
-
-.produto-card button {
-  background: none;
-  border: none;
+.carrinho-vazio p {
   font-size: 1.2rem;
-  cursor: pointer;
-  color: #ff4d4d;
+  color: var(--color-text);
+  margin-bottom: 20px;
 }
 
-.pagamento form {
+.btn-explorar {
+  display: inline-block;
+  padding: 12px 25px;
+  background-color: var(--color-primary);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-explorar:hover {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-2px);
+}
+
+.produtos-grid {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.pagamento input,
-.pagamento select {
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
-}
-
-.pagamento .linha {
-  display: flex;
-  gap: 10px;
-}
-
-.total {
-  margin-top: 10px;
-  font-size: 1.2rem;
-}
-
-.pagamento button {
-  margin-top: 10px;
-  padding: 12px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  background-color: black;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.pagamento button:hover {
-  background-color: #333;
-}
-
-.popup-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+.item-card {
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 9999;
+  padding: 15px;
+  background-color: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  position: relative;
 }
 
-.popup {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+.item-imagem {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 6px;
+  margin-right: 20px;
 }
 
-.pix-container {
+.item-info {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 5px;
 }
 
-.pix-container img {
-  width: 200px;
-  height: 200px;
-  object-fit: contain;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  background-color: #f5f5f5;
+.item-nome {
+  font-weight: 600;
+  color: var(--color-heading);
+}
+
+.item-preco {
+  color: var(--color-text);
+}
+
+.btn-remover {
+  background: none;
+  border: none;
+  color: var(--color-text);
+  opacity: 0.6;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px 10px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.btn-remover:hover {
+  color: #ff4d4d;
+}
+
+.resumo-carrinho {
+  position: sticky;
+  top: 120px;
+}
+
+.detalhes-resumo {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.linha-resumo,
+.linha-total {
+  display: flex;
+  justify-content: space-between;
+  color: var(--color-text);
+}
+
+.linha-total {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid var(--color-border);
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--color-heading);
+}
+
+.btn-finalizar {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background-color: var(--color-primary);
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-finalizar:hover {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px hsla(24, 100%, 50%, 0.3);
+}
+
+.btn-finalizar.disabled {
+  pointer-events: none;
+  background-color: var(--color-background-mute);
+  color: var(--color-text);
+  opacity: 0.6;
+}
+
+@media (max-width: 992px) {
+  .carrinho-container {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
