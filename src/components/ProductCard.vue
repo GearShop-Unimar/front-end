@@ -32,6 +32,7 @@
 import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
+import { useToast } from "vue-toastification";
 
 const props = defineProps({
   produto: Object,
@@ -39,6 +40,7 @@ const props = defineProps({
 
 const router = useRouter();
 const userStore = useUserStore();
+const toast = useToast();
 
 onMounted(() => {
   if (props.produto.sellerId) {
@@ -59,7 +61,7 @@ const irParaProduto = (id) => {
 };
 
 const adicionarAoCarrinho = () => {
-  alert(`Produto "${props.produto.name}" adicionado ao carrinho!`);
+  toast.success(`"${props.produto.name}" adicionado ao carrinho!`);
 };
 </script>
 

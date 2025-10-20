@@ -4,7 +4,7 @@
       <h2>
         <span class="gear-logo">Gear</span><span class="shop-logo">Shop</span>
       </h2>
-      <p class="slogan">A sua loja favorita <br>No conforto da sua casa.</br></p>
+      <p class="slogan">A sua loja favorita <br />No conforto da sua casa.</p>
     </div>
 
     <div class="right-column">
@@ -35,17 +35,16 @@
           />
         </div>
 
-        <p v-if="erro" class="erro-mensagem">{{ erro }}</p>
-
         <button type="submit" :disabled="loading">
           {{ loading ? "Entrando..." : "Entrar" }}
         </button>
 
-    <p class="link">
-      Esqueceu a senha? <a href="#">Clique aqui</a><br />
-      Ainda não tem uma conta?
-      <router-link to="/cadastro" class="btn-cadastrar">Cadastre-se</router-link>
-    </p>
+        <p class="link">
+          Esqueceu a senha? <a href="#">Clique aqui</a><br />
+          <router-link to="/cadastro" class="btn-cadastrar"
+            >Cadastre-se</router-link
+          >
+        </p>
       </form>
     </div>
   </div>
@@ -54,29 +53,24 @@
 <script setup>
 import { ref } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import { useToast } from "vue-toastification";
 
 const authStore = useAuthStore();
+const toast = useToast();
 
 const email = ref("");
 const password = ref("");
-const erro = ref("");
 const loading = ref(false);
 
 const login = async () => {
-  erro.value = "";
   loading.value = true;
-  console.log("Tentativa de Login iniciada via store.");
-
   try {
     await authStore.login({
       email: email.value,
       password: password.value,
     });
-
-    console.log("Processo de Login via store finalizado com sucesso.");
   } catch (error) {
-    console.error("Erro retornado pelo store:", error.message);
-    erro.value = "Credenciais inválidas. Tente novamente.";
+    toast.error("Credenciais inválidas. Tente novamente.");
   } finally {
     loading.value = false;
   }
@@ -86,29 +80,23 @@ const login = async () => {
 <style scoped>
 .login-container {
   max-width: 1300px;
-  width: 90%;
-  min-height: 800px;
-  height: auto;
+  width: 100%;
+  min-height: 850px;
   margin: 100px auto;
-  padding: 0;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-  font-family: "Rajdhani", sans-serif;
+  background: var(--color-card-background);
+  box-shadow: 0 8px 30px var(--color-card-shadow);
   display: flex;
   overflow: hidden;
 }
 
 .left-column {
   flex: 1;
-  background: #f8f8f8;
+  background: var(--color-background-soft);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 40px;
-  border-right: 1px solid #eee;
   text-align: center;
 }
 
@@ -122,7 +110,7 @@ const login = async () => {
 
 .slogan {
   font-size: 1.2rem;
-  color: #666;
+  color: var(--color-text);
   margin-top: 10px;
   text-align: center;
 }
@@ -131,40 +119,12 @@ const login = async () => {
   display: none;
 }
 
-@media (max-width: 768px) {
-  .login-container {
-    flex-direction: column;
-    max-width: 480px;
-    min-height: auto;
-    margin: 50px auto;
-    padding: 40px;
-  }
-
-  .left-column {
-    display: none;
-  }
-
-  .right-column {
-    padding: 0;
-  }
-
-  .right-column h2 {
-    display: block;
-    margin-bottom: 30px;
-    text-align: center;
-  }
-}
-
-.input-group {
-  width: 100%;
-  margin-bottom: 20px;
-}
-
 .input-group label {
   display: block;
+  margin-top: 15px;
   margin-bottom: 5px;
   font-weight: 600;
-  color: #444;
+  color: var(--color-heading);
   font-size: 0.95em;
 }
 
@@ -174,20 +134,26 @@ h2 {
 }
 
 .gear-logo {
-  color: #ff6600;
+  color: var(--color-primary);
 }
 
 .shop-logo {
-  color: #000;
+  color: var(--color-heading);
 }
 
 input {
-  width: 100%;
+  border-radius: 12px;
+  width: 92%;
   padding: 14px;
   margin-bottom: 0;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  background-color: var(--color-background);
+  color: var(--color-text);
   font-size: 16px;
+}
+
+input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px hsla(24, 100%, 50%, 0.15);
 }
 
 form {
@@ -199,52 +165,75 @@ form {
 }
 
 button {
-  background-color: #000;
+  background-color: var(--color-primary);
   color: #fff;
   padding: 14px;
-  border: none;
-  border-radius: 8px;
   font-size: 18px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
   width: 100%;
-  margin-top: 10px;
+  margin-top: 25px;
+  border-radius: 15px;
+  border: none;
 }
 
-button:hover {
-  background-color: #333;
+button:hover:not([disabled]) {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-2px);
 }
 
 .link {
-  font-size: 14px;
+  font-size: 18px;
   text-align: center;
   margin-top: 20px;
+  color: var(--color-text);
 }
 
-.erro-mensagem {
-  color: red;
-  font-size: 0.95em;
-  text-align: center;
-  margin-bottom: 15px;
+.link a {
+  color: var(--color-primary);
+  text-decoration: none;
 }
 
 button[disabled] {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
 .btn-cadastrar {
   display: block;
-  background-color: #ff6600;
-  color: #fff;
+  background-color: transparent;
+  color: var(--color-primary);
   padding: 14px;
-  border-radius: 8px;
   text-decoration: none;
   margin-top: 10px;
   font-weight: bold;
-  transition: background-color 0.2s ease;
+  border-radius: 15px;
+  transition: all 0.2s ease;
 }
 
 .btn-cadastrar:hover {
-  background-color: #e65c00;
+  background-color: var(--color-primary);
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+    max-width: 480px;
+    min-height: auto;
+    margin: 50px auto;
+    padding: 40px;
+  }
+  .left-column {
+    display: none;
+  }
+  .right-column {
+    padding: 0;
+  }
+  .right-column h2 {
+    display: block;
+    margin-bottom: 30px;
+    text-align: center;
+  }
 }
 </style>

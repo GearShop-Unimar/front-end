@@ -15,6 +15,14 @@
 
   --color-card-background: #ffffff;
   --color-card-shadow: rgba(0, 0, 0, 0.1);
+  --vt-toast-background: var(--color-background-soft);
+  --vt-toast-color: var(--color-heading);
+  --vt-toast-min-width: 300px;
+  --vt-toast-border-radius: 8px;
+  --vt-color-success: #28a745;
+  --vt-color-error: #dc3545;
+  --vt-color-warning: #ffc107;
+  --vt-color-info: #17a2b8;
 }
 
 html.dark-theme {
@@ -34,6 +42,8 @@ html.dark-theme {
 
   --color-card-background: #1e1e1e;
   --color-card-shadow: rgba(0, 0, 0, 0.4);
+  --vt-toast-background: var(--color-background-mute);
+  --vt-toast-color: var(--color-heading);
 }
 
 html,
