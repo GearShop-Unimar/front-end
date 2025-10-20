@@ -265,8 +265,7 @@ export default {
   flex-shrink: 0;
   background-color: var(--color-card-background);
   padding: 20px;
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
+  border-radius: 15px;
   position: sticky;
   top: 120px;
 }

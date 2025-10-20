@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { jwtDecode } from "jwt-decode";
+import { useToast } from "vue-toastification";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 const AUTH_API_URL = `${API_BASE_URL}/Auth/login`;
@@ -10,6 +10,7 @@ export const useAuthStore = defineStore("auth", () => {
   const token = ref(localStorage.getItem("token"));
   const user = ref(JSON.parse(localStorage.getItem("user")));
   const router = useRouter();
+  const toast = useToast();
 
   const isAuthenticated = computed(() => !!token.value);
 
@@ -27,20 +28,18 @@ export const useAuthStore = defineStore("auth", () => {
 
       const data = await response.json();
 
+      if (!data.token || !data.user) {
+        throw new Error("Resposta da API inválida.");
+      }
+
       token.value = data.token;
       localStorage.setItem("token", data.token);
 
-      const decodedToken = jwtDecode(data.token);
-      const userData = {
-        id: decodedToken.sub,
-        name: decodedToken.name,
-        email: decodedToken.email,
-        role: decodedToken.role,
-      };
-
+      const userData = data.user;
       user.value = userData;
       localStorage.setItem("user", JSON.stringify(userData));
 
+      toast.success(`Bem-vindo, ${userData.name}!`);
       router.push("/");
     } catch (error) {
       console.error("Erro no login:", error);
