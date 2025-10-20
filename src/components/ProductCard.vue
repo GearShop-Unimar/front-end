@@ -14,9 +14,9 @@
       </div>
       <div class="produto-info">
         <h3>{{ produto.name }}</h3>
-        <span class="badge-vendedor">{{
-          produto.seller || "Vendedor desconhecido"
-        }}</span>
+
+        <span class="badge-vendedor">{{ sellerName }}</span>
+
         <p class="preco">R$ {{ produto.price.toFixed(2) }}</p>
         <p class="estado">{{ produto.state || "" }}</p>
         <p class="descricao">{{ produto.description }}</p>
@@ -29,11 +29,31 @@
 </template>
 
 <script setup>
+import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { useUserStore } from "@/stores/user";
+
 const props = defineProps({
   produto: Object,
 });
+
 const router = useRouter();
+const userStore = useUserStore();
+
+onMounted(() => {
+  if (props.produto.sellerId) {
+    userStore.fetchUserById(props.produto.sellerId);
+  }
+});
+
+const sellerName = computed(() => {
+  if (!props.produto.sellerId) {
+    return "Vendedor desconhecido";
+  }
+  const seller = userStore.users[props.produto.sellerId];
+  return seller ? seller.name : "Vendedor...";
+});
+
 const irParaProduto = (id) => {
   router.push(`/produto/${id}`);
 };
@@ -81,15 +101,6 @@ const adicionarAoCarrinho = () => {
   margin: 0 0 10px;
   font-size: 1.25rem;
   color: #333;
-}
-.categoria {
-  display: inline-block;
-  background-color: #f0f0f0;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  margin: 0.5rem 0;
-  color: #666;
 }
 .preco {
   font-size: 1.5rem;

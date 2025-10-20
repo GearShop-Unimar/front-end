@@ -4,7 +4,7 @@
       <h2>
         <span class="gear-logo">Gear</span><span class="shop-logo">Shop</span>
       </h2>
-      <p class="slogan">A sua loja de tecnologia favorita!</p>
+      <p class="slogan">A sua loja favorita <br>No conforto da sua casa.</br></p>
     </div>
 
     <div class="right-column">
@@ -41,11 +41,11 @@
           {{ loading ? "Entrando..." : "Entrar" }}
         </button>
 
-        <p class="link">
-          Esqueceu a senha? <a href="#">Clique aqui</a><br />
-          Ainda não tem uma conta?
-          <router-link to="/cadastro">Cadastre-se</router-link>
-        </p>
+    <p class="link">
+      Esqueceu a senha? <a href="#">Clique aqui</a><br />
+      Ainda não tem uma conta?
+      <router-link to="/cadastro" class="btn-cadastrar">Cadastre-se</router-link>
+    </p>
       </form>
     </div>
   </div>
@@ -231,5 +231,20 @@ button:hover {
 button[disabled] {
   opacity: 0.6;
   cursor: not-allowed;
+}
+.btn-cadastrar {
+  display: block;
+  background-color: #ff6600;
+  color: #fff;
+  padding: 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  margin-top: 10px;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.btn-cadastrar:hover {
+  background-color: #e65c00;
 }
 </style>
