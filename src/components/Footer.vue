@@ -20,7 +20,7 @@
 
       <div class="footer-section">
         <h4>Contato</h4>
-        <p>Email: suporte@gearshop.com</p>
+        <p>Email: gear.shopuni@gmail.com</p>
         <p>Telefone: (14) 99999-9999</p>
       </div>
     </div>
@@ -33,9 +33,10 @@
 
 <style scoped>
 .footer {
-  background-color: #1a1a1a;
-  color: white;
+  background-color: var(--color-background-soft);
+  color: var(--color-text);
   padding: 40px 20px 20px;
+  border-top: 1px solid var(--color-border);
 }
 
 .footer-content {
@@ -52,10 +53,15 @@
   min-width: 200px;
 }
 
+.footer-section p {
+  font-size: 1.5rem;
+}
+
 .footer-section h3,
 .footer-section h4 {
-  color: #ff6600;
+  color: var(--color-primary);
   margin-bottom: 10px;
+  font-size: 2rem;
 }
 
 .footer-section ul {
@@ -68,20 +74,21 @@
 }
 
 .footer-section ul li a {
-  color: #fff;
+  color: var(--color-text);
   text-decoration: none;
   transition: color 0.3s;
+  font-size: 1.5rem;
 }
 
 .footer-section ul li a:hover {
-  color: #ff6600;
+  color: var(--color-primary);
 }
 
 .footer-bottom {
   text-align: center;
   margin-top: 30px;
-  font-size: 0.9rem;
-  border-top: 1px solid #333;
+  font-size: 1.5rem;
+  border-top: 1px solid var(--color-border);
   padding-top: 15px;
 }
 </style>

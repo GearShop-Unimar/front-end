@@ -251,7 +251,7 @@ export default {
 
 <style scoped>
 .pagina-produtos {
-  padding: 100px 20px;
+  padding: 40px 20px;
   max-width: 1800px;
   margin: auto;
 }
@@ -263,12 +263,12 @@ export default {
 .sidebar {
   width: 250px;
   flex-shrink: 0;
-  background-color: #f9f9f9;
+  background-color: var(--color-card-background);
   padding: 20px;
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border);
   position: sticky;
-  top: 100px;
+  top: 120px;
 }
 .conteudo-principal {
   flex: 1;
@@ -279,21 +279,23 @@ export default {
 .secao-principal {
   margin-top: 60px;
   padding-top: 40px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-border);
 }
 .titulo-secao {
   font-size: 1.8rem;
   font-weight: 600;
   margin-bottom: 25px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #ff6600;
+  border-bottom: 2px solid var(--color-primary);
   display: inline-block;
+  color: var(--color-heading);
 }
 .sidebar-titulo {
   font-size: 1.5rem;
   margin-bottom: 20px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #ddd;
+  border-bottom: 2px solid var(--color-border);
+  color: var(--color-heading);
 }
 .filtro-grupo {
   margin-bottom: 25px;
@@ -302,6 +304,7 @@ export default {
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 12px;
+  color: var(--color-heading);
 }
 .lista-categorias {
   list-style: none;
@@ -313,12 +316,13 @@ export default {
   cursor: pointer;
   border-radius: 5px;
   transition: background-color 0.2s;
+  color: var(--color-text);
 }
 .lista-categorias li:hover {
-  background-color: #e9e9e9;
+  background-color: var(--color-background-mute);
 }
 .lista-categorias li.ativo {
-  background-color: #007bff;
+  background-color: var(--color-primary);
   color: white;
   font-weight: bold;
 }
@@ -330,8 +334,10 @@ export default {
 .filtro-preco-inputs input {
   width: 100%;
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
+  background-color: var(--color-background);
+  color: var(--color-text);
 }
 .filtro-avaliacao {
   display: flex;
@@ -346,7 +352,8 @@ export default {
 .limpar-avaliacao {
   margin-left: 10px;
   border: none;
-  background: #f0f0f0;
+  background-color: var(--color-background-mute);
+  color: var(--color-text);
   padding: 4px 8px;
   border-radius: 4px;
   cursor: pointer;
@@ -359,7 +366,7 @@ export default {
 .sem-resultados {
   text-align: center;
   font-size: 1.2rem;
-  color: #666;
+  color: var(--color-text);
   margin-top: 50px;
 }
 .paginacao-container {
@@ -371,14 +378,15 @@ export default {
 }
 .pagina-btn {
   padding: 10px 20px;
-  border: 1px solid #ddd;
-  background-color: #fff;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-card-background);
+  color: var(--color-text);
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 .pagina-btn:hover:not(:disabled) {
-  background-color: #f0f0f0;
+  background-color: var(--color-background-mute);
 }
 .pagina-btn:disabled {
   opacity: 0.5;
@@ -387,7 +395,7 @@ export default {
 .pagina-info {
   font-size: 1rem;
   font-weight: 500;
-  color: #555;
+  color: var(--color-text);
 }
 @media (max-width: 1200px) {
   .produtos-grid {

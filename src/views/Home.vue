@@ -98,13 +98,11 @@
   </div>
 </template>
 
-<script setup>
-// Nenhuma lógica de script é necessária para esta página.
-</script>
+<script setup></script>
 
 <style scoped>
 .home-page {
-  background-color: #f8f9fa;
+  background-color: var(--color-background-soft);
   color: var(--color-text);
   font-family: "Rajdhani", sans-serif;
 }
@@ -118,8 +116,11 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: #fff;
-  background-color: #000;
+  background-image: url("https://images.unsplash.com/photo-1617083222379-a17862f92864?q=80&w=1932&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: var(--color-heading);
 }
 
 .background-overlay {
@@ -128,8 +129,14 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--color-background-soft);
+  opacity: 0.8;
   z-index: 1;
+}
+
+html.dark-theme .background-overlay {
+  background-color: var(--color-navbar-background);
+  opacity: 0.7;
 }
 
 .welcome-content {
@@ -165,46 +172,44 @@
   font-size: 3.5rem;
   font-weight: 700;
   margin: 0;
-  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
 }
 
 .welcome-section h3 {
   font-size: 1.5rem;
   font-weight: 400;
-  color: #ff6600;
+  color: var(--color-primary);
   margin-top: 10px;
-  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
 }
 
 .cta-button {
   display: inline-block;
   margin-top: 40px;
   padding: 15px 35px;
-  background-color: #ff6600;
+  background-color: var(--color-primary);
   color: #fff;
   border-radius: 50px;
   text-decoration: none;
   font-weight: bold;
   font-size: 1.1rem;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(255, 102, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .cta-button:hover {
+  background-color: var(--color-primary-hover);
   transform: translateY(-5px);
-  box-shadow: 0 6px 25px rgba(255, 102, 0, 0.5);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
 }
 
 .info-strip {
   display: flex;
   justify-content: space-around;
   align-items: stretch;
-  background-color: #111111;
+  background-color: var(--color-background);
   padding: 50px 20px;
   flex-wrap: wrap;
   gap: 20px;
-  border-bottom: 1px solid #222222;
-  border-top: 1px solid #222222;
 }
 
 .info-box {
@@ -220,7 +225,7 @@
 
 .info-box .icon {
   font-size: 3rem;
-  color: #ff6600;
+  color: var(--color-primary);
   margin-bottom: 20px;
   display: inline-block;
 }
@@ -228,12 +233,12 @@
 .info-box h4 {
   font-size: 1.25rem;
   margin: 0 0 10px 0;
-  color: #f0f0f0;
+  color: var(--color-heading);
 }
 
 .info-box p {
   font-size: 1rem;
-  color: #a0a0a0;
+  color: var(--color-text);
   line-height: 1.6;
 }
 
@@ -242,12 +247,12 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 50px;
-  color: #212529;
+  color: var(--color-heading);
 }
 
 .mission-section {
   padding: 80px 20px;
-  background-color: #ffffff;
+  background-color: var(--color-background);
 }
 
 .mission-content {
@@ -266,13 +271,13 @@
   font-size: 2.2rem;
   font-weight: 700;
   margin-bottom: 20px;
-  color: #343a40;
+  color: var(--color-heading);
 }
 
 .mission-text p {
   font-size: 1.1rem;
   line-height: 1.8;
-  color: #495057;
+  color: var(--color-text);
   margin-bottom: 20px;
 }
 
@@ -280,7 +285,7 @@
   flex: 1;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 30px var(--color-card-shadow);
 }
 
 .mission-image img {
@@ -308,19 +313,20 @@
 .value-card {
   text-align: center;
   padding: 40px;
+  background-color: var(--color-card-background);
   border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px var(--color-card-shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .value-card:hover {
   transform: translateY(-10px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 30px var(--color-card-shadow);
 }
 
 .value-card i {
   font-size: 3rem;
-  color: #ff6600;
+  color: var(--color-primary);
   margin-bottom: 20px;
 }
 
@@ -328,13 +334,13 @@
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 15px;
-  color: #343a40;
+  color: var(--color-heading);
 }
 
 .value-card p {
   font-size: 1rem;
   line-height: 1.6;
-  color: #6c757d;
+  color: var(--color-text);
 }
 
 @media (max-width: 992px) {

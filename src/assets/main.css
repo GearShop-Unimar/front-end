@@ -1,3 +1,41 @@
+:root {
+  --color-background: #f8f9fa;
+  --color-background-soft: #f8f9fa;
+  --color-background-mute: #f1f3f5;
+  --color-navbar-background: #ffffff;
+
+  --color-border: #dee2e6;
+  --color-border-hover: #c9d1d9;
+
+  --color-heading: #000000;
+  --color-text: #212529;
+
+  --color-primary: #ff6600;
+  --color-primary-hover: #e55b00;
+
+  --color-card-background: #ffffff;
+  --color-card-shadow: rgba(0, 0, 0, 0.1);
+}
+
+html.dark-theme {
+  --color-background: #121212;
+  --color-background-soft: #1e1e1e;
+  --color-background-mute: #2c2c2c;
+  --color-navbar-background: #000000;
+
+  --color-border: #444444;
+  --color-border-hover: #666666;
+
+  --color-heading: #ffffff;
+  --color-text: #e0e0e0;
+
+  --color-primary: #ff771a;
+  --color-primary-hover: #ff8d40;
+
+  --color-card-background: #1e1e1e;
+  --color-card-shadow: rgba(0, 0, 0, 0.4);
+}
+
 html,
 body {
   height: 100%;
@@ -18,8 +56,10 @@ body {
 }
 
 body {
+  background-color: var(--color-background);
   color: var(--color-text);
   font-family: "Rajdhani", sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @media (max-width: 768px) {
@@ -28,4 +68,27 @@ body {
     grid-template-columns: 1fr;
     gap: 20px;
   }
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) var(--color-background-soft);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background-soft);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary);
+  border-radius: 10px;
+  border: 2px solid var(--color-background-soft);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-primary-hover);
 }
