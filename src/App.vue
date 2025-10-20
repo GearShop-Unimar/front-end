@@ -22,3 +22,6 @@ const isAuthRoute = computed(() => {
     <Footer v-if="!isAuthRoute" />
   </div>
 </template>
+<style scoped>
+
+</style>

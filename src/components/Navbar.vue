@@ -14,9 +14,8 @@
       <div class="nav-menu" :class="{ open: menuOpen }">
         <ul class="nav-links">
           <li><router-link to="/">Home</router-link></li>
-          <li><router-link to="/categoria">Categorias</router-link></li>
+          <li><router-link to="/produtos">Produtos</router-link></li>
           <li><router-link to="/anunciar">Anunciar</router-link></li>
-          <li><router-link to="/sobre">Sobre Nós</router-link></li>
           <li><router-link to="/contato">Contato</router-link></li>
         </ul>
 
@@ -105,7 +104,7 @@ const closeCart = () => {
 const pesquisar = () => {
   if (termoBusca.value.trim()) {
     router.push({
-      name: "Categoria",
+      name: "Produtos",
       query: { busca: termoBusca.value.trim() },
     });
     termoBusca.value = "";

@@ -3,6 +3,9 @@ import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { jwtDecode } from "jwt-decode";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+const AUTH_API_URL = `${API_BASE_URL}/Auth/login`;
+
 export const useAuthStore = defineStore("auth", () => {
   const token = ref(localStorage.getItem("token"));
   const user = ref(JSON.parse(localStorage.getItem("user")));
@@ -12,7 +15,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   async function login(credentials) {
     try {
-      const response = await fetch("http://localhost:5282/api/Auth/login", {
+      const response = await fetch(AUTH_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),

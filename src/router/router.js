@@ -1,9 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import Home from "../views/Home.vue";
-import Categoria from "../views/Categoria.vue";
 import Contato from "../views/Contato.vue";
-import Sobre from "../views/Sobre.vue";
 import Login from "../views/Login.vue";
 import Cadastro from "../views/Cadastro.vue";
 import Anunciar from "../views/Anunciar.vue";
@@ -12,16 +10,15 @@ import MeusProdutos from "../views/MeusProdutos.vue";
 import Produto from "../views/Produto.vue";
 import Pagamento from "../views/Pagamento.vue";
 import Sucesso from "../views/Sucesso.vue";
+import TelaProdutos from "../views/TelaProdutos.vue";
 
 const routes = [
   { path: "/", component: Home, name: "Home" },
-  { path: "/categoria", name: "Categoria", component: Categoria },
+  { path: "/produtos", name: "Produtos", component: TelaProdutos },
   { path: "/contato", name: "Contato", component: Contato },
-  { path: "/sobre", name: "Sobre", component: Sobre },
   { path: "/login", name: "Login", component: Login },
   { path: "/cadastro", name: "Cadastro", component: Cadastro },
 
-  // Rotas que exigem autenticação
   {
     path: "/anunciar",
     name: "Anunciar",
@@ -71,9 +68,6 @@ const router = createRouter({
   routes,
 });
 
-// ======================================================================
-// 🟢 NAVIGATION GUARD (Proteção de Rota)
-// ======================================================================
 router.beforeEach((to, from, next) => {
   // 1. Verifica se a rota de destino requer autenticação (usa o meta tag)
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
@@ -99,6 +93,5 @@ router.beforeEach((to, from, next) => {
     next();
   }
 });
-// ======================================================================
 
 export default router;

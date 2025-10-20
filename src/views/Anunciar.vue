@@ -207,7 +207,7 @@ const anunciarProduto = async () => {
     });
 
     alert("Anúncio publicado com sucesso!");
-    router.push("/categoria");
+    router.push("/produtos");
   } catch (error) {
     console.error("Erro ao cadastrar produto:", error);
     errorMessage.value = "Erro ao publicar anúncio. Tente novamente.";
