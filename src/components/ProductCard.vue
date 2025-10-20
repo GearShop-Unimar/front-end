@@ -65,22 +65,22 @@ const adicionarAoCarrinho = () => {
 
 <style scoped>
 .produto-card {
-  background: white;
+  background: var(--color-card-background);
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s;
+  box-shadow: 0 4px 8px var(--color-card-shadow);
+  transition: transform 0.3s, box-shadow 0.3s;
   position: relative;
   cursor: pointer;
 }
 .produto-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 12px var(--color-card-shadow);
 }
 .imagem-container {
   height: 200px;
   width: 100%;
-  background-color: #f5f5f5;
+  background-color: var(--color-background-mute);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -91,7 +91,8 @@ const adicionarAoCarrinho = () => {
   object-fit: contain;
 }
 .sem-imagem {
-  color: #999;
+  color: var(--color-text);
+  opacity: 0.7;
   font-size: 1rem;
 }
 .produto-info {
@@ -100,20 +101,20 @@ const adicionarAoCarrinho = () => {
 .produto-info h3 {
   margin: 0 0 10px;
   font-size: 1.25rem;
-  color: #333;
+  color: var(--color-heading);
 }
 .preco {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #ff6600;
+  color: var(--color-primary);
   margin: 0.5rem 0;
 }
 .estado {
-  color: #666;
+  color: var(--color-text);
   font-size: 0.9rem;
 }
 .descricao {
-  color: #444;
+  color: var(--color-text);
   font-size: 0.9rem;
   margin-top: 0.5rem;
   display: -webkit-box;
@@ -123,7 +124,7 @@ const adicionarAoCarrinho = () => {
 }
 .badge-vendedor {
   display: inline-block;
-  background-color: #ff6600;
+  background-color: var(--color-primary);
   color: #fff;
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
@@ -132,7 +133,7 @@ const adicionarAoCarrinho = () => {
   font-weight: bold;
 }
 .btn-carrinho {
-  background-color: #ff6600;
+  background-color: var(--color-primary);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -140,9 +141,9 @@ const adicionarAoCarrinho = () => {
   margin-top: 10px;
   cursor: pointer;
   font-weight: bold;
-  transition: background 0.2s;
+  transition: background-color 0.2s;
 }
 .btn-carrinho:hover {
-  background-color: #e65c00;
+  background-color: var(--color-primary-hover);
 }
 </style>

@@ -69,6 +69,13 @@
               >
             </li>
           </template>
+
+          <li>
+            <button @click="themeStore.toggleTheme" class="theme-toggle-btn">
+              <i v-if="themeStore.isDarkMode" class="bi bi-sun-fill"></i>
+              <i v-else class="bi bi-moon-stars-fill"></i>
+            </button>
+          </li>
         </ul>
       </div>
     </div>
@@ -81,8 +88,10 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import Carrinho from "@/components/Carrinho.vue";
 import { useAuthStore } from "@/stores/auth";
+import { useThemeStore } from "@/stores/theme";
 
 const authStore = useAuthStore();
+const themeStore = useThemeStore();
 const router = useRouter();
 
 const isCartOpen = ref(false);
@@ -125,34 +134,30 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-:root {
-  --cor-laranja-principal: #ff6600;
-  --cor-laranja-hover: #e55b00;
-}
-
 .navbar {
-  background-color: #000000;
+  background-color: var(--color-navbar-background);
   padding: 0 20px;
-  position: fixed;
+  position: sticky;
   width: 100%;
   top: 0;
   z-index: 1000;
   height: 80px;
-  transition: height 0.4s ease, box-shadow 0.4s ease;
+  transition: height 0.4s ease, box-shadow 0.4s ease, background-color 0.3s ease;
   display: flex;
   align-items: center;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 10px var(--color-card-shadow);
 }
 
 .navbar.navbar-scrolled {
   height: 70px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 15px var(--color-card-shadow);
 }
 
 .navbar-container {
   max-width: 1400px;
   margin: 0 auto;
   display: flex;
+  height: 150px;
   justify-content: space-between;
   align-items: center;
   width: 100%;
@@ -160,16 +165,16 @@ onUnmounted(() => {
 
 .navbar-logo {
   text-decoration: none;
-  font-size: 1.8rem;
+  font-size: 2.8rem;
   font-weight: bold;
 }
 
 .logo-gear {
-  color: #ff6600;
+  color: var(--color-primary);
 }
 
 .logo-shop {
-  color: #ffffff;
+  color: var(--color-heading);
 }
 
 .nav-menu {
@@ -180,7 +185,6 @@ onUnmounted(() => {
 
 .nav-links,
 .auth-links {
-  color: white;
   list-style: none;
   display: flex;
   align-items: center;
@@ -190,9 +194,10 @@ onUnmounted(() => {
 }
 
 .nav-links li a {
-  color: var(--vt-c-text-dark-1);
+  color: var(--color-text);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 1.5rem;
   padding: 8px 4px;
   position: relative;
   transition: color 0.3s ease;
@@ -205,12 +210,12 @@ onUnmounted(() => {
   height: 2px;
   bottom: 0;
   left: 0;
-  background-color: var(--cor-laranja-principal);
+  background-color: var(--color-primary);
   transition: width 0.3s ease;
 }
 
 .nav-links li a:hover {
-  color: var(--vt-c-text-dark-1);
+  color: var(--color-heading);
 }
 
 .nav-links li a:hover::after {
@@ -224,20 +229,21 @@ onUnmounted(() => {
 .search-bar {
   display: flex;
   align-items: center;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--color-background-mute);
   border-radius: 25px;
   padding: 5px;
-  border: 1px solid transparent;
+  border: 1px solid var(--color-border);
   transition: all 0.3s ease;
 }
 
 .search-bar:focus-within {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-color: var(--cor-laranja-principal);
+  background-color: var(--color-background);
+  border-color: var(--color-primary);
 }
 
 .search-icon {
-  color: #aaa;
+  color: var(--color-text);
+  opacity: 0.6;
   margin: 0 10px;
 }
 
@@ -245,15 +251,16 @@ onUnmounted(() => {
   background: transparent;
   border: none;
   outline: none;
-  color: var(--vt-c-text-dark-1);
+  color: var(--color-text);
   padding: 8px;
   width: 180px;
-  font-size: 14px;
+  font-size: 1.5rem;
   transition: width 0.3s ease;
 }
 
 .search-bar input::placeholder {
-  color: #aaa;
+  color: var(--color-text);
+  opacity: 0.7;
 }
 .search-bar input:focus {
   width: 250px;
@@ -268,6 +275,7 @@ onUnmounted(() => {
   border-radius: 25px;
   text-decoration: none;
   font-weight: bold;
+  font-size: 1.5rem;
   transition: all 0.3s ease;
   display: inline-block;
   border: 2px solid transparent;
@@ -275,33 +283,33 @@ onUnmounted(() => {
 }
 
 .btn-primary {
-  background-color: var(--cor-laranja-principal);
+  background-color: var(--color-primary);
   color: white;
 }
 .btn-primary:hover {
-  background-color: var(--cor-laranja-hover);
+  background-color: var(--color-primary-hover);
   transform: translateY(-2px);
   box-shadow: 0 4px 15px hsla(24, 100%, 50%, 0.3);
 }
 
 .btn-secondary {
   background-color: transparent;
-  color: white;
+  color: var(--color-heading);
   border-color: var(--color-border-hover);
 }
 .btn-secondary:hover {
-  background-color: var(--cor-laranja-principal);
-  border-color: var(--cor-laranja-principal);
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
   color: white;
 }
 
 .icon-link {
-  color: var(--vt-c-text-dark-2);
+  color: var(--color-text);
   font-size: 1.5rem;
   transition: color 0.3s ease, transform 0.3s ease;
 }
 .icon-link:hover {
-  color: var(--cor-laranja-principal);
+  color: var(--color-primary);
   transform: scale(1.1);
 }
 
@@ -311,21 +319,41 @@ onUnmounted(() => {
   gap: 15px;
 }
 .welcome-message {
-  color: var(--vt-c-text-dark-2);
+  color: var(--color-text);
   white-space: nowrap;
+  font-size: 1.5rem;
 }
 .logout-btn {
   background: none;
   border: none;
-  color: #aaa;
+  color: var(--color-text);
+  opacity: 0.7;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 1.5rem;
   text-decoration: underline;
   transition: color 0.3s ease;
   font-family: "Rajdhani", sans-serif;
 }
 .logout-btn:hover {
-  color: var(--cor-laranja-principal);
+  color: var(--color-primary);
+}
+
+.theme-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--color-text);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+  color: var(--color-primary);
+  transform: scale(1.1);
 }
 
 .hamburger {
@@ -341,7 +369,7 @@ onUnmounted(() => {
   width: 28px;
   height: 3px;
   margin: 6px 0;
-  background-color: var(--vt-c-text-dark-1);
+  background-color: var(--color-heading);
   border-radius: 3px;
   transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
@@ -363,13 +391,13 @@ onUnmounted(() => {
     right: -100%;
     width: 350px;
     height: 100vh;
-    background-color: #1f211f;
+    background-color: var(--color-background-soft);
     flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 40px;
     transition: right 0.5s ease-in-out;
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+    box-shadow: -5px 0 15px var(--color-card-shadow);
   }
 
   .nav-menu.open {
@@ -384,7 +412,7 @@ onUnmounted(() => {
 
   .nav-links li a,
   .auth-links li a {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
   }
 
   .welcome-container {
