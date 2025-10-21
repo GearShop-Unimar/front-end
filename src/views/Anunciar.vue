@@ -1,8 +1,8 @@
 <template>
   <div class="anunciar-container">
-    <h1>📢 Anuncie sua Peça</h1>
+    <h1>Anuncie seu Produto</h1>
     <p class="subtitle">
-      Preencha os dados abaixo e conecte sua peça a quem realmente precisa.
+      Preencha os dados abaixo e conecte seu produto a quem realmente precisa.
     </p>
 
     <div v-if="loading" class="loading-overlay">
@@ -12,7 +12,7 @@
 
     <form @submit.prevent="anunciarProduto" class="anuncio-form">
       <div class="form-group">
-        <label for="nome">Nome da Peça*</label>
+        <label for="nome">Nome do Produto*</label>
         <input
           v-model="produto.nome"
           id="nome"
@@ -50,7 +50,7 @@
       </div>
 
       <div class="form-group">
-        <label for="imagem">Foto da Peça (opcional, máximo 2MB)</label>
+        <label for="imagem">Foto do Produto (opcional, máximo 1MB)</label>
         <input
           type="file"
           @change="selecionarImagem"
@@ -81,7 +81,7 @@
         </div>
 
         <div class="form-group">
-          <label for="estado">Estado da Peça*</label>
+          <label for="estado">Estado do Produto*</label>
           <select v-model="produto.estado" id="estado" required>
             <option value="" disabled selected>Selecione</option>
             <option>Nova</option>
@@ -97,7 +97,7 @@
           v-model="produto.descricao"
           id="descricao"
           rows="4"
-          placeholder="Detalhes adicionais sobre a peça..."
+          placeholder="Detalhes adicionais sobre o produto..."
           required
           maxlength="500"
         ></textarea>
@@ -140,35 +140,67 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
+import { useProductStore } from "../stores/product.js";
 
 const router = useRouter();
+const productStore = useProductStore();
+
+// LIGAR O ESTADO DA STORE AO COMPONENTE
+const { loading, error } = storeToRefs(productStore);
 
 const produto = ref({
   nome: "",
   categoria: "",
+  modelo: "",
   preco: 0,
   estado: "",
   descricao: "",
-  imagemUrl: "",
+  cep: "",
+  telefone: "",
+  // NOVO CAMPO: Guardar o objeto File
+  arquivoImagem: null,
 });
 
-const loading = ref(false);
 const imagemPreview = ref(null);
-const imagemBase64 = ref(null);
 const imagemError = ref(null);
 const errorMessage = ref(null);
+
+const isDark = ref(false);
+
+const toggleDark = () => {
+  isDark.value = !isDark.value;
+  if (isDark.value) {
+    document.documentElement.classList.add("dark-theme");
+    localStorage.setItem("theme", "dark");
+  } else {
+    document.documentElement.classList.remove("dark-theme");
+    localStorage.setItem("theme", "light");
+  }
+};
+
+const removerImagem = () => {
+  imagemPreview.value = null;
+  produto.value.arquivoImagem = null;
+  const fileInput = document.getElementById("imagem");
+  if (fileInput) {
+    fileInput.value = "";
+  }
+};
 
 const selecionarImagem = (event) => {
   const file = event.target.files[0];
   imagemError.value = null;
 
-  if (!file) return;
+  if (!file) {
+    removerImagem();
+    return;
+  }
 
-  // Validações (tipo e tamanho)
   const validTypes = ["image/jpeg", "image/png", "image/webp"];
-  const maxSize = 1 * 1024 * 1024; // 1MB (reduzido para Base64)
+  const maxSize = 1 * 1024 * 1024;
 
   if (!validTypes.includes(file.type)) {
     imagemError.value = "Formato inválido. Use JPEG, PNG ou WEBP.";
@@ -180,45 +212,68 @@ const selecionarImagem = (event) => {
     return;
   }
 
-  // Converter para Base64
+  // GUARDA O OBJETO FILE E CRIA O PREVIEW (Blob URL)
+  produto.value.arquivoImagem = file;
+
   const reader = new FileReader();
   reader.onload = (e) => {
-    imagemBase64.value = e.target.result;
     imagemPreview.value = e.target.result;
   };
   reader.readAsDataURL(file);
 };
 
 const anunciarProduto = async () => {
-  if (!auth.currentUser) {
-    errorMessage.value = "Você precisa estar logado para anunciar!";
-    return router.push("/login");
-  }
-
-  loading.value = true;
+  // 1. O Payload agora inclui o objeto File
+  const payload = {
+    name: produto.value.nome,
+    description: produto.value.descricao,
+    price: produto.value.preco,
+    stockQuantity: 1,
+    category: produto.value.categoria,
+    // Envia o objeto File (se existir)
+    imageFile: produto.value.arquivoImagem,
+  };
 
   try {
-    const produtoRef = collection(db, "produtos");
-    await addDoc(produtoRef, {
-      ...produto.value,
-      imagemBase64: imagemBase64.value || null,
-      usuarioId: auth.currentUser.uid,
-      dataCriacao: new Date(),
-    });
+    errorMessage.value = null;
 
-    alert("Anúncio publicado com sucesso!");
+    // 2. Chama a Store, que agora sabe como transformar isso em FormData
+    await productStore.addProduct(payload);
+
+    showSuccessToast("Anúncio publicado com sucesso!");
     router.push("/produtos");
   } catch (error) {
-    console.error("Erro ao cadastrar produto:", error);
-    errorMessage.value = "Erro ao publicar anúncio. Tente novamente.";
-  } finally {
-    loading.value = false;
+    // Usa o erro reativo da Store
+    console.error("Erro ao publicar anúncio:", error);
+    errorMessage.value =
+      productStore.error || "Erro desconhecido ao publicar anúncio.";
   }
 };
-// Função para mostrar toast de sucesso (implementar ou usar uma lib como vue-toastification)
+
 const showSuccessToast = (message) => {
-  alert(message); // Substituir por implementação real de toast
+  alert(message);
 };
+
+onMounted(() => {
+  const savedTheme = localStorage.getItem("theme");
+
+  if (savedTheme) {
+    isDark.value = savedTheme === "dark";
+  } else {
+    isDark.value =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+
+  if (isDark.value) {
+    document.documentElement.classList.add("dark-theme");
+  }
+});
+
+defineExpose({
+  toggleDark,
+  isDark,
+});
 </script>
 
 <style scoped>
@@ -226,11 +281,12 @@ const showSuccessToast = (message) => {
   max-width: 700px;
   margin: 100px auto 50px;
   padding: 40px;
-  background-color: #fff;
+  background-color: var(--color-card-background); /* Uso de variável */
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px var(--color-card-shadow); /* Uso de variável */
   font-family: "Rajdhani", sans-serif;
   position: relative;
+  transition: background-color 0.3s, box-shadow 0.3s;
 }
 
 .loading-overlay {
@@ -239,7 +295,8 @@ const showSuccessToast = (message) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: var(--color-background-soft); /* Ajustado para variável */
+  opacity: 0.9;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -248,10 +305,14 @@ const showSuccessToast = (message) => {
   border-radius: 12px;
 }
 
+.loading-overlay p {
+  color: var(--color-text); /* Garantir que o texto apareça no dark mode */
+}
+
 .loading-spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
+  border: 4px solid var(--color-border); /* Ajustado para variável */
   border-radius: 50%;
-  border-top: 4px solid #ff6600;
+  border-top: 4px solid var(--color-primary); /* Ajustado para variável */
   width: 40px;
   height: 40px;
   animation: spin 1s linear infinite;
@@ -271,14 +332,14 @@ h1 {
   text-align: center;
   font-size: 2rem;
   margin-bottom: 10px;
-  color: #1a1a1a;
+  color: var(--color-heading); /* Uso de variável */
 }
 
 .subtitle {
   text-align: center;
   font-size: 1rem;
   margin-bottom: 30px;
-  color: #666;
+  color: var(--color-text); /* Uso de variável */
 }
 
 .anuncio-form {
@@ -306,7 +367,7 @@ h1 {
 label {
   margin-bottom: 6px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text); /* Uso de variável */
 }
 
 input[type="text"],
@@ -316,23 +377,24 @@ input[type="tel"],
 select,
 textarea {
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border); /* Uso de variável */
   border-radius: 8px;
   font-size: 1rem;
-  background-color: #f9f9f9;
+  background-color: var(--color-background-mute); /* Uso de variável */
+  color: var(--color-text); /* Ajuste para Dark Mode */
   transition: border-color 0.2s;
 }
 
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: #ff6600;
+  border-color: var(--color-primary); /* Uso de variável */
   outline: none;
 }
 
 button {
   padding: 12px;
-  background-color: #ff6600;
+  background-color: var(--color-primary); /* Uso de variável */
   color: white;
   border: none;
   border-radius: 8px;
@@ -343,11 +405,11 @@ button {
 }
 
 button:hover:not(:disabled) {
-  background-color: #e05500;
+  background-color: var(--color-primary-hover); /* Uso de variável */
 }
 
 button:disabled {
-  background-color: #ccc;
+  background-color: var(--color-border); /* Uso de variável */
   cursor: not-allowed;
 }
 
@@ -385,17 +447,25 @@ button:disabled {
 
 .char-counter {
   font-size: 0.8rem;
-  color: #666;
+  color: var(--color-text); /* Uso de variável */
+  opacity: 0.7;
   text-align: right;
   margin-top: 4px;
 }
 
 .error-message {
-  color: #d32f2f;
-  background-color: #fde8e8;
+  color: var(--vt-color-error); /* Uso de variável */
+  background-color: #fde8e8; /* Pode ser ajustado para var(--vt-color-error) com mais transparência */
   padding: 10px;
   border-radius: 5px;
   margin-top: 5px;
   font-size: 0.9rem;
+}
+
+html.dark-theme textarea::placeholder {
+  color: #a0a0a0;
+}
+html.dark-theme input::placeholder {
+  color: #a0a0a0;
 }
 </style>
