@@ -2,6 +2,7 @@ import { createApp } from "vue";
 import { createPinia } from "pinia";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
+import { mask } from "vue-the-mask";
 
 import App from "./App.vue";
 import router from "./router";
@@ -26,5 +27,7 @@ const toastOptions = {
 app.use(createPinia());
 app.use(router);
 app.use(Toast, toastOptions);
+
+app.directive("mask", mask);
 
 app.mount("#app");
