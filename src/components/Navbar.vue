@@ -14,11 +14,10 @@
       <div class="nav-menu" :class="{ open: menuOpen }">
         <ul class="nav-links">
           <li><router-link to="/">Home</router-link></li>
+          <li><router-link to="/posts">Posts</router-link></li>
           <li><router-link to="/produtos">Produtos</router-link></li>
           <li><router-link to="/anunciar">Anunciar</router-link></li>
-          <li><router-link to="/contato">Contato</router-link></li>
         </ul>
-
         <div class="search-container">
           <form class="search-bar" @submit.prevent="pesquisar">
             <i class="fa fa-search search-icon"></i>
