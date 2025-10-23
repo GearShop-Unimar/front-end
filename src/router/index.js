@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import Home from "../views/Home.vue";
+import Posts from "../views/Posts.vue"; // ADICIONADO
 import Contato from "../views/Contato.vue";
 import Login from "../views/Login.vue";
 import Cadastro from "../views/Cadastro.vue";
@@ -14,6 +15,7 @@ import TelaProdutos from "../views/TelaProdutos.vue";
 
 const routes = [
   { path: "/", component: Home, name: "Home" },
+  { path: "/posts", name: "Posts", component: Posts }, // ADICIONADO
   { path: "/produtos", name: "Produtos", component: TelaProdutos },
   { path: "/contato", name: "Contato", component: Contato },
   { path: "/login", name: "Login", component: Login },
