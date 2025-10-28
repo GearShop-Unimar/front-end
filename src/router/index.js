@@ -12,6 +12,7 @@ import Produto from "../views/Produto.vue";
 import Pagamento from "../views/Pagamento.vue";
 import Sucesso from "../views/Sucesso.vue";
 import TelaProdutos from "../views/TelaProdutos.vue";
+import Usuario from "../views/Usuario.vue"; // <-- 1. ADICIONAR ESTA LINHA
 
 const routes = [
   { path: "/", component: Home, name: "Home" },
@@ -54,6 +55,16 @@ const routes = [
     name: "Produto",
     component: Produto,
   },
+
+  // V 2. ADICIONAR ESTE BLOCO DE CÓDIGO V
+  {
+    path: "/perfil",
+    name: "Perfil",
+    component: Usuario,
+    meta: { requiresAuth: true },
+  },
+  // -------------------------------------
+
   { path: "/:catchAll(.*)", redirect: "/" },
 ];
 
