@@ -41,11 +41,7 @@
               </router-link>
             </li>
             <li>
-              <router-link
-                to="/meus-produtos"
-                class="icon-link"
-                aria-label="Minha Conta"
-              >
+              <router-link to="/perfil" class="icon-link" aria-label="Perfil">
                 <i class="fa fa-user-circle"></i>
               </router-link>
             </li>

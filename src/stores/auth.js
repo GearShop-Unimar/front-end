@@ -55,5 +55,45 @@ export const useAuthStore = defineStore("auth", () => {
     router.push("/login");
   }
 
-  return { token, user, isAuthenticated, login, logout };
+  async function updateUserProfile(updatedData) {
+    const userId = user.value?.id;
+
+    if (!token.value || !userId) {
+      toast.error("Você não está autenticado ou seu ID não foi encontrado.");
+      throw new Error("Não autenticado ou ID de usuário ausente");
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/User/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token.value}`,
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (!response.ok) {
+        let errorMsg = "Falha ao atualizar perfil";
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.message || errorMsg;
+        } catch (e) {}
+        throw new Error(errorMsg);
+      }
+
+      const updatedUser = await response.json();
+
+      user.value = updatedUser;
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+
+      toast.success("Perfil atualizado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao atualizar perfil:", error);
+      toast.error(error.message);
+      throw error;
+    }
+  }
+
+  return { token, user, isAuthenticated, login, logout, updateUserProfile };
 });
