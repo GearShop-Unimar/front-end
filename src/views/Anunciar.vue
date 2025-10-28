@@ -148,8 +148,8 @@ import { useProductStore } from "../stores/product.js";
 const router = useRouter();
 const productStore = useProductStore();
 
-// LIGAR O ESTADO DA STORE AO COMPONENTE
-const { loading, error } = storeToRefs(productStore);
+// CORREÇÃO: Removido 'error' daqui
+const { loading } = storeToRefs(productStore);
 
 const produto = ref({
   nome: "",
@@ -160,7 +160,6 @@ const produto = ref({
   descricao: "",
   cep: "",
   telefone: "",
-  // NOVO CAMPO: Guardar o objeto File
   arquivoImagem: null,
 });
 
@@ -212,7 +211,6 @@ const selecionarImagem = (event) => {
     return;
   }
 
-  // GUARDA O OBJETO FILE E CRIA O PREVIEW (Blob URL)
   produto.value.arquivoImagem = file;
 
   const reader = new FileReader();
@@ -223,27 +221,23 @@ const selecionarImagem = (event) => {
 };
 
 const anunciarProduto = async () => {
-  // 1. O Payload agora inclui o objeto File
   const payload = {
     name: produto.value.nome,
     description: produto.value.descricao,
     price: produto.value.preco,
     stockQuantity: 1,
     category: produto.value.categoria,
-    // Envia o objeto File (se existir)
     imageFile: produto.value.arquivoImagem,
   };
 
   try {
     errorMessage.value = null;
 
-    // 2. Chama a Store, que agora sabe como transformar isso em FormData
     await productStore.addProduct(payload);
 
     showSuccessToast("Anúncio publicado com sucesso!");
     router.push("/produtos");
   } catch (error) {
-    // Usa o erro reativo da Store
     console.error("Erro ao publicar anúncio:", error);
     errorMessage.value =
       productStore.error || "Erro desconhecido ao publicar anúncio.";

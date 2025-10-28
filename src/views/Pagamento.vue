@@ -117,10 +117,8 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
 import CreditCardForm from "@/components/CreditCardForm.vue";
 
-const router = useRouter();
 const currentStep = ref(1);
 const paymentMethod = ref(null);
 

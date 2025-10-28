@@ -6,7 +6,7 @@ import Contato from "../views/Contato.vue";
 import Login from "../views/Login.vue";
 import Cadastro from "../views/Cadastro.vue";
 import Anunciar from "../views/Anunciar.vue";
-import Carrinho from "../views/Carrinho.vue";
+import Carrinho from "../views/CarrinhoPage.vue";
 import MeusProdutos from "../views/MeusProdutos.vue";
 import Produto from "../views/Produto.vue";
 import Pagamento from "../views/Pagamento.vue";

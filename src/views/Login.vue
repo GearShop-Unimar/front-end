@@ -70,6 +70,7 @@ const login = async () => {
       password: password.value,
     });
   } catch (error) {
+    console.error("Erro no login:", error);
     toast.error("Credenciais inválidas. Tente novamente.");
   } finally {
     loading.value = false;

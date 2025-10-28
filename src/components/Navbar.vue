@@ -98,9 +98,6 @@ const toggleMenu = () => {
   menuOpen.value = !menuOpen.value;
 };
 
-const openCart = () => {
-  isCartOpen.value = true;
-};
 const closeCart = () => {
   isCartOpen.value = false;
 };

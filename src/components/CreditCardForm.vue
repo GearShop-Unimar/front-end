@@ -148,7 +148,7 @@ const formatarCPF = () => {
 
 const validarNumeroCartao = (num) => /^\d{16}$/.test(num.replace(/\s/g, ""));
 const validarCVV = (cvv) => /^\d{3,4}$/.test(cvv);
-const validarCPF = (cpf) => /^\d{3}\.\d{3}\.\d{3}\-\d{2}$/.test(cpf);
+const validarCPF = (cpf) => /^\d{3}\.\d{3}\.\d{3}\d{2}$/.test(cpf);
 
 const validarValidade = (mes, ano) => {
   if (!/^\d{2}$/.test(mes) || !/^\d{2}$/.test(ano)) return false;

@@ -29,13 +29,6 @@
 <script setup>
 import { ref } from "vue";
 
-const props = defineProps({
-  isOpen: {
-    type: Boolean,
-    required: true,
-  },
-});
-
 const emit = defineEmits(["close"]);
 
 const fecharCarrinho = () => {
