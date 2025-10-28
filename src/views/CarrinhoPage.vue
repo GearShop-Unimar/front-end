@@ -51,9 +51,6 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
-
-const router = useRouter();
 const carrinho = ref([]);
 
 const totalCarrinho = computed(() => {
