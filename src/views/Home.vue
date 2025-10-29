@@ -95,10 +95,14 @@
         </div>
       </div>
     </section>
+    <!-- Seção de Notícias -->
+    <NewsSection />
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import NewsSection from "@/components/NewsSection.vue";
+</script>
 
 <style scoped>
 .home-page {
