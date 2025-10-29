@@ -1,0 +1,3 @@
+[submodule "gearshop-back"]
+	path = gearshop-back
+	url = https://github.com/GearShop-Unimar/back-end.git
