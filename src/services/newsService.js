@@ -1,5 +1,3 @@
-import api from "@/services/apiService";
-
 // Serviço de notícias com dados mockados, preparado para conectar ao backend
 // Futuro endpoint sugerido: GET /news?limit=6&category=automotive
 
@@ -105,5 +103,3 @@ export default {
   formatDate,
   truncateText,
 };
-
-
