@@ -130,7 +130,7 @@
       </div>
 
       <button type="submit" :disabled="loading">
-        <span v-if="!loading">📤 Publicar Anúncio</span>
+        <span v-if="!loading"> Publicar Anúncio</span>
         <span v-else>Processando...</span>
       </button>
 
@@ -275,9 +275,9 @@ defineExpose({
   max-width: 700px;
   margin: 100px auto 50px;
   padding: 40px;
-  background-color: var(--color-card-background); /* Uso de variável */
+  background-color: var(--color-card-background);
   border-radius: 12px;
-  box-shadow: 0 4px 20px var(--color-card-shadow); /* Uso de variável */
+  box-shadow: 0 4px 20px var(--color-card-shadow);
   font-family: "Rajdhani", sans-serif;
   position: relative;
   transition: background-color 0.3s, box-shadow 0.3s;
@@ -289,7 +289,7 @@ defineExpose({
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--color-background-soft); /* Ajustado para variável */
+  background-color: var(--color-background-soft);
   opacity: 0.9;
   display: flex;
   flex-direction: column;
@@ -300,13 +300,13 @@ defineExpose({
 }
 
 .loading-overlay p {
-  color: var(--color-text); /* Garantir que o texto apareça no dark mode */
+  color: var(--color-text);
 }
 
 .loading-spinner {
-  border: 4px solid var(--color-border); /* Ajustado para variável */
+  border: 4px solid var(--color-border);
   border-radius: 50%;
-  border-top: 4px solid var(--color-primary); /* Ajustado para variável */
+  border-top: 4px solid var(--color-primary);
   width: 40px;
   height: 40px;
   animation: spin 1s linear infinite;
@@ -326,14 +326,14 @@ h1 {
   text-align: center;
   font-size: 2rem;
   margin-bottom: 10px;
-  color: var(--color-heading); /* Uso de variável */
+  color: var(--color-heading);
 }
 
 .subtitle {
   text-align: center;
   font-size: 1rem;
   margin-bottom: 30px;
-  color: var(--color-text); /* Uso de variável */
+  color: var(--color-text);
 }
 
 .anuncio-form {
@@ -361,7 +361,7 @@ h1 {
 label {
   margin-bottom: 6px;
   font-weight: 600;
-  color: var(--color-text); /* Uso de variável */
+  color: var(--color-text);
 }
 
 input[type="text"],
@@ -371,24 +371,24 @@ input[type="tel"],
 select,
 textarea {
   padding: 10px;
-  border: 1px solid var(--color-border); /* Uso de variável */
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 1rem;
-  background-color: var(--color-background-mute); /* Uso de variável */
-  color: var(--color-text); /* Ajuste para Dark Mode */
+  background-color: var(--color-background-mute);
+  color: var(--color-text);
   transition: border-color 0.2s;
 }
 
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: var(--color-primary); /* Uso de variável */
+  border-color: var(--color-primary);
   outline: none;
 }
 
 button {
   padding: 12px;
-  background-color: var(--color-primary); /* Uso de variável */
+  background-color: var(--color-primary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -399,11 +399,11 @@ button {
 }
 
 button:hover:not(:disabled) {
-  background-color: var(--color-primary-hover); /* Uso de variável */
+  background-color: var(--color-primary-hover);
 }
 
 button:disabled {
-  background-color: var(--color-border); /* Uso de variável */
+  background-color: var(--color-border);
   cursor: not-allowed;
 }
 
@@ -441,15 +441,15 @@ button:disabled {
 
 .char-counter {
   font-size: 0.8rem;
-  color: var(--color-text); /* Uso de variável */
+  color: var(--color-text);
   opacity: 0.7;
   text-align: right;
   margin-top: 4px;
 }
 
 .error-message {
-  color: var(--vt-color-error); /* Uso de variável */
-  background-color: #fde8e8; /* Pode ser ajustado para var(--vt-color-error) com mais transparência */
+  color: var(--vt-color-error);
+  background-color: #fde8e8;
   padding: 10px;
   border-radius: 5px;
   margin-top: 5px;
@@ -461,5 +461,43 @@ html.dark-theme textarea::placeholder {
 }
 html.dark-theme input::placeholder {
   color: #a0a0a0;
+}
+
+@media (max-width: 768px) {
+  .anunciar-container {
+    margin: 20px 10px;
+    padding: 20px;
+    max-width: 100%;
+    box-shadow: 0 2px 10px var(--color-card-shadow);
+  }
+
+  .form-group-inline {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .anunciar-container {
+    padding: 15px;
+    margin: 10px 5px;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+
+  button {
+    font-size: 0.9rem;
+  }
 }
 </style>
