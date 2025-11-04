@@ -3,6 +3,7 @@ import { computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import Navbar from "./components/Navbar.vue";
 import Footer from "./components/Footer.vue";
+import MessagesWidget from "@/components/MessagesWidget.vue";
 import { useThemeStore } from "@/stores/theme";
 import "./assets/main.css";
 
@@ -23,6 +24,8 @@ onMounted(() => {
     <Navbar v-if="!isAuthRoute" />
     <router-view />
     <Footer v-if="!isAuthRoute" />
+    <!-- Widget de mensagens flutuante -->
+    <MessagesWidget />
   </div>
 </template>
 
