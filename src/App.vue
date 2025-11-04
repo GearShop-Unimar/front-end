@@ -32,13 +32,7 @@ onMounted(() => {
   <div id="app">
     <Navbar v-if="!isAuthRoute" />
     <router-view />
-<<<<<<< HEAD
     <Footer v-if="!esconderFooter" />
-=======
-    <Footer v-if="!isAuthRoute" />
-    <!-- Widget de mensagens flutuante -->
-    <MessagesWidget />
->>>>>>> 68f3d045b69c76b0779604d1520c1d4c2a5759ef
   </div>
 </template>
 
