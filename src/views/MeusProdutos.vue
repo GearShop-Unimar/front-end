@@ -1,6 +1,6 @@
 <template>
   <div class="meus-produtos-container">
-    <h1>📋 Meus Produtos</h1>
+    <h1>Meus Produtos</h1>
 
     <div class="filtros">
       <select v-model="filtroCategoria" class="filtro-select">
@@ -22,51 +22,80 @@
 
     <div v-else-if="produtosFiltrados.length === 0" class="sem-produtos">
       <div class="icon-placeholder">📭</div>
-      <h2>Você ainda não tem produtos cadastrados</h2>
-      <router-link to="/anunciar" class="btn btn-primary">
+      <h2>
+        <span v-if="filtroCategoria">Nenhum produto encontrado</span>
+        <span v-else>Você ainda não tem produtos cadastrados</span>
+      </h2>
+      <router-link
+        to="/anunciar"
+        class="btn btn-primary"
+        v-if="!filtroCategoria"
+      >
         Criar primeiro anúncio
       </router-link>
     </div>
 
-    <div v-else class="produtos-grid">
-      <div
-        v-for="produto in produtosFiltrados"
-        :key="produto.id"
-        class="produto-card"
-      >
-        <div class="produto-imagem-container">
-          <img
-            v-if="produto.mainImageUrl"
-            :src="produto.mainImageUrl"
-            :alt="produto.name"
-            class="produto-imagem"
-          />
-          <div v-else class="sem-imagem">
-            <span>📷</span>
+    <div v-else>
+      <div class="produtos-grid">
+        <div
+          v-for="produto in paginatedProducts"
+          :key="produto.id"
+          class="produto-card"
+        >
+          <div class="produto-imagem-container">
+            <img
+              v-if="produto.mainImageUrl"
+              :src="produto.mainImageUrl"
+              :alt="produto.name"
+              class="produto-imagem"
+            />
+            <div v-else class="sem-imagem">
+              <span>📷</span>
+            </div>
+          </div>
+
+          <div class="produto-info">
+            <h3>{{ produto.name }}</h3>
+            <p class="categoria">{{ produto.category }}</p>
+            <p class="preco">R$ {{ produto.price.toFixed(2) }}</p>
+            <p class="estado">{{ produto.condition }}</p>
+
+            <div class="acoes">
+              <button
+                @click="editarProduto(produto.id)"
+                class="btn btn-secondary"
+              >
+                ✏️ Editar
+              </button>
+              <button
+                @click="confirmarExclusao(produto.id)"
+                class="btn btn-excluir"
+              >
+                🗑️ Excluir
+              </button>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div class="produto-info">
-          <h3>{{ produto.name }}</h3>
-          <p class="categoria">{{ produto.category }}</p>
-          <p class="preco">R$ {{ produto.price.toFixed(2) }}</p>
-          <p class="estado">{{ produto.condition }}</p>
-
-          <div class="acoes">
-            <button
-              @click="editarProduto(produto.id)"
-              class="btn btn-secondary"
-            >
-              ✏️ Editar
-            </button>
-            <button
-              @click="confirmarExclusao(produto.id)"
-              class="btn btn-excluir"
-            >
-              🗑️ Excluir
-            </button>
-          </div>
-        </div>
+      <div v-if="totalPages > 1" class="paginacao-container">
+        <button
+          @click="prevPage"
+          :disabled="currentPage === 1"
+          class="btn paginacao-btn"
+        >
+          &lt; Anterior
+        </button>
+        <span class="pagina-info">
+          Página {{ currentPage }} de {{ totalPages }}
+        </span>
+        <button
+          @click="nextPage"
+          :disabled="currentPage === totalPages"
+          class="btn paginacao-btn"
+        >
+          Próxima &gt;
+        </button>
       </div>
     </div>
 
@@ -88,7 +117,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+// NOVO: importar 'watch'
+import { ref, onMounted, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useToast } from "vue-toastification";
@@ -104,7 +134,12 @@ const filtroCategoria = ref("");
 const showModal = ref(false);
 const produtoParaExcluir = ref(null);
 
+// --- NOVO: Lógica de Paginação ---
+const currentPage = ref(1);
+const itemsPerPage = 9; // 3x3 = 9 itens por página
+
 const carregarProdutos = async () => {
+  // ... (função carregarProdutos continua igual)
   const token = authStore.token;
   const userId = authStore.user?.id;
 
@@ -115,7 +150,7 @@ const carregarProdutos = async () => {
   }
 
   try {
-    const response = await fetch(`${API_URL}/Product/user/${userId}`, {
+    const response = await fetch(`${API_URL}/Product`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -125,7 +160,8 @@ const carregarProdutos = async () => {
       throw new Error("Falha ao buscar produtos.");
     }
 
-    produtos.value = await response.json();
+    const todosOsProdutos = await response.json();
+    produtos.value = todosOsProdutos.filter((p) => p.sellerId === userId);
   } catch (error) {
     console.error("Erro ao buscar produtos:", error);
     toast.error(error.message || "Erro ao carregar produtos.");
@@ -141,6 +177,23 @@ const produtosFiltrados = computed(() => {
   );
 });
 
+// NOVO: Computed para o total de páginas
+const totalPages = computed(() => {
+  return Math.ceil(produtosFiltrados.value.length / itemsPerPage);
+});
+
+// NOVO: Computed para os produtos da página atual
+const paginatedProducts = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return produtosFiltrados.value.slice(start, end);
+});
+
+// NOVO: Watcher para resetar a página quando o filtro mudar
+watch(filtroCategoria, () => {
+  currentPage.value = 1;
+});
+
 const editarProduto = (id) => {
   router.push(`/editar-produto/${id}`);
 };
@@ -150,7 +203,23 @@ const confirmarExclusao = (id) => {
   showModal.value = true;
 };
 
+// NOVO: Funções para mudar de página
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+    window.scrollTo(0, 0); // Opcional: rola para o topo ao mudar de página
+  }
+};
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--;
+    window.scrollTo(0, 0); // Opcional: rola para o topo ao mudar de página
+  }
+};
+
 const excluirProduto = async () => {
+  // ... (função excluirProduto continua igual)
   const token = authStore.token;
   if (!token) {
     toast.error("Sua sessão expirou. Faça login novamente.");
@@ -172,9 +241,14 @@ const excluirProduto = async () => {
       throw new Error("Falha ao excluir o produto.");
     }
 
-    produtos.value = produtos.value.filter(
-      (p) => p.id !== produtoParaExcluir.value
-    );
+    // Recarrega os produtos para atualizar a paginação corretamente
+    await carregarProdutos();
+
+    // Ajusta a página atual se a última página ficar vazia
+    if (currentPage.value > totalPages.value) {
+      currentPage.value = totalPages.value;
+    }
+
     toast.success("Produto excluído com sucesso!");
     showModal.value = false;
   } catch (error) {
@@ -187,11 +261,11 @@ onMounted(carregarProdutos);
 </script>
 
 <style scoped>
+/* O teu CSS está correto e não precisa de alterações. */
 .meus-produtos-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 40px 20px;
-  background-color: var(--color-background-soft);
   min-height: calc(100vh - 80px); /* 80px = altura da navbar */
 }
 
@@ -271,11 +345,28 @@ h1 {
   color: var(--color-primary);
 }
 
+/* --- MUDANÇA NO CSS DA GRELHA --- */
 .produtos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  /* 1 coluna em ecrãs pequenos */
+  grid-template-columns: 1fr;
   gap: 1.5rem;
 }
+
+/* Em ecrãs médios (tablets), 2 colunas */
+@media (min-width: 600px) {
+  .produtos-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Em ecrãs grandes (desktop), 3 colunas para o 3x3 */
+@media (min-width: 992px) {
+  .produtos-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+/* --- FIM DA MUDANÇA NO CSS --- */
 
 .produto-card {
   background: var(--color-card-background);
@@ -459,5 +550,40 @@ h1 {
 }
 .btn-cancelar:hover {
   background-color: var(--color-border);
+}
+
+/* --- NOVO: Estilos da Paginação --- */
+.paginacao-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2.5rem;
+  gap: 1rem;
+}
+.pagina-info {
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 1.4rem;
+  margin: 0 0.5rem;
+}
+.paginacao-btn {
+  width: auto;
+  flex: 0 1 140px; /* Não cresce, base de 140px */
+  padding: 10px 14px;
+  font-size: 1.3rem;
+  background-color: transparent;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.paginacao-btn:hover:not(:disabled) {
+  background-color: var(--color-primary);
+  color: white;
+}
+.paginacao-btn:disabled {
+  background-color: var(--color-border);
+  border-color: var(--color-border);
+  color: var(--color-text-light);
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 </style>
