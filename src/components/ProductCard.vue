@@ -9,7 +9,7 @@
           class="produto-imagem"
         />
         <div v-else class="sem-imagem">
-          <span>📷 Sem imagem</span>
+          <span> Sem imagem</span>
         </div>
       </div>
       <div class="produto-info">
@@ -18,6 +18,21 @@
         <span class="badge-vendedor">{{ sellerName }}</span>
 
         <p class="preco">R$ {{ produto.price.toFixed(2) }}</p>
+
+        <div class="avaliacao-estrelas">
+          <span
+            v-for="star in 5"
+            :key="star"
+            :class="{ 'estrela-preenchida': star <= produtoRating }"
+            class="estrela"
+          >
+            &#9733;
+          </span>
+          <span class="numero-avaliacoes" v-if="reviewCount > 0">
+            ({{ reviewCount }})
+          </span>
+          <span class="numero-avaliacoes" v-else> (Sem avaliações) </span>
+        </div>
         <p class="estado">{{ produto.state || "" }}</p>
         <p class="descricao">{{ produto.description }}</p>
         <button class="btn-carrinho" @click.stop="adicionarAoCarrinho">
@@ -41,6 +56,18 @@ const props = defineProps({
 const router = useRouter();
 const userStore = useUserStore();
 const toast = useToast();
+
+// Esta 'computed' vai ler o 'averageRating' que vem da API
+const produtoRating = computed(() => {
+  return props.produto.averageRating
+    ? parseFloat(props.produto.averageRating)
+    : 0;
+});
+
+// Esta 'computed' vai ler o 'reviewCount' que vem da API
+const reviewCount = computed(() => {
+  return props.produto.reviewCount ? parseInt(props.produto.reviewCount) : 0;
+});
 
 onMounted(() => {
   if (props.produto.sellerId) {
@@ -109,8 +136,28 @@ const adicionarAoCarrinho = () => {
   font-size: 1.5rem;
   font-weight: bold;
   color: var(--color-primary);
-  margin: 0.5rem 0;
+  margin: 0.5rem 0; /* Ajustado para deixar espaço para as estrelas */
 }
+
+.avaliacao-estrelas {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px; /* Espaço abaixo das estrelas */
+}
+.estrela {
+  color: var(--color-gray-light); /* Cor da estrela vazia */
+  font-size: 1.2rem;
+  margin-right: 2px;
+}
+.estrela-preenchida {
+  color: gold; /* Cor da estrela preenchida */
+}
+.numero-avaliacoes {
+  font-size: 0.9rem;
+  color: var(--color-text-light);
+  margin-left: 5px;
+}
+
 .estado {
   color: var(--color-text);
   font-size: 0.9rem;

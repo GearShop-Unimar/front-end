@@ -10,8 +10,17 @@ import "./assets/main.css";
 const route = useRoute();
 const themeStore = useThemeStore();
 
+// Esta computed esconde a Navbar nas rotas de auth
 const isAuthRoute = computed(() => {
   return route.path === "/login" || route.path === "/cadastro";
+});
+
+const esconderFooter = computed(() => {
+  return (
+    route.path === "/login" ||
+    route.path === "/cadastro" ||
+    route.path === "/meus-produtos"
+  );
 });
 
 onMounted(() => {
@@ -23,9 +32,7 @@ onMounted(() => {
   <div id="app">
     <Navbar v-if="!isAuthRoute" />
     <router-view />
-    <Footer v-if="!isAuthRoute" />
-    <!-- Widget de mensagens flutuante -->
-    <MessagesWidget />
+    <Footer v-if="!esconderFooter" />
   </div>
 </template>
 
