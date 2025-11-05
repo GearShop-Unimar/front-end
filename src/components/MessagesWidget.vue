@@ -40,7 +40,11 @@
               :class="['conv-item', { active: conv.id === selectedId }]"
               @click="selectConversation(conv.id)"
             >
-              <img class="avatar" :src="conv.otherUser.avatar" :alt="conv.otherUser.name" />
+              <img
+                class="avatar"
+                :src="conv.otherUser.avatar"
+                :alt="conv.otherUser.name"
+              />
               <div class="conv-info">
                 <div class="row">
                   <span class="name">{{ conv.otherUser.name }}</span>
@@ -48,7 +52,9 @@
                 </div>
                 <div class="row">
                   <span class="last">{{ conv.lastMessage }}</span>
-                  <span v-if="conv.unread" class="badge">{{ conv.unread }}</span>
+                  <span v-if="conv.unread" class="badge">{{
+                    conv.unread
+                  }}</span>
                 </div>
               </div>
             </li>
@@ -64,7 +70,11 @@
 
           <template v-else>
             <div class="chat-title">
-              <img class="avatar" :src="selectedConversation?.otherUser.avatar" :alt="selectedConversation?.otherUser.name" />
+              <img
+                class="avatar"
+                :src="selectedConversation?.otherUser.avatar"
+                :alt="selectedConversation?.otherUser.name"
+              />
               <div class="meta">
                 <h4>{{ selectedConversation?.otherUser.name }}</h4>
                 <span class="sub">Conversando agora</span>
@@ -123,8 +133,10 @@ const messagesRef = ref(null);
 const filteredConversations = computed(() => {
   const q = query.value.toLowerCase().trim();
   if (!q) return conversations.value;
-  return conversations.value.filter((c) =>
-    c.otherUser.name.toLowerCase().includes(q) || c.lastMessage.toLowerCase().includes(q)
+  return conversations.value.filter(
+    (c) =>
+      c.otherUser.name.toLowerCase().includes(q) ||
+      c.lastMessage.toLowerCase().includes(q)
   );
 });
 
@@ -132,7 +144,9 @@ const selectedConversation = computed(() =>
   conversations.value.find((c) => c.id === selectedId.value)
 );
 
-const headerTitle = computed(() => selectedConversation.value?.otherUser?.name || "Mensagens");
+const headerTitle = computed(
+  () => selectedConversation.value?.otherUser?.name || "Mensagens"
+);
 
 function toggleOpen(v) {
   isOpen.value = v;
@@ -173,7 +187,11 @@ function scrollToBottom() {
 async function handleSend() {
   const text = draft.value.trim();
   if (!text || !selectedId.value) return;
-  const msg = await sendMessageToBackend(selectedId.value, text, currentUserId.value);
+  const msg = await sendMessageToBackend(
+    selectedId.value,
+    text,
+    currentUserId.value
+  );
   messages.value.push(msg);
   draft.value = "";
   await nextTick();
@@ -194,17 +212,24 @@ onMounted(() => {
   color: #fff;
   border: none;
   border-radius: 24px;
-  padding: 10px 14px;
+  padding: 18px 24px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(0,0,0,.25);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
   font-weight: 600;
   z-index: 9999;
 }
-.chat-fab .label { display: none; }
-@media (min-width: 420px){ .chat-fab .label { display: inline; } }
+.chat-fab .label {
+  display: none;
+  font-size: 16px;
+}
+@media (min-width: 420px) {
+  .chat-fab .label {
+    display: inline;
+  }
+}
 
 .chat-panel {
   position: fixed;
@@ -212,6 +237,7 @@ onMounted(() => {
   bottom: 20px;
   width: min(920px, 96vw);
   height: 520px;
+  font-size: 16px;
   background: var(--color-card-background);
   border: 1px solid var(--color-border);
   border-radius: 12px;
@@ -230,45 +256,196 @@ onMounted(() => {
   background: var(--color-navbar-background);
   border-bottom: 1px solid var(--color-border);
 }
-.chat-header .title { display: flex; align-items: center; gap: 8px; font-weight: 700; }
-.chat-header .actions .icon { background: transparent; border: none; cursor: pointer; }
-.chat-header .actions .icon .chevrons { color: var(--color-primary); font-size: 1.2rem; }
-.chat-header .actions .icon .bi-x { color: var(--color-text); }
+.chat-header .title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+.chat-header .actions .icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.chat-header .actions .icon .chevrons {
+  color: var(--color-primary);
+  font-size: 1.2rem;
+}
+.chat-header .actions .icon .bi-x {
+  color: var(--color-text);
+}
 
-.chat-body { display: grid; grid-template-columns: 320px 1fr; height: 100%; }
+.chat-body {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  height: 100%;
+}
 
-.conversations { border-right: 1px solid var(--color-border); display: flex; flex-direction: column; }
-.search-box { display: flex; align-items: center; gap: 8px; padding: 10px; border-bottom: 1px solid var(--color-border); }
-.search-box input { flex: 1; border: 1px solid var(--color-border); border-radius: 8px; padding: 8px 10px; background: var(--color-background); color: var(--color-text); }
-.conv-list { list-style: none; margin: 0; padding: 0; overflow-y: auto; }
-.conv-item { display: flex; gap: 10px; padding: 10px; cursor: pointer; align-items: center; }
-.conv-item.active { background: var(--color-background-mute); }
-.conv-item:hover { background: var(--color-background-mute); }
-.conv-item .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-.conv-info { flex: 1; }
-.conv-info .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.conv-info .name { font-weight: 700; color: var(--color-heading); }
-.conv-info .last { color: var(--color-text); opacity: .9; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.badge { background: var(--color-primary); color: #fff; border-radius: 10px; padding: 2px 8px; font-size: .75rem; }
+.conversations {
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+}
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+.search-box input {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--color-background);
+  color: var(--color-text);
+}
+.conv-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+.conv-item {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  cursor: pointer;
+  align-items: center;
+}
+.conv-item.active {
+  background: var(--color-background-mute);
+}
+.conv-item:hover {
+  background: var(--color-background-mute);
+}
+.conv-item .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.conv-info {
+  flex: 1;
+}
+.conv-info .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.conv-info .name {
+  font-weight: 700;
+  color: var(--color-heading);
+}
+.conv-info .last {
+  color: var(--color-text);
+  opacity: 0.9;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.badge {
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+}
 
-.chat { display: flex; flex-direction: column; height: 100%; }
-.chat-title { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid var(--color-border); }
-.chat-title .avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
-.chat-title .meta h4 { margin: 0; }
-.chat-title .meta .sub { font-size: .85rem; color: var(--color-text); opacity: .9; }
+.chat {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.chat-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+.chat-title .avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.chat-title .meta h4 {
+  margin: 0;
+}
+.chat-title .meta .sub {
+  font-size: 0.85rem;
+  color: var(--color-text);
+  opacity: 0.9;
+}
 
-.empty-state { height: 100%; display: grid; place-items: center; color: var(--color-text); }
+.empty-state {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--color-text);
+}
 
-.messages { flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-.bubble { max-width: 70%; background: var(--color-background-mute); color: var(--color-text); padding: 10px 12px; border-radius: 12px; align-self: flex-start; }
-.bubble.me { background: var(--color-primary); color: #fff; align-self: flex-end; }
-.bubble .ts { display: block; font-size: .75rem; opacity: .85; margin-top: 4px; }
+.messages {
+  flex: 1;
+  padding: 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bubble {
+  max-width: 70%;
+  background: var(--color-background-mute);
+  color: var(--color-text);
+  padding: 10px 12px;
+  border-radius: 12px;
+  align-self: flex-start;
+}
+.bubble.me {
+  background: var(--color-primary);
+  color: #fff;
+  align-self: flex-end;
+}
+.bubble .ts {
+  display: block;
+  font-size: 0.75rem;
+  opacity: 0.85;
+  margin-top: 4px;
+}
 
-.composer { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--color-border); }
-.composer input { flex: 1; border: 1px solid var(--color-border); border-radius: 20px; padding: 10px 12px; background: var(--color-background); color: var(--color-text); }
-.composer button { background: var(--color-primary); color: #fff; border: none; border-radius: 20px; padding: 0 14px; cursor: pointer; }
+.composer {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid var(--color-border);
+}
+.composer input {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 10px 12px;
+  background: var(--color-background);
+  color: var(--color-text);
+}
+.composer button {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 0 14px;
+  cursor: pointer;
+}
 
-@media (max-width: 920px) { .chat-body { grid-template-columns: 1fr; } .conversations { display: none; } }
+@media (max-width: 920px) {
+  .chat-body {
+    grid-template-columns: 1fr;
+  }
+  .conversations {
+    display: none;
+  }
+}
 </style>
-
-
