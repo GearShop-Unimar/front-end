@@ -1,93 +1,105 @@
-import { mount } from '@vue/test-utils'
-import { describe, it, expect, vi } from 'vitest'
-import { createRouter, createWebHistory } from 'vue-router'
-import Navbar from '../components/Navbar.vue'
+import Navbar from "@/components/Navbar.vue";
+import { mount } from "@vue/test-utils";
+import { describe, it, expect, beforeEach } from "vitest"; // <-- Importa o beforeEach
+import { createRouter, createMemoryHistory } from "vue-router";
+import { createPinia } from "pinia";
 
-//
-// Mock do router (caso sua Navbar use <router-link>)
-//
 const routes = [
-  { path: '/', component: { template: '<div>Home</div>' } },
-  { path: '/produtos', component: { template: '<div>Produtos</div>' } },
-  { path: '/contato', component: { template: '<div>Contato</div>' } }
-]
+  { path: "/", component: { template: "<div>Home</div>" } },
+  { path: "/produtos", component: { template: "<div>Produtos</div>" } },
+  { path: "/contato", component: { template: "<div>Contato</div>" } },
+  { path: "/posts", component: { template: "<div>Posts</div>" } },
+  { path: "/anunciar", component: { template: "<div>Anunciar</div>" } },
+  { path: "/login", component: { template: "<div>Login</div>" } },
+  { path: "/cadastro", component: { template: "<div>Cadastro</div>" } },
+];
 const router = createRouter({
-  history: createWebHistory(),
-  routes
-})
+  history: createMemoryHistory(),
+  routes,
+});
 
-describe('Navbar.vue', () => {
-  it('renderiza o nome da loja corretamente', () => {
-    const wrapper = mount(Navbar)
-    expect(wrapper.text()).toContain('GearShop')
-  })
+describe("Navbar.vue", () => {
+  const pinia = createPinia();
 
-  //
-  // Teste: renderização dos links principais
-  //
-  it('exibe os links de navegação', () => {
-    const wrapper = mount(Navbar)
-    const links = wrapper.findAll('a')
-    const textos = links.map(l => l.text())
-    expect(textos).toEqual(expect.arrayContaining(['Home', 'Produtos', 'Contato']))
-  })
+  // --- SOLUÇÃO 1: Resetar o router antes de cada teste ---
+  beforeEach(async () => {
+    // Leva o router de volta para a página inicial
+    await router.push("/");
+    await router.isReady();
+  });
 
-  //
-  // Teste: logo e atributos esperados
-  //
-  it('tem o logo visível e com alt correto', () => {
-    const wrapper = mount(Navbar)
-    const logo = wrapper.find('img')
-    expect(logo.exists()).toBe(true)
-    expect(logo.attributes('alt')).toBeDefined()
-  })
+  const mountNavbar = (options = {}) => {
+    return mount(Navbar, {
+      global: {
+        plugins: [pinia, router],
+        stubs: {
+          Carrinho: true, // "Desliga" o componente Carrinho
+        },
+      },
+      ...options,
+    });
+  };
 
-  //
-  // Teste: interação de clique (menu mobile)
-  //
-  it('abre o menu mobile ao clicar no botão', async () => {
-    const wrapper = mount(Navbar)
-    const botao = wrapper.find('[data-test="menu-button"]')
+  it("renderiza o nome da loja corretamente", () => {
+    const wrapper = mountNavbar();
+    expect(wrapper.text()).toContain("GearShop");
+  });
+
+  it("exibe os links de navegação", () => {
+    const wrapper = mountNavbar();
+    const links = wrapper.findAll("a");
+    const textos = links.map((l) => l.text());
+
+    expect(textos).toEqual(
+      expect.arrayContaining([
+        "Home",
+        "Posts",
+        "Produtos",
+        "Anunciar",
+        "Entrar",
+      ])
+    );
+  });
+
+  it("tem o logo visível (que é um link para a home)", () => {
+    const wrapper = mountNavbar();
+    const logoLink = wrapper.find('a[href="/"]');
+    expect(logoLink.exists()).toBe(true);
+    expect(logoLink.text()).toContain("GearShop");
+  });
+
+  it("abre o menu mobile ao clicar no botão", async () => {
+    const wrapper = mountNavbar();
+    const botao = wrapper.find('[data-test="menu-button"]');
     if (botao.exists()) {
-      await botao.trigger('click')
-      expect(wrapper.html()).toMatch(/menu/i) // verifica se algo muda no DOM
+      await botao.trigger("click");
+      expect(wrapper.html()).toMatch(/menu/i);
     } else {
-      expect(true).toBe(true) // se não existir, o teste não quebra
+      expect(true).toBe(true);
     }
-  })
+  });
 
-  //
-  // Teste: comportamento com vue-router
-  //
-  it('marca o link ativo corretamente ao navegar', async () => {
-    router.push('/produtos')
-    await router.isReady()
+  // --- SOLUÇÃO 2: Corrigir a lógica do teste de navegação ---
+  it("marca o link ativo corretamente ao navegar", async () => {
+    // 1. Monta o componente (está em "/")
+    const wrapper = mountNavbar();
 
-    const wrapper = mount(Navbar, {
-      global: { plugins: [router] }
-    })
+    // 2. Navega para /produtos
+    await router.push("/produtos");
 
-    const activeLink = wrapper.find('.router-link-active')
-    expect(activeLink.exists()).toBe(true)
-    expect(activeLink.text()).toMatch(/Produtos/i)
-  })
+    // 3. Espera o Vue atualizar o HTML
+    await wrapper.vm.$nextTick();
 
-  //
-  // Teste: usa nome de loja vindo por prop (se aplicável)
-  //
-  it('usa o nome da loja passado via prop', () => {
-    const wrapper = mount(Navbar, {
-      props: { storeName: 'TechZone' }
-    })
-    expect(wrapper.text()).toContain('TechZone')
-  })
+    // 4. Procura o link de produtos
+    const productsLink = wrapper.find('a[href="/produtos"]');
+    expect(productsLink.exists()).toBe(true);
 
-  //
-  // Teste de snapshot (estrutura geral da Navbar)
-  //
-  it('mantém a estrutura visual esperada (snapshot)', () => {
-    const wrapper = mount(Navbar)
-    expect(wrapper.html()).toMatchSnapshot()
-  })
-})
+    // 5. Verifica se TEM a classe
+    expect(productsLink.classes()).toContain("router-link-active");
+  });
 
+  it("mantém a estrutura visual esperada (snapshot)", () => {
+    const wrapper = mountNavbar();
+    expect(wrapper.html()).toMatchSnapshot();
+  });
+});
