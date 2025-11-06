@@ -117,10 +117,11 @@ import {
   fetchConversationsFromBackend,
   fetchMessagesFromBackend,
   sendMessageToBackend,
-} from "@/services/messagesService";
+} from "@/services/messagesService"; // <-- Isto agora importa as funções reais
 
 const auth = useAuthStore();
-const currentUserId = computed(() => auth.user?.id || 1);
+// O 'currentUserId' ainda é útil para sabermos qual balão é 'me'
+const currentUserId = computed(() => auth.user?.id || 0);
 
 const isOpen = ref(false);
 const query = ref("");
@@ -150,6 +151,10 @@ const headerTitle = computed(
 
 function toggleOpen(v) {
   isOpen.value = v;
+  // Quando abrir, carrega as conversas
+  if (v === true && conversations.value.length === 0) {
+    loadConversations();
+  }
 }
 
 function timeAgo(ts) {
@@ -169,14 +174,23 @@ function formatTime(ts) {
 }
 
 async function loadConversations() {
-  conversations.value = await fetchConversationsFromBackend();
+  try {
+    conversations.value = await fetchConversationsFromBackend();
+  } catch (error) {
+    console.error("Falha ao carregar conversas no componente.", error);
+  }
 }
 
 async function selectConversation(id) {
   selectedId.value = id;
-  messages.value = await fetchMessagesFromBackend(id);
-  await nextTick();
-  scrollToBottom();
+  messages.value = []; // Limpa mensagens antigas
+  try {
+    messages.value = await fetchMessagesFromBackend(id);
+    await nextTick();
+    scrollToBottom();
+  } catch (error) {
+    console.error("Falha ao carregar mensagens no componente.", error);
+  }
 }
 
 function scrollToBottom() {
@@ -187,22 +201,39 @@ function scrollToBottom() {
 async function handleSend() {
   const text = draft.value.trim();
   if (!text || !selectedId.value) return;
-  const msg = await sendMessageToBackend(
-    selectedId.value,
-    text,
-    currentUserId.value
-  );
-  messages.value.push(msg);
-  draft.value = "";
-  await nextTick();
-  scrollToBottom();
+
+  try {
+    // --- ESTA É A MUDANÇA PRINCIPAL ---
+    // Removemos o 'currentUserId.value' da chamada,
+    // pois o back-end obtém o ID do utilizador pelo token.
+    const msg = await sendMessageToBackend(
+      selectedId.value,
+      text
+      // currentUserId.value <-- REMOVIDO!
+    );
+    // --- FIM DA MUDANÇA ---
+
+    if (msg) {
+      messages.value.push(msg);
+      draft.value = "";
+      await nextTick();
+      scrollToBottom();
+
+      // Opcional: Atualizar a lista de conversas para mostrar a nova "última mensagem"
+      // loadConversations();
+      // (SignalR vai fazer isto melhor no futuro)
+    }
+  } catch (error) {
+    console.error("Falha ao enviar mensagem no componente.", error);
+  }
 }
 
 onMounted(() => {
-  loadConversations();
+  // Não carregues as conversas no 'onMounted'
+  // Vamos carregar apenas quando o utilizador clicar para abrir
+  // loadConversations();
 });
 </script>
-
 <style scoped>
 .chat-fab {
   position: fixed;
