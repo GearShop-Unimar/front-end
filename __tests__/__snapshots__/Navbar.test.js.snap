@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Navbar.vue > mantém a estrutura visual esperada (snapshot) 1`] = `
+"<nav data-v-4d808a77="" class="navbar">
+  <div data-v-4d808a77="" class="navbar-container"><a data-v-4d808a77="" aria-current="page" href="/" class="router-link-active router-link-exact-active navbar-logo"><span data-v-4d808a77="" class="logo-gear">Gear</span><span data-v-4d808a77="" class="logo-shop">Shop</span></a><button data-v-4d808a77="" class="hamburger"><span data-v-4d808a77=""></span><span data-v-4d808a77=""></span><span data-v-4d808a77=""></span></button>
+    <div data-v-4d808a77="" class="nav-menu">
+      <ul data-v-4d808a77="" class="nav-links">
+        <li data-v-4d808a77=""><a data-v-4d808a77="" aria-current="page" href="/" class="router-link-active router-link-exact-active">Home</a></li>
+        <li data-v-4d808a77=""><a data-v-4d808a77="" href="/posts" class="">Posts</a></li>
+        <li data-v-4d808a77=""><a data-v-4d808a77="" href="/produtos" class="">Produtos</a></li>
+        <li data-v-4d808a77=""><a data-v-4d808a77="" href="/anunciar" class="">Anunciar</a></li>
+      </ul>
+      <div data-v-4d808a77="" class="search-container">
+        <form data-v-4d808a77="" class="search-bar"><i data-v-4d808a77="" class="fa fa-search search-icon"></i><input data-v-4d808a77="" type="text" placeholder="Buscar peças..."></form>
+      </div>
+      <ul data-v-4d808a77="" class="auth-links">
+        <li data-v-4d808a77=""><a data-v-4d808a77="" href="/login" class="btn btn-secondary">Entrar</a></li>
+        <li data-v-4d808a77=""><a data-v-4d808a77="" href="/cadastro" class="btn btn-primary">Cadastre-se</a></li>
+        <li data-v-4d808a77=""><button data-v-4d808a77="" class="theme-toggle-btn"><i data-v-4d808a77="" class="bi bi-moon-stars-fill"></i></button></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<carrinho-stub data-v-4d808a77="" isopen="false"></carrinho-stub>"
+`;

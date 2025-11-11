@@ -162,7 +162,8 @@ export default {
             item.mainImageUrl ||
             "https://via.placeholder.com/250x250?text=Sem+Imagem",
           sellerId: item.sellerId,
-          rating: Math.floor(Math.random() * 5) + 1,
+
+          rating: item.averageRating || 0,
         }));
 
         produtosPertoDeVoce.value = produtos.value.slice(0, 4);

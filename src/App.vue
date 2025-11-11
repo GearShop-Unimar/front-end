@@ -14,6 +14,14 @@ const isAuthRoute = computed(() => {
   return route.path === "/login" || route.path === "/cadastro";
 });
 
+const esconderFooter = computed(() => {
+  return (
+    route.path === "/login" ||
+    route.path === "/cadastro" ||
+    route.path === "/meus-produtos"
+  );
+});
+
 onMounted(() => {
   themeStore.initTheme();
 });
@@ -22,11 +30,11 @@ onMounted(() => {
 <template>
   <div id="app">
     <Navbar v-if="!isAuthRoute" />
-    <div class="main-content">
-      <router-view />
-    </div>
-    <Footer v-if="!isAuthRoute" />
-    <!-- Widget de mensagens flutuante -->
+
+    <router-view />
+
+    <Footer v-if="!esconderFooter" />
+
     <MessagesWidget />
   </div>
 </template>
@@ -34,6 +42,7 @@ onMounted(() => {
 <style scoped>
 #app {
   overflow-x: hidden;
+
   overflow-y: unset;
 }
 </style>
