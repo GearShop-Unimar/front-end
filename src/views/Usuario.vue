@@ -13,6 +13,11 @@
           </router-link>
         </li>
         <li>
+          <router-link to="/fidelidade" class="nav-link">
+            <i class="bi bi-gem"></i> Plano de Fidelidade
+          </router-link>
+        </li>
+        <li>
           <router-link to="/pedidos" class="nav-link">
             <i class="bi bi-receipt"></i> Meus Pedidos
           </router-link>

@@ -13,6 +13,7 @@ import Pagamento from "../views/Pagamento.vue";
 import Sucesso from "../views/Sucesso.vue";
 import TelaProdutos from "../views/TelaProdutos.vue";
 import Usuario from "../views/Usuario.vue"; // <-- 1. ADICIONAR ESTA LINHA
+import Fidelidade from "../views/Fidelidade.vue";
 
 const routes = [
   { path: "/", component: Home, name: "Home" },
@@ -31,6 +32,12 @@ const routes = [
     path: "/meus-produtos",
     name: "MeusProdutos",
     component: MeusProdutos,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/fidelidade",
+    name: "Fidelidade",
+    component: Fidelidade,
     meta: { requiresAuth: true },
   },
   {
