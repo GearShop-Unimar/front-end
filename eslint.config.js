@@ -16,9 +16,18 @@ export default defineConfig([
 
   ...pluginVue.configs["flat/essential"],
 
+  storybook.configs["flat/recommended"],
+
   {
     rules: {
       "vue/multi-word-component-names": "off",
+    },
+  },
+
+  {
+    files: ["vite.config.js", "eslint.config.js"],
+    languageOptions: {
+      globals: globals.node,
     },
   },
 ]);
