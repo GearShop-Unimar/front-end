@@ -17,6 +17,9 @@
           <li><router-link to="/posts">Posts</router-link></li>
           <li><router-link to="/produtos">Produtos</router-link></li>
           <li><router-link to="/anunciar">Anunciar</router-link></li>
+          <li>
+            <router-link to="/fidelidade">Fidelidade</router-link>
+          </li>
         </ul>
         <div class="search-container">
           <form class="search-bar" @submit.prevent="pesquisar">
