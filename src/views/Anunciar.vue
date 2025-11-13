@@ -148,7 +148,6 @@ import { useProductStore } from "../stores/product.js";
 const router = useRouter();
 const productStore = useProductStore();
 
-// CORREÇÃO: Removido 'error' daqui
 const { loading } = storeToRefs(productStore);
 
 const produto = ref({

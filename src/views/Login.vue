@@ -76,7 +76,6 @@ const login = async () => {
     loading.value = false;
   }
 };
-
 </script>
 
 <style scoped>
@@ -151,10 +150,12 @@ input {
   background-color: var(--color-background);
   color: var(--color-text);
   font-size: 16px;
+  border: 1px solid var(--color-border);
 }
 
 input:focus {
   outline: none;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 3px hsla(24, 100%, 50%, 0.15);
 }
 
@@ -218,24 +219,52 @@ button[disabled] {
   color: #fff;
 }
 
+@media (max-width: 900px) {
+  .login-container {
+    min-height: 650px;
+  }
+}
+
 @media (max-width: 768px) {
   .login-container {
     flex-direction: column;
-    max-width: 480px;
-    min-height: auto;
-    margin: 50px auto;
-    padding: 40px;
+    max-width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
   }
   .left-column {
     display: none;
   }
   .right-column {
-    padding: 0;
+    padding: 40px 20px;
+    flex: none;
+    width: 100%;
   }
   .right-column h2 {
     display: block;
     margin-bottom: 30px;
     text-align: center;
+  }
+  form {
+    max-width: 90%;
+  }
+  input {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .right-column {
+    padding: 20px 10px;
+  }
+  .right-column h2 {
+    font-size: 2.5rem;
+  }
+  .link,
+  .input-group label {
+    font-size: 16px;
   }
 }
 </style>

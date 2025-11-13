@@ -90,4 +90,48 @@
   border-top: 1px solid var(--color-border);
   padding-top: 15px;
 }
+
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .footer-section {
+    min-width: 100%;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 15px;
+  }
+
+  .footer-section:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .footer-section h3,
+  .footer-section h4 {
+    font-size: 1.8rem;
+  }
+
+  .footer-section p,
+  .footer-section ul li a,
+  .footer-bottom p {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 30px 15px 15px;
+  }
+
+  .footer-section h3,
+  .footer-section h4 {
+    font-size: 1.6rem;
+  }
+
+  .footer-bottom {
+    margin-top: 20px;
+  }
+}
 </style>

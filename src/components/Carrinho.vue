@@ -29,13 +29,24 @@
 <script setup>
 import { ref } from "vue";
 
+const props = defineProps({
+  isOpen: {
+    type: Boolean,
+    default: false,
+  },
+});
+
 const emit = defineEmits(["close"]);
 
 const fecharCarrinho = () => {
   emit("close");
 };
 
-const itens = ref([]);
+const itens = ref([
+  { id: 1, nome: "Placa de Vídeo GTX 3060", preco: 2500.5 },
+  { id: 2, nome: "Memória RAM DDR4 16GB", preco: 450.0 },
+  { id: 3, nome: "SSD NVMe 1TB", preco: 550.99 },
+]);
 </script>
 
 <style scoped>
@@ -54,12 +65,14 @@ const itens = ref([]);
 .carrinho-modal {
   width: 100%;
   max-width: 400px;
-  background: #fff;
-  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
+  background: var(--color-background-soft);
+  box-shadow: -4px 0 10px var(--color-card-shadow);
   padding: 20px;
   height: 100%;
   transform: translateX(0);
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.4s ease-out;
+  display: flex;
+  flex-direction: column;
 }
 
 .carrinho-header {
@@ -67,12 +80,13 @@ const itens = ref([]);
   justify-content: space-between;
   align-items: center;
   padding-bottom: 20px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .carrinho-header h2 {
   margin: 0;
   font-size: 1.5rem;
+  color: var(--color-heading);
 }
 
 .close-btn {
@@ -80,20 +94,31 @@ const itens = ref([]);
   border: none;
   font-size: 2rem;
   cursor: pointer;
-  color: #333;
+  color: var(--color-text);
   line-height: 1;
+  transition: color 0.3s;
+}
+
+.close-btn:hover {
+  color: var(--color-primary);
 }
 
 .carrinho-icon {
-  color: #ff6600;
+  color: var(--color-primary);
   margin-right: 10px;
   font-size: 1.5rem;
 }
+
 .carrinho-vazio {
-  color: #888;
+  color: var(--color-text);
+  opacity: 0.7;
   font-size: 1.1rem;
   margin-top: 20px;
+  flex-grow: 1;
+  text-align: center;
+  padding-top: 50px;
 }
+
 .carrinho-lista {
   list-style: none;
   padding: 0;
@@ -101,32 +126,44 @@ const itens = ref([]);
   flex-grow: 1;
   overflow-y: auto;
 }
+
 .carrinho-item {
   display: flex;
   justify-content: space-between;
   padding: 15px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: 1.1rem;
 }
 
 .carrinho-footer {
   padding-top: 20px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-border);
   text-align: center;
 }
 
 .checkout-btn {
   width: 100%;
   padding: 15px;
-  background-color: #ff6600;
+  background-color: var(--color-primary);
   color: white;
   border: none;
   border-radius: 8px;
   font-size: 1.1rem;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.2s;
+  font-weight: bold;
 }
 
 .checkout-btn:hover {
-  background-color: #e55b00;
+  background-color: var(--color-primary-hover);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 600px) {
+  .carrinho-modal {
+    width: 100%;
+    max-width: none;
+  }
 }
 </style>

@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Botão flutuante quando minimizado -->
     <button
       class="chat-fab"
       v-if="!isOpen"
@@ -11,8 +10,11 @@
       <span class="label">Mensagens</span>
     </button>
 
-    <!-- Painel de mensagens -->
-    <div v-else class="chat-panel" :class="{ open: isOpen }">
+    <div
+      v-else
+      class="chat-panel"
+      :class="{ open: isOpen, 'chat-active': selectedId }"
+    >
       <header class="chat-header">
         <div class="title">
           <i class="bi bi-chat-dots"></i>
@@ -26,7 +28,6 @@
       </header>
 
       <div class="chat-body">
-        <!-- Lista de conversas -->
         <aside class="conversations">
           <div class="search-box">
             <i class="bi bi-search"></i>
@@ -61,7 +62,6 @@
           </ul>
         </aside>
 
-        <!-- Janela do chat -->
         <section class="chat">
           <div v-if="!selectedId" class="empty-state">
             <i class="bi bi-envelope-open"></i>
@@ -117,10 +117,9 @@ import {
   fetchConversationsFromBackend,
   fetchMessagesFromBackend,
   sendMessageToBackend,
-} from "@/services/messagesService"; // <-- Isto agora importa as funções reais
+} from "@/services/messagesService";
 
 const auth = useAuthStore();
-// O 'currentUserId' ainda é útil para sabermos qual balão é 'me'
 const currentUserId = computed(() => auth.user?.id || 0);
 
 const isOpen = ref(false);
@@ -151,7 +150,6 @@ const headerTitle = computed(
 
 function toggleOpen(v) {
   isOpen.value = v;
-  // Quando abrir, carrega as conversas
   if (v === true && conversations.value.length === 0) {
     loadConversations();
   }
@@ -183,7 +181,7 @@ async function loadConversations() {
 
 async function selectConversation(id) {
   selectedId.value = id;
-  messages.value = []; // Limpa mensagens antigas
+  messages.value = [];
   try {
     messages.value = await fetchMessagesFromBackend(id);
     await nextTick();
@@ -203,36 +201,20 @@ async function handleSend() {
   if (!text || !selectedId.value) return;
 
   try {
-    // --- ESTA É A MUDANÇA PRINCIPAL ---
-    // Removemos o 'currentUserId.value' da chamada,
-    // pois o back-end obtém o ID do utilizador pelo token.
-    const msg = await sendMessageToBackend(
-      selectedId.value,
-      text
-      // currentUserId.value <-- REMOVIDO!
-    );
-    // --- FIM DA MUDANÇA ---
+    const msg = await sendMessageToBackend(selectedId.value, text);
 
     if (msg) {
       messages.value.push(msg);
       draft.value = "";
       await nextTick();
       scrollToBottom();
-
-      // Opcional: Atualizar a lista de conversas para mostrar a nova "última mensagem"
-      // loadConversations();
-      // (SignalR vai fazer isto melhor no futuro)
     }
   } catch (error) {
     console.error("Falha ao enviar mensagem no componente.", error);
   }
 }
 
-onMounted(() => {
-  // Não carregues as conversas no 'onMounted'
-  // Vamos carregar apenas quando o utilizador clicar para abrir
-  // loadConversations();
-});
+onMounted(() => {});
 </script>
 <style scoped>
 .chat-fab {
@@ -471,12 +453,65 @@ onMounted(() => {
   cursor: pointer;
 }
 
+/* RESPONSIVIDADE PARA DESKTOPS E TABLETS GRANDES */
 @media (max-width: 920px) {
   .chat-body {
+    /* Em telas menores, o layout padrão é a lista de conversas em coluna única */
     grid-template-columns: 1fr;
   }
-  .conversations {
+
+  .chat-panel.chat-active .conversations {
+    /* Se uma conversa está selecionada, esconde a lista e mostra o chat */
     display: none;
+  }
+
+  .conversations {
+    /* Por padrão, em 920px (e abaixo), a lista é mostrada */
+    display: flex;
+    border-right: none;
+  }
+
+  .chat {
+    /* Garante que o chat esteja oculto se uma conversa não estiver ativa no modo mobile */
+    display: none;
+  }
+
+  .chat-panel.chat-active .chat {
+    /* Se uma conversa está selecionada, mostra a seção de chat */
+    display: flex;
+  }
+
+  .chat-panel {
+    /* Reduz o tamanho do painel */
+    width: min(400px, 96vw);
+    height: 90vh;
+    right: 10px;
+    bottom: 10px;
+  }
+}
+
+/* RESPONSIVIDADE PARA SMARTPHONES (TELA CHEIA) */
+@media (max-width: 420px) {
+  .chat-panel {
+    width: 100vw;
+    height: 100vh;
+    right: 0;
+    bottom: 0;
+    border-radius: 0;
+  }
+
+  .chat-fab {
+    right: 10px;
+    bottom: 10px;
+    padding: 14px;
+  }
+
+  .chat-fab .label {
+    display: none;
+  }
+
+  .conv-item .last {
+    max-width: 120px;
   }
 }
 </style>

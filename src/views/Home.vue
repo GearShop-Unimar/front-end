@@ -95,7 +95,6 @@
         </div>
       </div>
     </section>
-    <!-- Seção de Notícias -->
     <NewsSection />
   </div>
 </template>
@@ -347,13 +346,31 @@ html.dark-theme .background-overlay {
   color: var(--color-text);
 }
 
+@media (max-width: 1024px) {
+  .values-grid {
+    gap: 30px;
+  }
+}
+
 @media (max-width: 992px) {
   .mission-content {
     flex-direction: column;
+    text-align: center;
+  }
+  .mission-text h2 {
+    font-size: 2rem;
+  }
+  .mission-image {
+    max-width: 600px;
+    margin: 30px auto 0;
   }
 }
 
 @media (max-width: 768px) {
+  .welcome-section {
+    padding: 80px 15px;
+    min-height: 70vh;
+  }
   .welcome-section h1 {
     font-size: 2.5rem;
   }
@@ -363,9 +380,57 @@ html.dark-theme .background-overlay {
   .info-strip {
     flex-direction: column;
     align-items: center;
+    padding: 40px 15px;
+  }
+  .info-box {
+    max-width: 90%;
   }
   .values-grid {
     grid-template-columns: 1fr;
+    gap: 25px;
+  }
+  .mission-section,
+  .values-section {
+    padding: 60px 15px;
+  }
+  .section-title {
+    font-size: 2rem;
+    margin-bottom: 40px;
+  }
+  .mission-text h2 {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .welcome-section {
+    padding: 60px 10px;
+    min-height: 60vh;
+  }
+  .welcome-section h1 {
+    font-size: 2rem;
+  }
+  .welcome-section h3 {
+    font-size: 1rem;
+  }
+  .logo-animado-container {
+    width: 200px;
+    height: 200px;
+  }
+  .cta-button {
+    padding: 12px 25px;
+    font-size: 1rem;
+  }
+  .mission-section,
+  .values-section {
+    padding: 40px 10px;
+  }
+  .mission-text p {
+    font-size: 1rem;
+    text-align: left;
+  }
+  .value-card {
+    padding: 30px 20px;
   }
 }
 </style>

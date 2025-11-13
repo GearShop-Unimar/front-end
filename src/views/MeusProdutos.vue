@@ -117,7 +117,6 @@
 </template>
 
 <script setup>
-// NOVO: importar 'watch'
 import { ref, onMounted, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
@@ -134,12 +133,10 @@ const filtroCategoria = ref("");
 const showModal = ref(false);
 const produtoParaExcluir = ref(null);
 
-// --- NOVO: Lógica de Paginação ---
 const currentPage = ref(1);
-const itemsPerPage = 9; // 3x3 = 9 itens por página
+const itemsPerPage = 9;
 
 const carregarProdutos = async () => {
-  // ... (função carregarProdutos continua igual)
   const token = authStore.token;
   const userId = authStore.user?.id;
 
@@ -177,19 +174,16 @@ const produtosFiltrados = computed(() => {
   );
 });
 
-// NOVO: Computed para o total de páginas
 const totalPages = computed(() => {
   return Math.ceil(produtosFiltrados.value.length / itemsPerPage);
 });
 
-// NOVO: Computed para os produtos da página atual
 const paginatedProducts = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
   return produtosFiltrados.value.slice(start, end);
 });
 
-// NOVO: Watcher para resetar a página quando o filtro mudar
 watch(filtroCategoria, () => {
   currentPage.value = 1;
 });
@@ -203,23 +197,21 @@ const confirmarExclusao = (id) => {
   showModal.value = true;
 };
 
-// NOVO: Funções para mudar de página
 const nextPage = () => {
   if (currentPage.value < totalPages.value) {
     currentPage.value++;
-    window.scrollTo(0, 0); // Opcional: rola para o topo ao mudar de página
+    window.scrollTo(0, 0);
   }
 };
 
 const prevPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--;
-    window.scrollTo(0, 0); // Opcional: rola para o topo ao mudar de página
+    window.scrollTo(0, 0);
   }
 };
 
 const excluirProduto = async () => {
-  // ... (função excluirProduto continua igual)
   const token = authStore.token;
   if (!token) {
     toast.error("Sua sessão expirou. Faça login novamente.");
@@ -241,10 +233,8 @@ const excluirProduto = async () => {
       throw new Error("Falha ao excluir o produto.");
     }
 
-    // Recarrega os produtos para atualizar a paginação corretamente
     await carregarProdutos();
 
-    // Ajusta a página atual se a última página ficar vazia
     if (currentPage.value > totalPages.value) {
       currentPage.value = totalPages.value;
     }
@@ -261,12 +251,11 @@ onMounted(carregarProdutos);
 </script>
 
 <style scoped>
-/* O teu CSS está correto e não precisa de alterações. */
 .meus-produtos-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 40px 20px;
-  min-height: calc(100vh - 80px); /* 80px = altura da navbar */
+  min-height: calc(100vh - 80px);
 }
 
 h1 {
@@ -345,28 +334,23 @@ h1 {
   color: var(--color-primary);
 }
 
-/* --- MUDANÇA NO CSS DA GRELHA --- */
 .produtos-grid {
   display: grid;
-  /* 1 coluna em ecrãs pequenos */
   grid-template-columns: 1fr;
   gap: 1.5rem;
 }
 
-/* Em ecrãs médios (tablets), 2 colunas */
 @media (min-width: 600px) {
   .produtos-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* Em ecrãs grandes (desktop), 3 colunas para o 3x3 */
 @media (min-width: 992px) {
   .produtos-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
-/* --- FIM DA MUDANÇA NO CSS --- */
 
 .produto-card {
   background: var(--color-card-background);
@@ -450,7 +434,6 @@ h1 {
   margin-top: auto;
 }
 
-/* --- Botões Genéricos --- */
 .btn {
   width: 100%;
   border: 2px solid var(--color-primary);
@@ -496,7 +479,6 @@ h1 {
   border-color: #d32f2f;
 }
 
-/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -552,7 +534,6 @@ h1 {
   background-color: var(--color-border);
 }
 
-/* --- NOVO: Estilos da Paginação --- */
 .paginacao-container {
   display: flex;
   justify-content: center;
@@ -568,7 +549,7 @@ h1 {
 }
 .paginacao-btn {
   width: auto;
-  flex: 0 1 140px; /* Não cresce, base de 140px */
+  flex: 0 1 140px;
   padding: 10px 14px;
   font-size: 1.3rem;
   background-color: transparent;
@@ -585,5 +566,92 @@ h1 {
   color: var(--color-text-light);
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+/* Ajustes de Responsividade */
+
+@media (max-width: 768px) {
+  .meus-produtos-container {
+    padding: 30px 15px;
+  }
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  .filtro-select {
+    padding: 10px 14px;
+    font-size: 1.3rem;
+  }
+  .produto-imagem-container {
+    height: 150px;
+  }
+  .produto-info {
+    padding: 1rem;
+  }
+  .produto-info h3 {
+    font-size: 1.6rem;
+  }
+  .preco {
+    font-size: 1.8rem;
+  }
+  .categoria,
+  .estado {
+    font-size: 1.1rem;
+  }
+  .btn {
+    font-size: 1.3rem;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .meus-produtos-container {
+    padding: 20px 10px;
+  }
+  .filtro-select {
+    width: 100%;
+    max-width: 300px;
+  }
+  .produto-imagem-container {
+    height: 120px;
+  }
+  .produto-info h3 {
+    font-size: 1.4rem;
+  }
+  .preco {
+    font-size: 1.6rem;
+  }
+  .acoes {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .paginacao-container {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .paginacao-btn {
+    flex-grow: 1;
+    max-width: 45%;
+    font-size: 1.1rem;
+  }
+  .pagina-info {
+    font-size: 1.2rem;
+    order: -1;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+  .modal {
+    padding: 1.5rem;
+  }
+  .modal h3 {
+    font-size: 1.5rem;
+  }
+  .modal p {
+    font-size: 1.3rem;
+  }
+  .modal-botoes {
+    gap: 0.75rem;
+  }
 }
 </style>

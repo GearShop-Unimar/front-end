@@ -45,7 +45,16 @@
             </li>
             <li>
               <router-link to="/perfil" class="icon-link" aria-label="Perfil">
-                <i class="fa fa-user-circle"></i>
+                <template v-if="userPhoto">
+                  <img
+                    :src="userPhoto"
+                    alt="Foto de perfil"
+                    class="profile-photo"
+                  />
+                </template>
+                <template v-else>
+                  <i class="fa fa-user-circle"></i>
+                </template>
               </router-link>
             </li>
             <li class="welcome-container">
@@ -82,7 +91,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import Carrinho from "@/components/Carrinho.vue";
 import { useAuthStore } from "@/stores/auth";
@@ -91,6 +100,45 @@ import { useThemeStore } from "@/stores/theme";
 const authStore = useAuthStore();
 const themeStore = useThemeStore();
 const router = useRouter();
+
+// Base API URL to resolve relative image paths (useful when backend returns a relative path)
+const API_URL = import.meta.env.VITE_API_URL || "";
+
+// Computed URL for the user's profile photo — follow the same rules used in `Usuario.vue`:
+// - If `user.profilePicture` exists and starts with '/api', prefix with API_URL and remove '/api'
+// - If `user.profilePicture` is an absolute URL, use as-is
+// - If no profilePicture but user.id exists, use `${API_URL}/images/user/{id}` as fallback
+const userPhoto = computed(() => {
+  const u = authStore.user;
+  if (!u) return null;
+
+  const profilePicture = u.profilePicture;
+
+  if (profilePicture) {
+    // absolute URL
+    if (/^https?:\/\//i.test(profilePicture)) return profilePicture;
+
+    // backend returns a path starting with /api — mirror Usuario.vue behavior
+    if (profilePicture.startsWith("/api")) {
+      // remove '/api' and prefix API_URL
+      return API_URL
+        ? `${API_URL}${profilePicture.replace(/^\/api/, "")}`
+        : profilePicture.replace(/^\/api/, "");
+    }
+
+    // other relative path — try to prefix with API_URL
+    return API_URL
+      ? `${API_URL.replace(/\/$/, "")}/${profilePicture.replace(/^\//, "")}`
+      : profilePicture;
+  }
+
+  // fallback: use images endpoint by user id (same as in Usuario.vue.resetForm)
+  if (u.id) {
+    return `${API_URL.replace(/\/$/, "")}/images/user/${u.id}`;
+  }
+
+  return null;
+});
 
 const isCartOpen = ref(false);
 const termoBusca = ref("");
@@ -129,12 +177,13 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* Seu CSS existente */
 .navbar {
   background-color: var(--color-navbar-background);
   padding: 0 20px;
   position: sticky;
   width: 100%;
-  top: 0;
+top: 0;
   z-index: 1000;
   height: 80px;
   transition: height 0.4s ease, box-shadow 0.4s ease, background-color 0.3s ease;
@@ -308,6 +357,14 @@ onUnmounted(() => {
   transform: scale(1.1);
 }
 
+.profile-photo {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: inline-block;
+}
+
 .welcome-container {
   display: flex;
   align-items: center;
@@ -379,6 +436,8 @@ onUnmounted(() => {
   transform: translateY(-9px) rotate(-45deg);
 }
 
+/* --- REGRAS DE RESPONSIVIDADE (JÁ EXISTENTES) --- */
+
 @media (max-width: 1200px) {
   .nav-menu {
     position: fixed;
@@ -420,6 +479,79 @@ onUnmounted(() => {
   }
 }
 
+/* --- REGRAS DE RESPONSIVIDADE (NOVAS ADIÇÕES PARA SMARTPHONES) --- */
+
+@media (max-width: 768px) {
+  /* Diminui o tamanho do logo para telas menores */
+  .navbar-logo {
+    font-size: 2rem;
+  }
+
+  /* Reduz o padding horizontal da navbar */
+  .navbar {
+    padding: 0 15px;
+  }
+
+  /* Ajusta os tamanhos de fonte dos links dentro do menu (que já abre a 1200px) */
+  .nav-links li a,
+  .auth-links li a,
+  .welcome-message,
+  .logout-btn,
+  .btn {
+    font-size: 1.4rem; /* Um pouco menor para mobile */
+  }
+
+  /* Ajusta o tamanho da barra de pesquisa dentro do menu */
+  .search-bar input {
+    width: 150px; /* Largura inicial menor */
+    font-size: 1.4rem;
+  }
+  .search-bar input:focus {
+    width: 200px; /* Largura de foco ajustada */
+  }
+
+  /* Ajusta o padding dos botões */
+  .btn {
+    padding: 8px 18px;
+  }
+
+  /* Ajusta os ícones e a foto de perfil */
+  .icon-link,
+  .theme-toggle-btn {
+    font-size: 1.4rem;
+  }
+  .profile-photo {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (max-width: 600px) {
+  .navbar-logo {
+    font-size: 1.8rem; /* Redução adicional do logo */
+  }
+
+  /* No menu aberto, a barra de pesquisa precisa de mais largura */
+  .search-container {
+    width: 80%; /* Garante que o contêiner de busca ocupe mais espaço no menu */
+  }
+
+  .nav-menu.open .search-bar input {
+    width: 90%; /* Ocupa quase a largura total do menu deslizante */
+    max-width: 250px;
+  }
+  .nav-menu.open .search-bar input:focus {
+    width: 90%;
+  }
+
+  /* Garantir que o contêiner do menu se ajuste bem */
+  .nav-menu {
+    width: 100%; /* Ocupa toda a tela em larguras muito pequenas */
+    max-width: none;
+  }
+}
+
+/* Sua media query original para 480px, mantida para 100% de largura */
 @media (max-width: 480px) {
   .nav-menu {
     width: 100%;

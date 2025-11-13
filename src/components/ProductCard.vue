@@ -57,14 +57,12 @@ const router = useRouter();
 const userStore = useUserStore();
 const toast = useToast();
 
-// Esta 'computed' vai ler o 'averageRating' que vem da API
 const produtoRating = computed(() => {
   return props.produto.averageRating
     ? parseFloat(props.produto.averageRating)
     : 0;
 });
 
-// Esta 'computed' vai ler o 'reviewCount' que vem da API
 const reviewCount = computed(() => {
   return props.produto.reviewCount ? parseInt(props.produto.reviewCount) : 0;
 });
@@ -136,21 +134,21 @@ const adicionarAoCarrinho = () => {
   font-size: 1.5rem;
   font-weight: bold;
   color: var(--color-primary);
-  margin: 0.5rem 0; /* Ajustado para deixar espaço para as estrelas */
+  margin: 0.5rem 0;
 }
 
 .avaliacao-estrelas {
   display: flex;
   align-items: center;
-  margin-bottom: 10px; /* Espaço abaixo das estrelas */
+  margin-bottom: 10px;
 }
 .estrela {
-  color: var(--color-gray-light); /* Cor da estrela vazia */
+  color: var(--color-gray-light);
   font-size: 1.2rem;
   margin-right: 2px;
 }
 .estrela-preenchida {
-  color: gold; /* Cor da estrela preenchida */
+  color: gold;
 }
 .numero-avaliacoes {
   font-size: 0.9rem;
@@ -194,5 +192,58 @@ const adicionarAoCarrinho = () => {
 }
 .btn-carrinho:hover {
   background-color: var(--color-primary-hover);
+}
+
+@media (max-width: 768px) {
+  .produto-info h3 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+  .preco {
+    font-size: 1.4rem;
+  }
+  .estrela {
+    font-size: 1.1rem;
+  }
+  .numero-avaliacoes,
+  .estado,
+  .descricao {
+    font-size: 0.85rem;
+  }
+  .badge-vendedor {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+  }
+  .btn-carrinho {
+    padding: 7px 14px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .imagem-container {
+    height: 160px;
+  }
+  .produto-info {
+    padding: 12px;
+  }
+  .produto-info h3 {
+    font-size: 1rem;
+  }
+  .preco {
+    font-size: 1.3rem;
+  }
+  .estrela {
+    font-size: 1rem;
+  }
+  .numero-avaliacoes,
+  .estado,
+  .descricao {
+    font-size: 0.8rem;
+  }
+  .btn-carrinho {
+    width: 100%;
+    margin-top: 8px;
+  }
 }
 </style>
