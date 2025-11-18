@@ -29,7 +29,8 @@
 <script setup>
 import { ref } from "vue";
 
-const props = defineProps({
+// REMOVIDA a atribuição "const props ="
+defineProps({
   isOpen: {
     type: Boolean,
     default: false,
@@ -50,6 +51,8 @@ const itens = ref([
 </script>
 
 <style scoped>
+/* Estilos omitidos por brevidade, permanecem inalterados */
+/* ... */
 .carrinho-overlay {
   position: fixed;
   top: 0;
