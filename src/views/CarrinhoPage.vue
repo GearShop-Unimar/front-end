@@ -243,9 +243,66 @@ h2 {
   opacity: 0.6;
 }
 
+/* RESPONSIVIDADE */
+
 @media (max-width: 992px) {
+  .carrinho-page {
+    padding: 40px 15px;
+  }
   .carrinho-container {
     grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .resumo-carrinho {
+    /* O resumo é movido para o topo no grid vertical para melhor visibilidade em mobile */
+    order: -1;
+    position: static;
+    top: auto;
+  }
+  .lista-itens {
+    order: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  h2 {
+    font-size: 1.6rem;
+    margin-bottom: 20px;
+  }
+  .lista-itens,
+  .resumo-carrinho {
+    padding: 20px;
+  }
+  .item-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px 20px 15px 15px;
+  }
+  .item-imagem {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 10px;
+  }
+  .item-info {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .item-nome {
+    font-size: 1rem;
+  }
+  .item-preco {
+    font-size: 1.1rem;
+  }
+  .btn-remover {
+    top: 5px;
+    right: 5px;
+    font-size: 1.2rem;
+  }
+  .btn-finalizar {
+    font-size: 1.1rem;
+    padding: 14px;
   }
 }
 </style>

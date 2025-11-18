@@ -45,7 +45,7 @@
             <div class="news-meta">
               <span class="news-source">
                 <i class="bi bi-building"></i>
-                {{ article.source?.name || 'Fonte não informada' }}
+                {{ article.source?.name || "Fonte não informada" }}
               </span>
               <span class="news-date">
                 <i class="bi bi-calendar"></i>
@@ -181,8 +181,12 @@ onMounted(loadNews);
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error-container i {
@@ -212,8 +216,16 @@ onMounted(loadNews);
   box-shadow: 0 8px 30px var(--color-card-shadow);
 }
 
-.news-image { position: relative; height: 200px; overflow: hidden; }
-.news-image img { width: 100%; height: 100%; object-fit: cover; }
+.news-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+.news-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
 .news-category {
   position: absolute;
@@ -230,17 +242,100 @@ onMounted(loadNews);
   gap: 5px;
 }
 
-.news-content { padding: 20px; }
-.news-title { font-size: 1.25rem; font-weight: 700; color: var(--color-heading); margin-bottom: 10px; }
-.news-description { font-size: 1rem; color: var(--color-text); line-height: 1.6; margin-bottom: 18px; }
-.news-meta { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--color-text); }
-.news-footer { display: flex; justify-content: flex-end; margin-top: 12px; }
-.read-more { color: var(--color-primary); font-weight: 600; }
+.news-content {
+  padding: 20px;
+}
+.news-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-heading);
+  margin-bottom: 10px;
+}
+.news-description {
+  font-size: 1rem;
+  color: var(--color-text);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+.news-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+.news-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+.read-more {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+@media (max-width: 992px) {
+  .news-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+  }
+}
 
 @media (max-width: 768px) {
-  .news-section { padding: 60px 15px; }
-  .section-title { font-size: 2rem; }
+  .news-section {
+    padding: 60px 15px;
+  }
+  .section-title {
+    font-size: 2rem;
+  }
+  .section-subtitle {
+    font-size: 1rem;
+    margin-bottom: 40px;
+  }
+  .news-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .news-image {
+    height: 180px;
+  }
+  .news-title {
+    font-size: 1.15rem;
+  }
+  .news-description {
+    font-size: 0.95rem;
+  }
+  .news-meta {
+    flex-direction: column;
+    gap: 5px;
+  }
+  .news-source {
+    order: 2;
+  }
+  .news-date {
+    order: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .news-section {
+    padding: 40px 10px;
+  }
+  .section-title {
+    font-size: 1.8rem;
+    gap: 10px;
+  }
+  .section-title i {
+    font-size: 1.8rem;
+  }
+  .news-image {
+    height: 160px;
+  }
+  .news-category {
+    font-size: 0.8rem;
+    padding: 4px 10px;
+  }
+  .news-content {
+    padding: 15px;
+  }
 }
 </style>
-
-

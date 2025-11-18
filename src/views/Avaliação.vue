@@ -1,6 +1,6 @@
 <template>
-  <div class="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-6">
-    <h2 class="text-2xl font-bold mb-4 text-gray-800">
+  <div class="max-w-3xl mx-auto p-4 sm:p-6 bg-white shadow-lg rounded-lg mt-6">
+    <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-800">
       Avaliações e Comentários
     </h2>
 
@@ -9,7 +9,7 @@
         <span v-for="star in 5" :key="star" class="text-yellow-400">
           <svg
             v-if="star <= averageRating"
-            class="w-6 h-6"
+            class="w-5 h-5 sm:w-6 sm:h-6"
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -19,7 +19,7 @@
           </svg>
           <svg
             v-else
-            class="w-6 h-6 text-gray-300"
+            class="w-5 h-5 sm:w-6 sm:h-6 text-gray-300"
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -29,30 +29,32 @@
           </svg>
         </span>
       </div>
-      <span class="ml-2 text-gray-600 font-medium"
+      <span class="ml-2 text-gray-600 text-sm sm:text-base font-medium"
         >{{ averageRating.toFixed(1) }} de 5</span
       >
     </div>
 
     <button
       @click="showModal = true"
-      class="bg-yellow-400 text-white px-6 py-2 rounded-lg hover:bg-yellow-500 transition mb-6"
+      class="bg-yellow-400 text-white px-4 py-2 sm:px-6 sm:py-2 rounded-lg hover:bg-yellow-500 transition mb-6 text-sm sm:text-base w-full sm:w-auto"
     >
       Avaliar Produto
     </button>
 
     <div
       v-if="showModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
     >
       <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative">
         <button
           @click="showModal = false"
-          class="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
+          class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl"
         >
           &times;
         </button>
-        <h3 class="text-xl font-semibold mb-4">Deixe sua Avaliação</h3>
+        <h3 class="text-lg sm:text-xl font-semibold mb-4">
+          Deixe sua Avaliação
+        </h3>
         <div class="flex mb-4">
           <button
             v-for="star in 5"
@@ -65,7 +67,7 @@
               :class="
                 star <= newReview.rating ? 'text-yellow-400' : 'text-gray-300'
               "
-              class="w-8 h-8"
+              class="w-7 h-7 sm:w-8 sm:h-8"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -78,12 +80,12 @@
         <textarea
           v-model="newReview.comment"
           placeholder="Seu comentário..."
-          class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-yellow-400 focus:outline-none"
+          class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-yellow-400 focus:outline-none text-sm"
           rows="4"
         ></textarea>
         <button
           @click="submitReview"
-          class="bg-yellow-400 text-white px-6 py-2 rounded-lg hover:bg-yellow-500 transition"
+          class="bg-yellow-400 text-white px-6 py-2 rounded-lg hover:bg-yellow-500 transition w-full text-sm sm:text-base"
         >
           Enviar Avaliação
         </button>
@@ -97,12 +99,14 @@
         class="border-t border-gray-200 py-4"
       >
         <div class="flex items-center justify-between mb-1">
-          <span class="font-medium text-gray-700">{{ review.userName }}</span>
+          <span class="font-medium text-gray-700 text-base">{{
+            review.userName
+          }}</span>
           <div class="flex">
             <svg
               v-for="star in 5"
               :key="star"
-              class="w-5 h-5"
+              class="w-4 h-4 sm:w-5 sm:h-5"
               :class="
                 star <= review.rating ? 'text-yellow-400' : 'text-gray-300'
               "
@@ -115,8 +119,10 @@
             </svg>
           </div>
         </div>
-        <p class="text-gray-600 mb-2">{{ review.comment }}</p>
-        <div class="flex items-center space-x-4 text-gray-500 text-sm">
+        <p class="text-gray-600 text-sm mb-2">{{ review.comment }}</p>
+        <div
+          class="flex items-center space-x-4 text-gray-500 text-xs sm:text-sm"
+        >
           <button @click="vote(review.id, 'up')">
             👍 {{ review.upvotes }}
           </button>
@@ -126,7 +132,7 @@
         </div>
       </div>
     </div>
-    <div v-else class="text-gray-500">
+    <div v-else class="text-gray-500 text-sm">
       Nenhum comentário ainda. Seja o primeiro!
     </div>
   </div>

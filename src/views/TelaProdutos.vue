@@ -397,9 +397,14 @@ export default {
   font-weight: 500;
   color: var(--color-text);
 }
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
   .produtos-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 1200px) {
+  .produtos-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 @media (max-width: 992px) {
@@ -414,10 +419,46 @@ export default {
   .produtos-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+  .sidebar-titulo,
+  .filtro-grupo h4 {
+    font-size: 1.4rem;
+  }
+  .lista-categorias li {
+    font-size: 1rem;
+  }
 }
 @media (max-width: 600px) {
+  .pagina-produtos {
+    padding: 20px 10px;
+  }
   .produtos-grid {
     grid-template-columns: 1fr;
+  }
+  .sidebar {
+    padding: 15px;
+  }
+  .filtro-preco-inputs {
+    flex-direction: column;
+    gap: 5px;
+  }
+  .filtro-preco-inputs input {
+    width: 100%;
+  }
+  .paginacao-container {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .pagina-btn {
+    flex-grow: 1;
+    font-size: 0.95rem;
+    padding: 8px 15px;
+  }
+  .pagina-info {
+    width: 100%;
+    text-align: center;
+  }
+  .titulo-secao {
+    font-size: 1.6rem;
   }
 }
 </style>

@@ -530,4 +530,99 @@ onMounted(resetForm);
   background-color: var(--color-primary);
   color: white;
 }
+
+@media (max-width: 992px) {
+  .profile-page-container {
+    flex-direction: column;
+    padding: 30px 15px;
+  }
+  .profile-nav {
+    flex: none;
+    width: 100%;
+    padding: 15px 10px;
+  }
+  .profile-nav ul {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+  .profile-nav li {
+    flex: 1 1 45%;
+    min-width: 150px;
+  }
+  .nav-link {
+    justify-content: center;
+    padding: 12px;
+    font-size: 1.4rem;
+  }
+  .profile-content {
+    padding: 30px;
+  }
+  .form-row {
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  .form-group {
+    flex: 1 1 calc(50% - 10px);
+  }
+  .form-group.small-numero,
+  .form-group.small-estado {
+    flex: 1 1 auto;
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 600px) {
+  .profile-page-container {
+    padding: 15px 10px;
+  }
+  .profile-content {
+    padding: 20px 15px;
+  }
+  .profile-content h1 {
+    font-size: 2rem;
+  }
+  .profile-subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+  }
+  .profile-nav ul {
+    gap: 5px;
+  }
+  .profile-nav li {
+    flex: 1 1 100%;
+  }
+  .nav-link {
+    font-size: 1.3rem;
+  }
+  .avatar-upload-section {
+    flex-direction: column;
+    align-items: flex-start;
+    padding-bottom: 20px;
+  }
+  .avatar-controls {
+    text-align: left;
+    width: 100%;
+  }
+  .form-group {
+    flex: 1 1 100%;
+  }
+  .form-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .form-group.small-numero,
+  .form-group.small-estado {
+    min-width: auto;
+  }
+  .form-group input {
+    font-size: 1.4rem;
+  }
+  .form-actions {
+    justify-content: center;
+  }
+  .form-actions .btn-primary {
+    width: 100%;
+  }
+}
 </style>

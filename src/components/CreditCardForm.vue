@@ -148,8 +148,7 @@ const formatarCPF = () => {
 
 const validarNumeroCartao = (num) => /^\d{16}$/.test(num.replace(/\s/g, ""));
 const validarCVV = (cvv) => /^\d{3,4}$/.test(cvv);
-const validarCPF = (cpf) => /^\d{3}\.\d{3}\.\d{3}\d{2}$/.test(cpf);
-
+const validarCPF = (cpf) => /^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(cpf);
 const validarValidade = (mes, ano) => {
   if (!/^\d{2}$/.test(mes) || !/^\d{2}$/.test(ano)) return false;
   const mesNum = parseInt(mes);
@@ -279,5 +278,29 @@ button[disabled] {
   margin-bottom: 15px;
   font-size: 14px;
   border: 1px solid #ebccd1;
+}
+
+@media (max-width: 600px) {
+  .linha {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .linha .form-group {
+    flex: 1 1 30%;
+  }
+  .form-pagamento input {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 400px) {
+  .linha {
+    flex-direction: column;
+    gap: 15px;
+  }
+  .linha .form-group {
+    flex: 1 1 100%;
+  }
 }
 </style>

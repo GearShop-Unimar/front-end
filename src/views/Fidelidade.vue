@@ -26,7 +26,9 @@
     <section v-else-if="error" class="state-card error">
       <h2>Não foi possível carregar seu plano de fidelidade</h2>
       <p>{{ error }}</p>
-      <button @click="retryLoad" class="btn btn-primary">Tentar novamente</button>
+      <button @click="retryLoad" class="btn btn-primary">
+        Tentar novamente
+      </button>
     </section>
 
     <section v-else-if="!activeSubscription" class="state-card empty">
@@ -108,7 +110,9 @@
           <h2>Gerenciamento do plano</h2>
         </div>
         <div class="actions-row">
-          <button class="btn" @click="goToPayment">Atualizar forma de pagamento</button>
+          <button class="btn" @click="goToPayment">
+            Atualizar forma de pagamento
+          </button>
           <button
             v-if="activeSubscription.status === 1"
             class="btn btn-warning"
@@ -123,7 +127,9 @@
           >
             Retomar plano
           </button>
-          <button class="btn btn-danger" @click="cancelPlan">Cancelar plano</button>
+          <button class="btn btn-danger" @click="cancelPlan">
+            Cancelar plano
+          </button>
         </div>
       </section>
 
@@ -133,7 +139,9 @@
           <span class="tag">
             Atualizado
             {{
-              formatDate(activeSubscription.updatedAt || activeSubscription.createdAt)
+              formatDate(
+                activeSubscription.updatedAt || activeSubscription.createdAt
+              )
             }}
           </span>
         </div>
@@ -155,7 +163,9 @@
         <dl>
           <div class="detail-row">
             <dt>Produto vinculado</dt>
-            <dd>{{ activeSubscription.product?.name || "Plano personalizado" }}</dd>
+            <dd>
+              {{ activeSubscription.product?.name || "Plano personalizado" }}
+            </dd>
           </div>
           <div class="detail-row">
             <dt>Status</dt>
@@ -182,7 +192,9 @@
           </div>
           <div class="detail-row">
             <dt>Observações</dt>
-            <dd>{{ activeSubscription.notes || "Sem observações adicionais." }}</dd>
+            <dd>
+              {{ activeSubscription.notes || "Sem observações adicionais." }}
+            </dd>
           </div>
         </dl>
       </section>
@@ -319,7 +331,9 @@ const planName = computed(() => {
 
 const activeSubscription = computed(() => {
   if (!subscriptions.value?.length) return null;
-  const active = subscriptions.value.find((subscription) => subscription.status === 1);
+  const active = subscriptions.value.find(
+    (subscription) => subscription.status === 1
+  );
   return active || subscriptions.value[0];
 });
 
@@ -440,13 +454,18 @@ const getMockLoyaltyData = () => {
       id: 1,
       userId: 1,
       status: 1, // Ativa
-      monthlyAmount: 49.90,
-      startDate: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 dias atrás
+      monthlyAmount: 49.9,
+      startDate: new Date(
+        now.getTime() - 30 * 24 * 60 * 60 * 1000
+      ).toISOString(), // 30 dias atrás
       endDate: null, // Plano contínuo
       nextPaymentDate: nextMonth.toISOString(),
-      createdAt: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(
+        now.getTime() - 30 * 24 * 60 * 60 * 1000
+      ).toISOString(),
       updatedAt: new Date().toISOString(),
-      notes: "Plano Premium\n• Desconto de 15% em todas as compras\n• Frete grátis para pedidos acima de R$ 100\n• Suporte prioritário 24/7\n• Acesso antecipado a promoções",
+      notes:
+        "Plano Premium\n• Desconto de 15% em todas as compras\n• Frete grátis para pedidos acima de R$ 100\n• Suporte prioritário 24/7\n• Acesso antecipado a promoções",
       product: {
         id: 1,
         name: "Plano Premium GearShop",
@@ -458,20 +477,28 @@ const getMockLoyaltyData = () => {
     {
       id: 1,
       subscriptionId: 1,
-      amount: 49.90,
+      amount: 49.9,
       status: 3, // Aprovado
       paymentType: 1, // Cartão de crédito
-      createdAt: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString(), // 15 dias atrás
-      processedAt: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(
+        now.getTime() - 15 * 24 * 60 * 60 * 1000
+      ).toISOString(), // 15 dias atrás
+      processedAt: new Date(
+        now.getTime() - 15 * 24 * 60 * 60 * 1000
+      ).toISOString(),
     },
     {
       id: 2,
       subscriptionId: 1,
-      amount: 49.90,
+      amount: 49.9,
       status: 3, // Aprovado
       paymentType: 1, // Cartão de crédito
-      createdAt: new Date(now.getTime() - 45 * 24 * 60 * 60 * 1000).toISOString(), // 45 dias atrás
-      processedAt: new Date(now.getTime() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(
+        now.getTime() - 45 * 24 * 60 * 60 * 1000
+      ).toISOString(), // 45 dias atrás
+      processedAt: new Date(
+        now.getTime() - 45 * 24 * 60 * 60 * 1000
+      ).toISOString(),
     },
   ];
 
@@ -532,7 +559,9 @@ const loadLoyaltyData = async () => {
         payments.value = mockData.payments;
         toast.info("API não disponível. Exibindo dados de exemplo.");
       } else {
-        throw new Error("Não foi possível carregar as informações da assinatura.");
+        throw new Error(
+          "Não foi possível carregar as informações da assinatura."
+        );
       }
     } else {
       subscriptions.value = await subscriptionsResponse.json();
@@ -546,9 +575,13 @@ const loadLoyaltyData = async () => {
     }
   } catch (err) {
     console.error("Erro ao carregar dados de fidelidade:", err);
-    
+
     // Em desenvolvimento, se houver erro de rede, usa dados mock
-    if (import.meta.env.DEV && (err.message.includes("Failed to fetch") || err.message.includes("NetworkError"))) {
+    if (
+      import.meta.env.DEV &&
+      (err.message.includes("Failed to fetch") ||
+        err.message.includes("NetworkError"))
+    ) {
       console.warn("⚠️ Erro de rede. Usando dados mockados...");
       const mockData = getMockLoyaltyData();
       subscriptions.value = mockData.subscriptions;
@@ -586,7 +619,9 @@ const goToPayment = () => {
 
 const mutateSubscriptionStatusLocally = (newStatus) => {
   if (!subscriptions.value?.length) return;
-  const sub = subscriptions.value.find((s) => s.id === activeSubscription.value.id);
+  const sub = subscriptions.value.find(
+    (s) => s.id === activeSubscription.value.id
+  );
   if (sub) {
     sub.status = newStatus;
     sub.updatedAt = new Date().toISOString();
@@ -1170,4 +1205,3 @@ const cancelPlan = async () => {
   }
 }
 </style>
-

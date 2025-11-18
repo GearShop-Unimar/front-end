@@ -209,6 +209,8 @@ const handlePayment = async () => {
   flex-direction: column;
   color: var(--color-text);
   opacity: 0.5;
+  flex: 0 1 auto;
+  text-align: center;
 }
 .step-number {
   width: 30px;
@@ -225,6 +227,7 @@ const handlePayment = async () => {
   margin-top: 8px;
   font-size: 0.9rem;
   font-weight: 500;
+  white-space: nowrap;
 }
 .step.active .step-number {
   border-color: var(--color-primary);
@@ -281,11 +284,15 @@ const handlePayment = async () => {
 .produto-revisao-item .info {
   display: flex;
   flex-direction: column;
+  flex-grow: 1;
 }
 .produto-revisao-item .nome {
   font-weight: 600;
   color: var(--color-heading);
   font-size: 0.9rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .produto-revisao-item .preco {
   color: var(--color-text);
@@ -370,6 +377,8 @@ button:disabled {
 .qr-code {
   margin: 20px auto;
   display: block;
+  max-width: 100%;
+  height: auto;
 }
 .success-step {
   text-align: center;
@@ -383,5 +392,81 @@ button:disabled {
   font-size: 1.1rem;
   color: var(--color-text);
   margin-bottom: 30px;
+}
+
+/* RESPONSIVIDADE */
+
+@media (max-width: 768px) {
+  .pagamento-page {
+    padding: 30px 10px;
+    align-items: stretch;
+  }
+  .pagamento-card {
+    padding: 20px;
+  }
+  .stepper {
+    margin-bottom: 20px;
+    padding: 0 5px;
+  }
+  .step-number {
+    width: 25px;
+    height: 25px;
+    font-size: 0.9rem;
+  }
+  .step-label {
+    font-size: 0.8rem;
+    margin-top: 5px;
+  }
+  .step-line {
+    margin-bottom: 20px;
+  }
+  .step-content h2 {
+    font-size: 1.5rem;
+  }
+  .produtos-revisao-grid {
+    grid-template-columns: 1fr;
+    max-height: 250px;
+  }
+  .produto-revisao-item {
+    padding: 8px;
+  }
+  .total-container {
+    font-size: 1.3rem;
+  }
+  .method {
+    padding: 15px;
+  }
+  .navigation-buttons button,
+  .navigation-buttons a {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+  .success-step h2 {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pagamento-card {
+    padding: 15px;
+  }
+  .stepper {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: initial;
+    padding-bottom: 10px;
+  }
+  .step {
+    min-width: 80px;
+  }
+  .step-line {
+    margin: 0 5px;
+  }
+  .produto-revisao-item .nome {
+    white-space: initial;
+    max-width: 100%;
+    text-overflow: clip;
+    word-break: break-word;
+  }
 }
 </style>

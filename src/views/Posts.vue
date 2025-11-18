@@ -105,9 +105,7 @@
         </article>
       </div>
     </div>
-    {/* Fim de posts-page-content */}
   </div>
-  {/* Fim de posts-page-layout */}
 </template>
 
 <script setup>
@@ -119,7 +117,7 @@ import {
   toggleLike as apiToggleLike,
 } from "@/services/postService";
 import { baseURL } from "@/services/apiService";
-import Sidebar from "@/components/Sidebar.vue"; // 4. Importar Sidebar aqui
+import Sidebar from "@/components/Sidebar.vue";
 
 const authStore = useAuthStore();
 const newPostText = ref("");
@@ -210,33 +208,25 @@ const formatTimestamp = (dateString) => {
 </script>
 
 <style scoped>
-/* 5. Adicionar estilos para o layout DENTRO desta página */
 .posts-page-layout {
   display: grid;
-  grid-template-columns: auto 1fr; /* Coluna da Sidebar + Coluna do Conteúdo */
-  /* Remove margem/padding da div raiz anterior se houver */
-  max-width: none; /* Permite ocupar a largura definida no App.vue */
+  grid-template-columns: auto 1fr;
+  max-width: none;
   width: 100%;
   margin: 0;
   padding: 0;
 }
 
 .posts-page-content {
-  /* Os estilos que antes eram de .posts-page-container agora aplicam-se aqui */
-  max-width: 800px; /* Mantém a largura do feed */
+  max-width: 800px;
   margin: 40px auto;
   padding: 0 20px;
-  width: 100%; /* Garante que ocupa a coluna do grid */
-  border-left: 1px solid var(--color-border); /* Adiciona borda como no Twitter */
+  width: 100%;
+  border-left: 1px solid var(--color-border);
   border-right: 1px solid var(--color-border);
 }
 
-/* O resto dos estilos permanece igual, apenas ajuste nomes se necessário */
-/* Ex: Renomeei .create-post-content para .create-post-content-inner */
-/* para evitar conflito com a classe do layout pai */
-
 .create-post-box {
-  /* width: 96%; */ /* Pode remover se .posts-page-content já limita a largura */
   background-color: var(--color-navbar-background);
   border-radius: 8px;
   border: 1px solid var(--color-border);
@@ -253,15 +243,12 @@ const formatTimestamp = (dateString) => {
   object-fit: cover;
 }
 .create-post-content-inner {
-  /* Nome ajustado */
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 .create-post-content-inner textarea {
-  /* Seletor ajustado */
-  /* width: 95%; */ /* Pode remover */
   background-color: var(--color-background-mute);
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -275,7 +262,6 @@ const formatTimestamp = (dateString) => {
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 .create-post-content-inner textarea:focus {
-  /* Seletor ajustado */
   border-color: var(--color-primary);
   background-color: var(--color-background);
 }
@@ -322,10 +308,8 @@ const formatTimestamp = (dateString) => {
   display: flex;
   flex-direction: column;
   gap: 25px;
-  /* width: 100%; */ /* Pode remover */
 }
 .post-item {
-  /* width: 100%; */ /* Pode remover */
   background-color: var(--color-navbar-background);
   border-radius: 8px;
   border: 1px solid var(--color-border);
@@ -455,20 +439,77 @@ const formatTimestamp = (dateString) => {
   line-height: 1;
 }
 
-/* Media query para esconder a sidebar em telas pequenas */
 @media (max-width: 1000px) {
   .posts-page-layout {
-    grid-template-columns: 1fr; /* Coluna única */
+    grid-template-columns: 1fr;
   }
   .posts-page-layout > .sidebar {
-    /* Seleciona a Sidebar dentro do layout */
-    display: none; /* Esconde a sidebar */
+    display: none;
   }
   .posts-page-content {
-    border-left: none; /* Remove bordas */
+    border-left: none;
     border-right: none;
-    max-width: 100%; /* Opcional: Ocupa toda a largura */
-    margin: 20px auto; /* Reduz margem */
+    max-width: 100%;
+    margin: 20px auto;
+    padding: 0 15px;
+  }
+}
+
+@media (max-width: 600px) {
+  .posts-page-content {
+    margin: 10px auto;
+    padding: 0 10px;
+  }
+  .create-post-box {
+    padding: 15px;
+    gap: 10px;
+  }
+  .create-post-avatar {
+    width: 40px;
+    height: 40px;
+  }
+  .create-post-content-inner textarea {
+    font-size: 1.3rem;
+    padding: 10px;
+  }
+  .file-input-label {
+    font-size: 1.8rem;
+  }
+  .btn-primary {
+    font-size: 1.3rem;
+    padding: 8px 18px;
+  }
+  .feed-title {
+    font-size: 2rem;
+  }
+  .post-header {
+    padding: 15px 15px 10px 15px;
+  }
+  .post-avatar {
+    width: 40px;
+    height: 40px;
+  }
+  .author-name {
+    font-size: 1.5rem;
+  }
+  .post-timestamp {
+    font-size: 1.2rem;
+  }
+  .post-body {
+    padding: 0 15px 15px 15px;
+  }
+  .post-body p {
+    font-size: 1.4rem;
+  }
+  .action-btn {
+    font-size: 1.2rem;
+    padding: 8px 10px;
+    gap: 5px;
+  }
+  .remove-image-btn {
+    width: 20px;
+    height: 20px;
+    font-size: 1.2rem;
   }
 }
 </style>

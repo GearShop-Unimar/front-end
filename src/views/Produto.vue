@@ -178,7 +178,6 @@ const carregarProduto = async () => {
   }
 };
 
-// --- Computeds ---
 const produtoId = computed(() => route.params.id);
 const produto = computed(() => productStore.products[produtoId.value]);
 const reviews = computed(() => produto.value?.reviews ?? []);
@@ -192,28 +191,24 @@ const minhaAvaliacaoExistente = computed(() => {
   return reviews.value.find((r) => r.author.id === authStore.user?.id);
 });
 
-// Helper computed para o vendedor
 const vendedor = computed(() => {
   if (!produto.value?.sellerId) return null;
   return userStore.users[produto.value.sellerId];
 });
 
-// Usa o helper 'vendedor'
 const vendedorName = computed(() => {
   if (!vendedor.value) return "Vendedor desconhecido";
   return vendedor.value ? vendedor.value.name : "Carregando vendedor...";
 });
 
-// Computed para a imagem do vendedor
 const vendedorImageUrl = computed(() => {
   if (
     !vendedor.value ||
     !vendedor.value.profilePictureData ||
     !vendedor.value.profilePictureMimeType
   ) {
-    return null; // Sem imagem
+    return null;
   }
-  // Constrói a Data URL a partir dos dados Base64
   return `data:${vendedor.value.profilePictureMimeType};base64,${vendedor.value.profilePictureData}`;
 });
 
@@ -221,7 +216,6 @@ const adicionarAoCarrinho = () => {
   mostrarPopup.value = true;
 };
 
-// ... (resto dos métodos: comprarAgora, continuarComprando, irParaCarrinho, setHoverAvaliacao, resetHoverAvaliacao, submeterAvaliacao, formatarData) ...
 const comprarAgora = () => {
   router.push("/pagamento");
 };
@@ -271,19 +265,18 @@ const formatarData = (dateString) => {
   const options = { day: "2-digit", month: "2-digit", year: "numeric" };
   return new Date(dateString).toLocaleDateString("pt-BR", options);
 };
-// --- FIM dos outros métodos ---
 
 onMounted(carregarProduto);
 </script>
 
 <style scoped>
 .pagina-produto {
+  position: relative;
   padding: 60px 20px;
   background-color: var(--color-background-soft);
   min-height: 80vh;
 }
 
-/* ... (estilos .produto-container, .imagem-container, etc. continuam iguais) ... */
 .produto-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -342,9 +335,6 @@ onMounted(carregarProduto);
   margin-bottom: 10px;
 }
 
-/* --- ESTILOS ALTERADOS --- */
-
-/* Secção de avaliação sem borda/fundo */
 .avaliacao-input-container {
   padding-top: 10px;
   margin-bottom: 20px;
@@ -394,7 +384,6 @@ onMounted(carregarProduto);
   cursor: pointer;
 }
 
-/* ... (estilos .descricao-produto continuam iguais) ... */
 .descricao-produto {
   margin-top: 20px;
   margin-bottom: 20px;
@@ -409,12 +398,7 @@ onMounted(carregarProduto);
   line-height: 1.7;
 }
 
-/* Bloco do vendedor sem borda/fundo */
 .vendedor-info-bloco {
-  /* background-color: var(--color-background-soft); */ /* REMOVIDO */
-  /* border: 1px solid var(--color-border); */ /* REMOVIDO */
-  /* border-radius: 10px; */ /* REMOVIDO */
-  /* padding: 15px; */ /* REMOVIDO */
   margin-bottom: 20px;
 }
 
@@ -424,34 +408,30 @@ onMounted(carregarProduto);
   gap: 15px;
 }
 
-/* Estilos para a imagem do vendedor */
 .vendedor-imagem-container {
   width: 40px;
   height: 40px;
-  border-radius: 50%; /* Torna redondo */
+  border-radius: 50%;
   overflow: hidden;
-  background-color: var(--color-background-mute); /* Fundo para o fallback */
+  background-color: var(--color-background-mute);
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Adiciona uma borda fina se quiser */
   border: 2px solid var(--color-border);
 }
 
 .vendedor-imagem {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Garante que a imagem preencha o círculo */
+  object-fit: cover;
 }
 
 .vendedor-icone-fallback {
-  font-size: 2.2rem; /* Tamanho do ícone */
-  color: var(--color-primary); /* Cor original do ícone */
-  /* Ajusta o alinhamento do ícone se necessário */
+  font-size: 2.2rem;
+  color: var(--color-primary);
   line-height: 1;
   margin-top: 2px;
 }
-/* FIM DOS ESTILOS NOVOS */
 
 .vendedor-nome {
   font-size: 16px;
@@ -459,7 +439,6 @@ onMounted(carregarProduto);
   color: var(--color-heading);
 }
 
-/* ... (resto dos estilos .botoes-acao-container) ... */
 .botoes-acao-container {
   display: flex;
   gap: 15px;
@@ -497,10 +476,6 @@ onMounted(carregarProduto);
   color: white;
 }
 
-/* #############################################
-  # INÍCIO - ESTILOS DA LISTA DE AVALIAÇÕES (RE-ADICIONADOS)
-  #############################################
-*/
 .secao-avaliacoes {
   max-width: 1200px;
   margin: 40px auto 0 auto;
@@ -566,10 +541,6 @@ onMounted(carregarProduto);
   padding: 20px;
 }
 
-/* #############################################
-  # INÍCIO - ESTILOS DO POPUP (RE-ADICIONADOS)
-  #############################################
-*/
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -627,7 +598,7 @@ onMounted(carregarProduto);
 }
 .btn-ir-carrinho:hover {
   background-color: var(--color-primary-hover);
-  border-color: var(--color-primary-hover);
+  border-color: var(--color-primary);
 }
 .carregando {
   text-align: center;
@@ -638,9 +609,72 @@ onMounted(carregarProduto);
 @media (max-width: 992px) {
   .produto-container {
     grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 30px;
   }
   .imagem-container {
     height: 350px;
+  }
+  .botoes-acao-container {
+    margin-top: 25px;
+  }
+  .secao-avaliacoes {
+    padding: 30px;
+    margin-top: 30px;
+  }
+  .secao-avaliacoes h2 {
+    font-size: 1.6rem;
+  }
+  .avaliacao-autor {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .pagina-produto {
+    padding: 20px 10px;
+  }
+  .produto-container {
+    padding: 20px;
+    gap: 20px;
+  }
+  .imagem-container {
+    height: 300px;
+  }
+  .titulo-produto {
+    font-size: 1.8rem;
+  }
+  .preco-produto {
+    font-size: 1.6rem;
+  }
+  .estrelas-input {
+    justify-content: center;
+    margin-left: 0;
+  }
+  .estrela-input {
+    font-size: 1.8rem;
+  }
+  .botoes-acao-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .btn-comprar,
+  .btn-carrinho {
+    padding: 14px;
+    font-size: 1rem;
+  }
+  .secao-avaliacoes {
+    padding: 20px;
+  }
+  .secao-avaliacoes h2 {
+    font-size: 1.5rem;
+  }
+  .avaliacao-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .avaliacao-data {
+    margin-top: 5px;
   }
 }
 </style>

@@ -380,8 +380,6 @@ button[disabled] {
   text-align: center;
 }
 
-/* Estilos Adicionais para as Melhorias */
-
 fieldset {
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -396,14 +394,12 @@ legend {
   font-size: 1.1em;
 }
 
-/* Campo de Senha com Ícone */
 .password-field {
   position: relative;
   margin-bottom: 15px;
 }
 
 .password-field input {
-  /* Garante que o input preencha o div pai */
   margin-bottom: 0;
 }
 
@@ -413,5 +409,31 @@ legend {
   right: 15px;
   color: #888;
   cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .cadastro-container {
+    max-width: 100%;
+    margin: 0;
+    padding: 20px;
+    border-radius: 0;
+    box-shadow: none;
+    min-height: 100vh;
+  }
+}
+
+@media (max-width: 400px) {
+  .cadastro-container {
+    padding: 15px;
+  }
+  h2 {
+    font-size: 1.8em;
+  }
+  input,
+  select,
+  button {
+    font-size: 15px;
+    padding: 10px;
+  }
 }
 </style>
