@@ -60,7 +60,7 @@
         </div>
         <div class="mission-image">
           <img
-            src="https://images.unsplash.com/photo-1599493356233-a6039c638f0c?q=80&w=2070&auto=format&fit=crop"
+            src="../../src/assets/img/mecanico.jpg"
             alt="Mecânico trabalhando em um motor"
           />
         </div>
