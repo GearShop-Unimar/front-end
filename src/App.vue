@@ -28,6 +28,10 @@ onMounted(() => {
 </script>
 
 <template>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+  />
   <div id="app">
     <Navbar v-if="!isAuthRoute" />
 
@@ -36,13 +40,14 @@ onMounted(() => {
     <Footer v-if="!esconderFooter" />
 
     <MessagesWidget />
+
+    <Carrinho />
   </div>
 </template>
 
 <style scoped>
 #app {
   overflow-x: hidden;
-
   overflow-y: unset;
 }
 </style>
