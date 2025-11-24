@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import ReviewProductCard from "@/components/ReviewProductCard.vue";
 
 describe("ReviewProductCard.vue", () => {
@@ -54,9 +54,7 @@ describe("ReviewProductCard.vue", () => {
     const img = wrapper.find("img");
     expect(img.exists()).toBe(true);
 
-    // Simula o erro de carregamento da imagem
     await img.trigger("error");
-    // Verifica se a imagem foi escondida
     expect(img.element.style.display).toBe("none");
   });
 

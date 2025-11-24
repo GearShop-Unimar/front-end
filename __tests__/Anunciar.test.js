@@ -108,7 +108,9 @@ describe("Anunciar.vue", () => {
         // Simular a leitura de forma assíncrona
         setTimeout(() => {
           if (onloadCallback) {
-            onloadCallback({ target: { result: "data:image/png;base64,mocked-base64-image" } });
+            onloadCallback({
+              target: { result: "data:image/png;base64,mocked-base64-image" },
+            });
           }
         }, 100);
       }

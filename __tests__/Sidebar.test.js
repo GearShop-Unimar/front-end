@@ -2,14 +2,29 @@ import { mount } from "@vue/test-utils";
 import { describe, it, expect, beforeEach } from "vitest";
 import { createRouter, createMemoryHistory } from "vue-router";
 import Sidebar from "@/components/Sidebar.vue";
-import Icon from "@/components/Icon.vue"; // Importa o componente Icon
 
 const routes = [
   { path: "/", name: "Home", component: { template: "<div>Home</div>" } },
-  { path: "/produtos", name: "Produtos", component: { template: "<div>Produtos</div>" } },
-  { path: "/mensagens", name: "Mensagens", component: { template: "<div>Mensagens</div>" } },
-  { path: "/perfil", name: "Perfil", component: { template: "<div>Perfil</div>" } },
-  { path: "/postar", name: "Postar", component: { template: "<div>Postar</div>" } },
+  {
+    path: "/produtos",
+    name: "Produtos",
+    component: { template: "<div>Produtos</div>" },
+  },
+  {
+    path: "/mensagens",
+    name: "Mensagens",
+    component: { template: "<div>Mensagens</div>" },
+  },
+  {
+    path: "/perfil",
+    name: "Perfil",
+    component: { template: "<div>Perfil</div>" },
+  },
+  {
+    path: "/postar",
+    name: "Postar",
+    component: { template: "<div>Postar</div>" },
+  },
 ];
 
 const router = createRouter({
@@ -19,7 +34,7 @@ const router = createRouter({
 
 describe("Sidebar.vue", () => {
   beforeEach(async () => {
-    await router.push("/"); // Garante que a rota inicial seja Home antes de cada teste
+    await router.push("/");
     await router.isReady();
   });
 
@@ -28,8 +43,7 @@ describe("Sidebar.vue", () => {
       global: {
         plugins: [router],
         stubs: {
-          // Stub o componente Icon para focar no teste do Sidebar
-          Icon: true, 
+          Icon: true,
         },
       },
       ...options,
@@ -39,7 +53,7 @@ describe("Sidebar.vue", () => {
   it("renderiza os links de navegação", () => {
     const wrapper = mountSidebar();
     const navLinks = wrapper.findAll(".sidebar-nav li a");
-    expect(navLinks.length).toBe(4); // Home, Explorar, Mensagens, Perfil
+    expect(navLinks.length).toBe(4);
     expect(navLinks[0].text()).toContain("Página Inicial");
     expect(navLinks[1].text()).toContain("Explorar");
     expect(navLinks[2].text()).toContain("Mensagens");
@@ -64,26 +78,19 @@ describe("Sidebar.vue", () => {
     expect(wrapper.html()).toMatchSnapshot();
   });
 
-  // Teste de responsividade (exemplo para 1200px)
   it("esconde o texto dos links em telas menores que 1200px", async () => {
-    // Simula uma largura de tela menor para testes de mídia
     global.innerWidth = 1000;
-    global.dispatchEvent(new Event('resize'));
+    global.dispatchEvent(new Event("resize"));
 
     const wrapper = mountSidebar();
     await wrapper.vm.$nextTick();
 
     const navLinks = wrapper.findAll(".sidebar-nav li a span");
-    navLinks.forEach(span => {
-      // No modo mobile/tablet, os spans de texto são escondidos via CSS
-      // Não é diretamente testável com .isVisible() pois o CSS é que os esconde
-      // Mas podemos verificar que eles existem e a logica do CSS os esconde.
-      // Para um teste mais robusto, seria necessário testar o CSS computado ou mockar as media queries.
-      expect(span.exists()).toBe(true); // O elemento span ainda existe
+    navLinks.forEach((span) => {
+      expect(span.exists()).toBe(true);
     });
-    
-    // Restaura a largura da tela
+
     global.innerWidth = 1920;
-    global.dispatchEvent(new Event('resize'));
+    global.dispatchEvent(new Event("resize"));
   });
 });

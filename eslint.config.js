@@ -1,6 +1,3 @@
-// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
-import storybook from "eslint-plugin-storybook";
-
 import js from "@eslint/js";
 import globals from "globals";
 import pluginVue from "eslint-plugin-vue";
@@ -16,11 +13,21 @@ export default defineConfig([
 
   ...pluginVue.configs["flat/essential"],
 
-  storybook.configs["flat/recommended"],
-
   {
     rules: {
       "vue/multi-word-component-names": "off",
+    },
+  },
+
+  // Configuração para ficheiros de teste: Resolve 'global is not defined'
+  {
+    files: ["**/*.test.js", "**/__tests__/*.js"],
+    languageOptions: {
+      globals: {
+        ...globals.node, // Reconhece 'global'
+        ...globals.browser,
+        ...globals.jest,
+      },
     },
   },
 
