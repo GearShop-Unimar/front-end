@@ -13,9 +13,6 @@
           exclusivos.
         </p>
       </div>
-      <div class="header-highlight">
-        <i class="bi bi-stars"></i>
-      </div>
     </header>
 
     <section v-if="loading" class="state-card loading">
@@ -34,13 +31,36 @@
     <section v-else-if="!activeSubscription" class="state-card empty">
       <h2>Você ainda não possui um plano de fidelidade ativo</h2>
       <p>
-        Assine um plano para desbloquear descontos, benefícios e suporte
-        prioritário.
+        Assine o Plano de Fidelidade GearShop e desbloqueie descontos,
+        benefícios e suporte prioritário.
       </p>
-      <router-link to="/produtos" class="btn btn-primary">
-        Explorar planos disponíveis
-      </router-link>
+      <div style="margin: 16px 0; text-align: center">
+        <div class="default-price">
+          R$ 15,99 <small class="default-price-sub">/mês</small>
+        </div>
+        <ul class="default-benefits" aria-label="Benefícios do plano">
+          <li>Frete grátis para pedidos acima de R$ 100</li>
+          <li>Descontos exclusivos em peças selecionadas</li>
+          <li>Suporte prioritário 24/7</li>
+          <li>Acesso antecipado a promoções e lançamentos</li>
+        </ul>
+      </div>
+      <div
+        style="
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          justify-content: center;
+          margin-top: 12px;
+        "
+      >
+        <button class="btn btn-primary" @click="openPaymentModal">
+          Aderir ao plano
+        </button>
+      </div>
     </section>
+
+    <!-- payment modal mounted at the end of template to avoid breaking v-if chain -->
 
     <div v-else class="content-grid">
       <section class="plan-overview card">
@@ -110,6 +130,9 @@
           <h2>Gerenciamento do plano</h2>
         </div>
         <div class="actions-row">
+          <button class="btn btn-primary" @click="activatePlan">
+            {{ !activeSubscription ? "Assinar plano" : "Renovar plano" }}
+          </button>
           <button class="btn" @click="goToPayment">
             Atualizar forma de pagamento
           </button>
@@ -238,22 +261,32 @@
       </section>
     </div>
   </div>
+  <PaymentModal
+    v-model="showPaymentModal"
+    :price="15.99"
+    @confirmed="onPaymentConfirmed"
+  />
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useToast } from "vue-toastification";
+import { useRouter } from "vue-router";
+import premiumService from "@/services/premiumService";
+import PaymentModal from "@/components/PaymentModal.vue";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const authStore = useAuthStore();
+const router = useRouter();
 const toast = useToast();
 
 const loading = ref(true);
 const error = ref("");
 const subscriptions = ref([]);
 const payments = ref([]);
+const hasPremium = ref(false);
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -518,17 +551,15 @@ const loadLoyaltyData = async () => {
   loading.value = true;
   error.value = "";
 
-  // Verifica se está em modo mock
   const isMockMode = localStorage.getItem("mock_mode") === "true";
 
-  // Se estiver em modo mock, usa dados mockados
   if (isMockMode) {
     try {
-      // Simula um delay de rede
       await new Promise((resolve) => setTimeout(resolve, 500));
       const mockData = getMockLoyaltyData();
       subscriptions.value = mockData.subscriptions;
       payments.value = mockData.payments;
+      hasPremium.value = mockData.subscriptions?.length > 0;
       console.log("📦 Modo Mock: Dados de fidelidade mockados carregados");
     } catch (err) {
       console.error("Erro ao carregar dados mockados:", err);
@@ -539,53 +570,106 @@ const loadLoyaltyData = async () => {
     return;
   }
 
-  // Tenta carregar dados reais da API
   try {
-    const headers = {
-      Authorization: `Bearer ${token}`,
+    // Primeiro, consultamos a rota /api/premiumaccount/status que retorna { IsPremium: bool }
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      // Use premiumService (axios) to avoid duplicar '/api' quando o baseURL já contém '/api'
+      const statusJson = await premiumService.getStatus();
+      hasPremium.value = !!statusJson?.IsPremium;
+    } catch (sErr) {
+      console.warn("Erro ao consultar status do plano de fidelidade:", sErr);
+      hasPremium.value = false;
+    }
+
+    // Carrega pagamentos (se houver) — endpoint já existente
+    let paymentsData = [];
+    try {
+      const paymentsResponse = await fetch(
+        `${API_URL}/Payment/user/${userId}`,
+        {
+          headers,
+        }
+      );
+      if (paymentsResponse.ok) {
+        paymentsData = await paymentsResponse.json();
+      } else {
+        console.warn("Falha ao carregar pagamentos do plano de fidelidade.");
+        paymentsData = [];
+      }
+    } catch (pErr) {
+      console.warn("Erro ao buscar pagamentos:", pErr);
+      paymentsData = [];
+    }
+
+    const normalizePayment = (p) => {
+      const id = p.id ?? p.Id;
+      const amount = p.amount ?? p.Amount;
+      const status = p.status ?? p.Status;
+      const paymentType = p.paymentType ?? p.PaymentType ?? p.paymentTypeId;
+      const createdAt = p.createdAt ?? p.CreatedAt;
+      const processedAt = p.processedAt ?? p.ProcessedAt;
+      const premiumAccountId =
+        p.premiumAccountId ??
+        p.PremiumAccountId ??
+        (p.premiumAccount
+          ? p.premiumaccount?.id ?? p.premiumAccount?.Id ?? p.premiumAccount?.id
+          : undefined);
+
+      return {
+        ...p,
+        id,
+        amount,
+        status,
+        paymentType,
+        createdAt,
+        processedAt,
+        subscriptionId: premiumAccountId,
+      };
     };
 
-    const [subscriptionsResponse, paymentsResponse] = await Promise.all([
-      fetch(`${API_URL}/Subscription/user/${userId}`, { headers }),
-      fetch(`${API_URL}/Payment/user/${userId}`, { headers }),
-    ]);
+    payments.value = Array.isArray(paymentsData)
+      ? paymentsData.map(normalizePayment)
+      : [];
 
-    if (!subscriptionsResponse.ok) {
-      // Se a API falhar e estiver em desenvolvimento, oferece usar dados mock
-      if (import.meta.env.DEV) {
-        console.warn("⚠️ API não disponível. Usando dados mockados...");
-        const mockData = getMockLoyaltyData();
-        subscriptions.value = mockData.subscriptions;
-        payments.value = mockData.payments;
-        toast.info("API não disponível. Exibindo dados de exemplo.");
-      } else {
-        throw new Error(
-          "Não foi possível carregar as informações da assinatura."
-        );
-      }
-    } else {
-      subscriptions.value = await subscriptionsResponse.json();
+    // Se a rota /details não existe, confiamos apenas em hasPremium para saber se o usuário possui plano
+    // Criamos uma assinatura mínima quando sabemos que o usuário é premium,
+    // já que o endpoint de detalhes foi removido. Isso permite que a UI
+    // mostre que o usuário possui o plano mesmo sem todos os dados.
+    const minimalSubscription = {
+      id: 0, // ID 0 para indicar uma assinatura mínima sem detalhes completos
+      userId,
+      status: 1, // Assumimos status ativo para um premium
+      monthlyAmount: 0,
+      startDate: null,
+      endDate: null,
+      nextPaymentDate: null,
+      createdAt: null,
+      updatedAt: null,
+      notes: "Plano GearShop (Premium Básico)",
+      product: { id: 0, name: "Plano de Fidelidade Básico" },
+    };
+    subscriptions.value = [minimalSubscription];
 
-      if (paymentsResponse.ok) {
-        payments.value = await paymentsResponse.json();
-      } else {
-        payments.value = [];
-        console.warn("Falha ao carregar pagamentos do plano de fidelidade.");
-      }
+    // Se o usuário é premium (hasPremium é true) e a assinatura é a mínima (id === 0),
+    // redirecionamos para a página do roadmap.
+    if (hasPremium.value && minimalSubscription.id === 0) {
+      router.push("/fidelidade/roadmap");
+      loading.value = false; // Parar o estado de carregamento desta página
+      return; // Encerrar a execução de loadLoyaltyData para esta página
     }
   } catch (err) {
     console.error("Erro ao carregar dados de fidelidade:", err);
-
-    // Em desenvolvimento, se houver erro de rede, usa dados mock
     if (
       import.meta.env.DEV &&
-      (err.message.includes("Failed to fetch") ||
-        err.message.includes("NetworkError"))
+      (err.message?.includes("Failed to fetch") ||
+        err.message?.includes("NetworkError"))
     ) {
       console.warn("⚠️ Erro de rede. Usando dados mockados...");
       const mockData = getMockLoyaltyData();
       subscriptions.value = mockData.subscriptions;
       payments.value = mockData.payments;
+      hasPremium.value = mockData.subscriptions?.length > 0;
       toast.info("API não disponível. Exibindo dados de exemplo para testes.");
     } else {
       error.value =
@@ -632,44 +716,36 @@ const pausePlan = async () => {
   const subId = activeSubscription.value?.id;
   if (!subId) return;
   try {
+    // Pause/Resume não implementado no backend atual.
     if (localStorage.getItem("mock_mode") === "true") {
       mutateSubscriptionStatusLocally(2);
       toast.success("Plano pausado (modo teste).");
       return;
     }
-    const res = await fetch(`${API_URL}/Subscription/${subId}/pause`, {
-      method: "POST",
-      headers: withAuthHeaders(),
-    });
-    if (!res.ok) throw new Error("Falha ao pausar plano");
-    mutateSubscriptionStatusLocally(2);
-    toast.success("Plano pausado com sucesso.");
+
+    toast.info(
+      "Pausar plano não está disponível no servidor atualmente. Peça ao backend para implementar pausa/retomada."
+    );
   } catch (e) {
-    console.error(e);
-    toast.error(e.message || "Erro ao pausar plano.");
+    console.error("Erro ao pausar plano:", e);
+    toast.error(e.message || "Erro ao pausar o plano.");
   }
 };
 
 const resumePlan = async () => {
   const subId = activeSubscription.value?.id;
   if (!subId) return;
-  try {
-    if (localStorage.getItem("mock_mode") === "true") {
-      mutateSubscriptionStatusLocally(1);
-      toast.success("Plano retomado (modo teste).");
-      return;
-    }
-    const res = await fetch(`${API_URL}/Subscription/${subId}/resume`, {
-      method: "POST",
-      headers: withAuthHeaders(),
-    });
-    if (!res.ok) throw new Error("Falha ao retomar plano");
+
+  // Não há endpoint de resume no backend — apenas suporte mock
+  if (localStorage.getItem("mock_mode") === "true") {
     mutateSubscriptionStatusLocally(1);
-    toast.success("Plano retomado com sucesso.");
-  } catch (e) {
-    console.error(e);
-    toast.error(e.message || "Erro ao retomar plano.");
+    toast.success("Plano retomado (modo teste).");
+    return;
   }
+
+  toast.info(
+    "Retomar plano não está disponível no servidor atualmente. Peça ao backend para implementar pausa/retomada."
+  );
 };
 
 const cancelPlan = async () => {
@@ -681,16 +757,126 @@ const cancelPlan = async () => {
       toast.success("Plano cancelado (modo teste).");
       return;
     }
-    const res = await fetch(`${API_URL}/Subscription/${subId}/cancel`, {
-      method: "POST",
-      headers: withAuthHeaders(),
-    });
-    if (!res.ok) throw new Error("Falha ao cancelar plano");
-    mutateSubscriptionStatusLocally(3);
+
+    await premiumService.cancel();
     toast.success("Plano cancelado com sucesso.");
+    await loadLoyaltyData();
   } catch (e) {
     console.error(e);
-    toast.error(e.message || "Erro ao cancelar plano.");
+    toast.error(e.message || "Erro ao cancelar o plano.");
+  }
+};
+
+const activatePlan = async () => {
+  const defaultDays = 30;
+  const input = window.prompt(
+    "Quantos dias deseja ativar/renovar o plano? (dias)",
+    String(defaultDays)
+  );
+  if (!input) return;
+  const days = parseInt(input, 10);
+  if (Number.isNaN(days) || days <= 0) {
+    toast.error("Duração inválida.");
+    return;
+  }
+
+  try {
+    if (localStorage.getItem("mock_mode") === "true") {
+      // cria/atualiza uma assinatura mock localmente
+      const now = new Date();
+      const end = new Date(now);
+      end.setDate(end.getDate() + days);
+
+      if (!subscriptions.value || !subscriptions.value.length) {
+        subscriptions.value = [
+          {
+            id: Date.now(),
+            userId: authStore.user?.id,
+            status: 1,
+            monthlyAmount: 0,
+            startDate: now.toISOString(),
+            endDate: end.toISOString(),
+            nextPaymentDate: null,
+            createdAt: now.toISOString(),
+            updatedAt: now.toISOString(),
+            notes: "Plano mock",
+            product: { id: 0, name: "Plano Mock" },
+          },
+        ];
+      } else {
+        const sub = subscriptions.value[0];
+        sub.startDate = now.toISOString();
+        sub.endDate = end.toISOString();
+        sub.status = 1;
+        sub.updatedAt = now.toISOString();
+      }
+
+      toast.success("Plano ativado (modo teste).");
+      return;
+    }
+
+    await premiumService.activate(days);
+    toast.success("Plano ativado/renovado com sucesso.");
+    await loadLoyaltyData();
+  } catch (e) {
+    console.error(e);
+    toast.error(e.message || "Erro ao ativar/renovar plano.");
+  }
+};
+
+const subscribeToDefaultPlan = async () => {
+  // Plano padrão: 30 dias por mês a R$15,99
+  const days = 30;
+  const price = 15.99;
+
+  try {
+    if (localStorage.getItem("mock_mode") === "true") {
+      const now = new Date();
+      const end = new Date(now);
+      end.setDate(end.getDate() + days);
+
+      subscriptions.value = [
+        {
+          id: Date.now(),
+          userId: authStore.user?.id,
+          status: 1,
+          monthlyAmount: price,
+          startDate: now.toISOString(),
+          endDate: end.toISOString(),
+          nextPaymentDate: null,
+          createdAt: now.toISOString(),
+          updatedAt: now.toISOString(),
+          notes: "Plano Fidelidade GearShop",
+          product: { id: 0, name: "Plano Fidelidade GearShop" },
+        },
+      ];
+      toast.success("Plano ativado (modo teste).");
+      return;
+    }
+
+    // Em produção, chamamos o endpoint de ativação
+    await premiumService.activate(days);
+    toast.success("Plano ativado com sucesso.");
+    await loadLoyaltyData();
+  } catch (e) {
+    console.error(e);
+    toast.error(e.message || "Erro ao aderir ao plano.");
+  }
+};
+
+// Modal control (we mount PaymentModal component)
+const showPaymentModal = ref(false);
+const openPaymentModal = () => {
+  showPaymentModal.value = true;
+};
+
+const onPaymentConfirmed = async (paymentInfo) => {
+  // paymentInfo: { paymentMethod, card }
+  // Neste projeto não temos integração com gateway; reaproveitamos subscribeToDefaultPlan
+  try {
+    await subscribeToDefaultPlan();
+  } catch (e) {
+    console.error("Erro ao confirmar pagamento via modal:", e);
   }
 };
 </script>
@@ -1150,6 +1336,34 @@ const cancelPlan = async () => {
 .btn-primary:hover {
   background-color: var(--color-primary-hover);
   transform: translateY(-2px);
+}
+
+.default-benefits {
+  list-style: disc;
+  margin: 12px auto 0 auto;
+  padding-left: 20px;
+  max-width: 640px;
+  text-align: left;
+  font-size: 1.6rem;
+  color: var(--color-text);
+  line-height: 1.6;
+}
+.default-benefits li {
+  margin-bottom: 8px;
+}
+
+.default-price {
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: #ff8c42; /* laranja chamativo padrão */
+  line-height: 1;
+}
+.default-price-sub {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-left: 8px;
+  opacity: 0.95;
 }
 
 @keyframes spin {

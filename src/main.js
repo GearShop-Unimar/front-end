@@ -6,6 +6,7 @@ import { mask } from "vue-the-mask";
 
 import App from "./App.vue";
 import router from "./router";
+import Icon from "./components/Icon.vue";
 
 const app = createApp(App);
 
@@ -29,5 +30,8 @@ app.use(router);
 app.use(Toast, toastOptions);
 
 app.directive("mask", mask);
+
+// Registro global do componente de ícones
+app.component('Icon', Icon);
 
 app.mount("#app");

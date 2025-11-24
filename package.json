@@ -28,6 +28,8 @@
     "vue-toastification": "^2.0.0-rc.5"
   },
   "devDependencies": {
+    "@babel/generator": "^7.28.5",
+    "@babel/parser": "^7.28.5",
     "@chromatic-com/storybook": "^4.1.2",
     "@eslint/js": "^9.38.0",
     "@storybook/addon-a11y": "^10.0.6",
@@ -35,6 +37,9 @@
     "@storybook/addon-onboarding": "^10.0.6",
     "@storybook/addon-vitest": "^10.0.6",
     "@storybook/vue3-vite": "^10.0.6",
+    "@types/estree": "^1.0.8",
+    "@types/json-schema": "^7.0.15",
+    "@types/mdx": "^2.0.13",
     "@vitejs/plugin-vue": "^5.2.3",
     "@vitest/browser-playwright": "4.0.7",
     "@vitest/coverage-v8": "4.0.7",
@@ -43,11 +48,13 @@
     "eslint": "^9.38.0",
     "eslint-plugin-storybook": "^10.0.6",
     "eslint-plugin-vue": "^10.5.1",
+    "glob": "^13.0.0",
     "globals": "^16.4.0",
     "jsdom": "^27.1.0",
     "playwright": "^1.56.1",
     "storybook": "^10.0.6",
     "vite": "^6.2.4",
+    "vite-plugin-compression": "^0.5.1",
     "vite-plugin-vue-devtools": "^7.7.2",
     "vitest": "^4.0.7"
   },

@@ -2,7 +2,7 @@
   <div class="anunciar-container">
     <h1>Anuncie seu Produto</h1>
     <p class="subtitle">
-      Preencha os dados abaixo e conecte seu produto a quem realmente precisa.
+      Preencha os dados técnicos para que o comprador encontre a peça certa.
     </p>
 
     <div v-if="loading" class="loading-overlay">
@@ -12,340 +12,287 @@
 
     <form @submit.prevent="anunciarProduto" class="anuncio-form">
       <div class="form-group">
-        <label for="nome">Nome do Produto*</label>
+        <label for="nome">Nome da Peça*</label>
         <input
           v-model="produto.nome"
           id="nome"
           type="text"
-          placeholder="Ex: Motor 1.6 Flex"
+          placeholder="Ex: Jogo de Velas NGK"
           required
-          maxlength="60"
+          maxlength="100"
         />
-        <span class="char-counter">{{ produto.nome.length }}/60</span>
+        <span class="char-counter">{{ produto.nome.length }}/100</span>
+      </div>
+
+      <div class="form-group-inline">
+        <div class="form-group">
+          <label for="categoria">Categoria*</label>
+          <select v-model="produto.categoria" id="categoria" required>
+            <option value="" disabled selected>Selecione</option>
+            <option>Motor e Ignição</option>
+            <option>Suspensão</option>
+            <option>Freios</option>
+            <option>Transmissão</option>
+            <option>Elétrica</option>
+            <option>Iluminação</option>
+            <option>Arrefecimento</option>
+            <option>Filtros e Óleos</option>
+            <option>Baterias</option>
+            <option>Direção</option>
+          </select>
+        </div>
+
+        <div class="form-group small-group">
+          <label for="estoque">Estoque*</label>
+          <input
+            v-model.number="produto.estoque"
+            id="estoque"
+            type="number"
+            min="1"
+            placeholder="Qtd"
+            required
+          />
+        </div>
       </div>
 
       <div class="form-group">
-        <label for="categoria">Categoria*</label>
-        <select v-model="produto.categoria" id="categoria" required>
-          <option value="" disabled selected>Selecione uma categoria</option>
-          <option>Motor</option>
-          <option>Suspensão</option>
-          <option>Freios</option>
-          <option>Cambio</option>
-          <option>Elétrica</option>
-          <option>Carroceria</option>
-          <option>Rodas e Pneus</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="modelo">Modelo Compatível*</label>
+        <label for="modelo">Modelo Compatível (Aplicação)*</label>
         <input
           v-model="produto.modelo"
           id="modelo"
           type="text"
-          placeholder="Ex: Gol 1.6 2010-2015"
+          placeholder="Ex: VW Gol G5/G6 1.0 e 1.6"
           required
         />
-      </div>
-
-      <div class="form-group">
-        <label for="imagem">Foto do Produto (opcional, máximo 1MB)</label>
-        <input
-          type="file"
-          @change="selecionarImagem"
-          id="imagem"
-          accept="image/*"
-        />
-        <div v-if="imagemPreview" class="img-preview">
-          <img :src="imagemPreview" alt="Preview da imagem" />
-          <button type="button" @click="removerImagem" class="remove-image-btn">
-            × Remover
-          </button>
-        </div>
-        <p v-if="imagemError" class="error-message">{{ imagemError }}</p>
+        <span class="hint">Descreva os veículos e anos compatíveis.</span>
       </div>
 
       <div class="form-group-inline">
         <div class="form-group">
           <label for="preco">Preço (R$)*</label>
           <input
-            v-model.number="produto.preco"
             id="preco"
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="Ex: 150.00"
+            type="text"
+            :value="precoVisual"
+            @input="formatarMoeda"
+            placeholder="0,00"
             required
           />
         </div>
 
         <div class="form-group">
-          <label for="estado">Estado do Produto*</label>
+          <label for="estado">Condição da Peça*</label>
           <select v-model="produto.estado" id="estado" required>
             <option value="" disabled selected>Selecione</option>
-            <option>Nova</option>
-            <option>Usada</option>
-            <option>Recondicionada</option>
+            <option value="Nova">Nova</option>
+            <option value="Usada">Usada (Original)</option>
+            <option value="Recondicionada">Recondicionada</option>
           </select>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="descricao">Descrição*</label>
+        <label for="descricao">Descrição Detalhada*</label>
         <textarea
           v-model="produto.descricao"
           id="descricao"
-          rows="4"
-          placeholder="Detalhes adicionais sobre o produto..."
+          rows="5"
+          placeholder="Detalhes técnicos, marca, número da peça, etc..."
           required
-          maxlength="500"
+          maxlength="1000"
         ></textarea>
-        <span class="char-counter">{{ produto.descricao.length }}/500</span>
+        <span class="char-counter">{{ produto.descricao.length }}/1000</span>
       </div>
 
-      <div class="form-group-inline">
-        <div class="form-group">
-          <label for="cep">CEP (opcional)</label>
+      <div class="form-group">
+        <label for="imagem">Foto da Peça*</label>
+        <div class="image-upload-wrapper">
           <input
-            v-model="produto.cep"
-            id="cep"
-            type="text"
-            placeholder="Ex: 00000-000"
-            v-mask="'#####-###'"
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="telefone">Telefone para Contato*</label>
-          <input
-            v-model="produto.telefone"
-            id="telefone"
-            type="tel"
-            placeholder="Ex: (11) 99999-9999"
+            type="file"
+            @change="selecionarImagem"
+            id="imagem"
+            accept="image/*"
             required
-            v-mask="'(##) #####-####'"
           />
+
+          <div v-if="imagemPreview" class="img-preview-container">
+            <img :src="imagemPreview" alt="Preview" />
+            <button type="button" @click="removerImagem" class="remove-btn">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+
+          <div v-else class="upload-placeholder" @click="triggerFileInput">
+            <i class="bi bi-camera"></i>
+            <span>Clique para adicionar foto</span>
+          </div>
         </div>
+        <p v-if="imagemError" class="error-message">{{ imagemError }}</p>
       </div>
 
-      <button type="submit" :disabled="loading">
-        <span v-if="!loading"> Publicar Anúncio</span>
-        <span v-else>Processando...</span>
+      <button type="submit" :disabled="loading" class="btn-submit">
+        <span v-if="!loading">Publicar Peça</span>
+        <span v-else>Enviando...</span>
       </button>
 
-      <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+      <div v-if="errorMessage" class="error-message alert">
+        {{ errorMessage }}
+      </div>
     </form>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useProductStore } from "../stores/product.js";
 
 const router = useRouter();
 const productStore = useProductStore();
-
 const { loading } = storeToRefs(productStore);
 
+// Estado do Formulário
 const produto = ref({
   nome: "",
   categoria: "",
-  modelo: "",
-  preco: 0,
-  estado: "",
+  modelo: "", // Mapeia para CompatibleModel
+  preco: null,
+  estoque: 1, // Mapeia para StockQuantity
+  estado: "", // Vai para a Descrição
   descricao: "",
-  cep: "",
-  telefone: "",
   arquivoImagem: null,
 });
-
+const precoVisual = ref("");
 const imagemPreview = ref(null);
 const imagemError = ref(null);
 const errorMessage = ref(null);
 
-const isDark = ref(false);
-
-const toggleDark = () => {
-  isDark.value = !isDark.value;
-  if (isDark.value) {
-    document.documentElement.classList.add("dark-theme");
-    localStorage.setItem("theme", "dark");
-  } else {
-    document.documentElement.classList.remove("dark-theme");
-    localStorage.setItem("theme", "light");
-  }
-};
+// Funções de Imagem
+const triggerFileInput = () => document.getElementById("imagem").click();
 
 const removerImagem = () => {
   imagemPreview.value = null;
   produto.value.arquivoImagem = null;
   const fileInput = document.getElementById("imagem");
-  if (fileInput) {
-    fileInput.value = "";
-  }
+  if (fileInput) fileInput.value = "";
 };
 
 const selecionarImagem = (event) => {
   const file = event.target.files[0];
   imagemError.value = null;
 
-  if (!file) {
+  if (!file) return;
+
+  const validTypes = ["image/jpeg", "image/png", "image/webp"];
+  const maxSize = 2 * 1024 * 1024; // Aumentei para 2MB
+
+  if (!validTypes.includes(file.type)) {
+    imagemError.value = "Apenas JPG, PNG ou WEBP.";
     removerImagem();
     return;
   }
 
-  const validTypes = ["image/jpeg", "image/png", "image/webp"];
-  const maxSize = 1 * 1024 * 1024;
-
-  if (!validTypes.includes(file.type)) {
-    imagemError.value = "Formato inválido. Use JPEG, PNG ou WEBP.";
-    return;
-  }
-
   if (file.size > maxSize) {
-    imagemError.value = "Imagem muito grande. Máximo 1MB.";
+    imagemError.value = "Imagem muito grande (Max 2MB).";
+    removerImagem();
     return;
   }
 
   produto.value.arquivoImagem = file;
-
   const reader = new FileReader();
   reader.onload = (e) => {
     imagemPreview.value = e.target.result;
   };
   reader.readAsDataURL(file);
 };
+const formatarMoeda = (event) => {
+  // 1. Pega o valor digitado e remove tudo que NÃO for número
+  let valor = event.target.value.replace(/\D/g, "");
 
+  if (!valor) {
+    produto.value.preco = 0;
+    precoVisual.value = "";
+    return;
+  }
+
+  // 2. Converte para Decimal/Float (divide por 100 para considerar os centavos)
+  // Exemplo: Se digitou "28990", vira 289.90
+  const numero = parseFloat(valor) / 100;
+
+  // 3. Salva o número REAL no objeto que vai para o Backend (formato americano: 289.90)
+  produto.value.preco = numero;
+
+  // 4. Atualiza o visual do input para o formato brasileiro (289,90)
+  precoVisual.value = numero.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+// Envio do Formulário
 const anunciarProduto = async () => {
+  // Combinamos o Estado com a Descrição para não perder a informação
+  const descricaoCompleta = `Condição: ${produto.value.estado}.\n${produto.value.descricao}`;
+
+  // Construção do Payload conforme o Backend espera
   const payload = {
     name: produto.value.nome,
-    description: produto.value.descricao,
+    description: descricaoCompleta,
     price: produto.value.preco,
-    stockQuantity: 1,
+    stockQuantity: produto.value.estoque, // Novo campo
     category: produto.value.categoria,
+    compatibleModel: produto.value.modelo, // Novo campo
     imageFile: produto.value.arquivoImagem,
   };
 
   try {
     errorMessage.value = null;
-
+    // O Store deve tratar a conversão para FormData
     await productStore.addProduct(payload);
-
-    showSuccessToast("Anúncio publicado com sucesso!");
+    alert("Peça anunciada com sucesso!");
     router.push("/produtos");
   } catch (error) {
-    console.error("Erro ao publicar anúncio:", error);
+    console.error("Erro:", error);
     errorMessage.value =
-      productStore.error || "Erro desconhecido ao publicar anúncio.";
+      "Erro ao publicar. Verifique os dados e tente novamente.";
   }
 };
-
-const showSuccessToast = (message) => {
-  alert(message);
-};
-
-onMounted(() => {
-  const savedTheme = localStorage.getItem("theme");
-
-  if (savedTheme) {
-    isDark.value = savedTheme === "dark";
-  } else {
-    isDark.value =
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
-  }
-
-  if (isDark.value) {
-    document.documentElement.classList.add("dark-theme");
-  }
-});
-
-defineExpose({
-  toggleDark,
-  isDark,
-});
 </script>
 
 <style scoped>
 .anunciar-container {
   max-width: 700px;
-  margin: 100px auto 50px;
+  margin: 40px auto;
   padding: 40px;
   background-color: var(--color-card-background);
   border-radius: 12px;
   box-shadow: 0 4px 20px var(--color-card-shadow);
-  font-family: "Rajdhani", sans-serif;
-  position: relative;
-  transition: background-color 0.3s, box-shadow 0.3s;
-}
-
-.loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--color-background-soft);
-  opacity: 0.9;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
-  border-radius: 12px;
-}
-
-.loading-overlay p {
   color: var(--color-text);
-}
-
-.loading-spinner {
-  border: 4px solid var(--color-border);
-  border-radius: 50%;
-  border-top: 4px solid var(--color-primary);
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin-bottom: 15px;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }
 
 h1 {
   text-align: center;
   font-size: 2rem;
-  margin-bottom: 10px;
   color: var(--color-heading);
+  margin-bottom: 5px;
 }
 
 .subtitle {
   text-align: center;
-  font-size: 1rem;
+  color: var(--color-text-light);
   margin-bottom: 30px;
-  color: var(--color-text);
+  font-size: 0.95rem;
 }
 
 .anuncio-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  position: relative;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  position: relative;
 }
 
 .form-group-inline {
@@ -357,146 +304,187 @@ h1 {
   flex: 1;
 }
 
-label {
-  margin-bottom: 6px;
-  font-weight: 600;
-  color: var(--color-text);
+.small-group {
+  flex: 0 0 100px !important; /* Largura fixa para estoque */
 }
 
-input[type="text"],
-input[type="number"],
-input[type="file"],
-input[type="tel"],
+label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+input,
 select,
 textarea {
-  padding: 10px;
+  padding: 12px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  font-size: 1rem;
-  background-color: var(--color-background-mute);
+  background-color: var(--color-background);
   color: var(--color-text);
+  font-size: 1rem;
+  font-family: inherit;
   transition: border-color 0.2s;
 }
 
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: var(--color-primary);
   outline: none;
+  border-color: var(--color-primary);
 }
 
-button {
-  padding: 12px;
-  background-color: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-button:hover:not(:disabled) {
-  background-color: var(--color-primary-hover);
-}
-
-button:disabled {
-  background-color: var(--color-border);
-  cursor: not-allowed;
-}
-
-.img-preview {
-  margin-top: 10px;
-  position: relative;
-}
-
-.img-preview img {
-  max-width: 100%;
-  max-height: 200px;
-  border-radius: 8px;
-  display: block;
-}
-
-.remove-image-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: rgba(255, 0, 0, 0.7);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 25px;
-  height: 25px;
-  font-size: 14px;
-  line-height: 1;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.remove-image-btn:hover {
-  background-color: rgba(255, 0, 0, 0.9);
+.hint {
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+  margin-top: 4px;
 }
 
 .char-counter {
   font-size: 0.8rem;
-  color: var(--color-text);
-  opacity: 0.7;
   text-align: right;
+  color: var(--color-text-light);
   margin-top: 4px;
 }
 
-.error-message {
-  color: var(--vt-color-error);
-  background-color: #fde8e8;
-  padding: 10px;
-  border-radius: 5px;
-  margin-top: 5px;
-  font-size: 0.9rem;
+/* Upload de Imagem Estilizado */
+.image-upload-wrapper {
+  position: relative;
 }
 
-html.dark-theme textarea::placeholder {
-  color: #a0a0a0;
-}
-html.dark-theme input::placeholder {
-  color: #a0a0a0;
+/* Esconde o input file original */
+input[type="file"] {
+  display: none;
 }
 
-@media (max-width: 768px) {
-  .anunciar-container {
-    margin: 20px 10px;
-    padding: 20px;
-    max-width: 100%;
-    box-shadow: 0 2px 10px var(--color-card-shadow);
+.upload-placeholder {
+  border: 2px dashed var(--color-border);
+  border-radius: 8px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text-light);
+  transition: all 0.2s;
+  background-color: var(--color-background-mute);
+}
+
+.upload-placeholder:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.upload-placeholder i {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.img-preview-container {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  max-height: 300px;
+}
+
+.img-preview-container img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.remove-btn:hover {
+  background: rgba(220, 53, 69, 0.9);
+}
+
+.btn-submit {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 15px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+.btn-submit:disabled {
+  background-color: var(--color-border);
+  cursor: not-allowed;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  border-radius: 12px;
+  color: white;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+.error-message.alert {
+  margin-top: 15px;
+  text-align: center;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
+}
 
+@media (max-width: 600px) {
+  .anunciar-container {
+    padding: 20px;
+    margin: 20px 10px;
+  }
   .form-group-inline {
     flex-direction: column;
     gap: 20px;
   }
-
-  h1 {
-    font-size: 1.8rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .anunciar-container {
-    padding: 15px;
-    margin: 10px 5px;
-  }
-
-  h1 {
-    font-size: 1.6rem;
-  }
-
-  .subtitle {
-    font-size: 0.9rem;
-    margin-bottom: 20px;
-  }
-
-  button {
-    font-size: 0.9rem;
+  .small-group {
+    flex: 1 !important;
   }
 }
 </style>

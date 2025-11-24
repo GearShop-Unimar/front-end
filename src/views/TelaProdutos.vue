@@ -3,12 +3,17 @@
     <div class="layout-container">
       <aside class="sidebar">
         <h3 class="sidebar-titulo">Filtros</h3>
+
         <div class="filtro-grupo">
           <h4>Categoria</h4>
           <ul class="lista-categorias">
             <li
               :class="{ ativo: filtroCategoria === '' }"
               @click="filtroCategoria = ''"
+              tabindex="0"
+              @keydown.enter="filtroCategoria = ''"
+              role="button"
+              aria-label="Todas as categorias"
             >
               Todas
             </li>
@@ -17,6 +22,10 @@
               :key="cat"
               :class="{ ativo: filtroCategoria === cat }"
               @click="filtroCategoria = cat"
+              tabindex="0"
+              @keydown.enter="filtroCategoria = cat"
+              role="button"
+              :aria-label="'Filtrar por ' + cat"
             >
               {{ cat }}
             </li>
@@ -30,12 +39,14 @@
               type="number"
               v-model.number="filtroPrecoMin"
               placeholder="Mín"
+              aria-label="Preço mínimo"
             />
             <span>-</span>
             <input
               type="number"
               v-model.number="filtroPrecoMax"
               placeholder="Máx"
+              aria-label="Preço máximo"
             />
           </div>
         </div>
@@ -43,18 +54,21 @@
         <div class="filtro-grupo">
           <h4>Avaliação</h4>
           <div class="filtro-avaliacao">
-            <span
+            <button
               v-for="estrela in 5"
               :key="estrela"
               @click="filtroAvaliacao = estrela"
-              class="estrela"
+              class="estrela-btn"
+              :class="{ ativo: estrela <= filtroAvaliacao }"
+              :aria-label="'Filtrar por ' + estrela + ' estrelas ou mais'"
             >
               {{ estrela <= filtroAvaliacao ? "★" : "☆" }}
-            </span>
+            </button>
             <button
               v-if="filtroAvaliacao > 0"
               @click="filtroAvaliacao = 0"
               class="limpar-avaliacao"
+              aria-label="Limpar filtro de avaliação"
             >
               Limpar
             </button>
@@ -63,62 +77,85 @@
       </aside>
 
       <main class="conteudo-principal">
-        <section class="secao-destaque">
-          <h2 class="titulo-secao">Destaques Perto de Você</h2>
-          <div class="produtos-grid">
-            <ProductCard
-              v-for="produto in produtosPertoDeVoce"
-              :key="produto.id"
-              :produto="produto"
-            />
+        <div v-if="loading" class="skeleton-container">
+          <div class="skeleton-section">
+            <div class="skeleton-title"></div>
+            <div class="produtos-grid">
+              <div v-for="n in 4" :key="n" class="skeleton-card"></div>
+            </div>
           </div>
-        </section>
-
-        <section class="secao-destaque">
-          <h2 class="titulo-secao">Destaques da Plataforma</h2>
-          <div class="produtos-grid">
-            <ProductCard
-              v-for="produto in produtosDestaquePlataforma"
-              :key="produto.id"
-              :produto="produto"
-            />
+          <div class="skeleton-section">
+            <div class="skeleton-title"></div>
+            <div class="produtos-grid">
+              <div v-for="n in 8" :key="n" class="skeleton-card"></div>
+            </div>
           </div>
-        </section>
+        </div>
 
-        <section class="secao-principal">
-          <h2 class="titulo-secao">Todos os Produtos</h2>
-          <div class="produtos-grid">
-            <ProductCard
-              v-for="produto in produtosDaPagina"
-              :key="produto.id"
-              :produto="produto"
-            />
-          </div>
+        <div v-else>
+          <section class="secao-destaque">
+            <h2 class="titulo-secao">Destaques Perto de Você</h2>
+            <div class="produtos-grid">
+              <ProductCard
+                v-for="produto in produtosPertoDeVoce"
+                :key="produto.id"
+                :produto="produto"
+                @delete="funcaoQueRemoveDoBackend"
+              />
+            </div>
+          </section>
 
-          <p v-if="produtosFiltrados.length === 0" class="sem-resultados">
-            Nenhum produto encontrado com os filtros aplicados.
-          </p>
+          <section class="secao-destaque">
+            <h2 class="titulo-secao">Destaques da Plataforma</h2>
+            <div class="produtos-grid">
+              <ProductCard
+                v-for="produto in produtosDestaquePlataforma"
+                :key="produto.id"
+                :produto="produto"
+                @delete="funcaoQueRemoveDoBackend"
+              />
+            </div>
+          </section>
 
-          <div v-if="totalPaginas > 1" class="paginacao-container">
-            <button
-              @click="paginaAnterior"
-              :disabled="paginaAtual === 1"
-              class="pagina-btn"
-            >
-              Anterior
-            </button>
-            <span class="pagina-info">
-              Página {{ paginaAtual }} de {{ totalPaginas }}
-            </span>
-            <button
-              @click="proximaPagina"
-              :disabled="paginaAtual === totalPaginas"
-              class="pagina-btn"
-            >
-              Próxima
-            </button>
-          </div>
-        </section>
+          <section class="secao-principal">
+            <h2 class="titulo-secao">Todos os Produtos</h2>
+
+            <div class="produtos-grid">
+              <ProductCard
+                v-for="produto in produtosDaPagina"
+                :key="produto.id"
+                :produto="produto"
+                @delete="funcaoQueRemoveDoBackend"
+              />
+            </div>
+
+            <p v-if="produtosFiltrados.length === 0" class="sem-resultados">
+              Nenhum produto encontrado com os filtros aplicados.
+            </p>
+
+            <div v-if="totalPaginas > 1" class="paginacao-container">
+              <button
+                @click="paginaAnterior"
+                :disabled="paginaAtual === 1"
+                class="pagina-btn"
+                aria-label="Página anterior"
+              >
+                Anterior
+              </button>
+              <span class="pagina-info">
+                Página {{ paginaAtual }} de {{ totalPaginas }}
+              </span>
+              <button
+                @click="proximaPagina"
+                :disabled="paginaAtual === totalPaginas"
+                class="pagina-btn"
+                aria-label="Próxima página"
+              >
+                Próxima
+              </button>
+            </div>
+          </section>
+        </div>
       </main>
     </div>
   </div>
@@ -128,6 +165,8 @@
 import { ref, onMounted, computed, watch } from "vue";
 import axios from "axios";
 import ProductCard from "@/components/ProductCard.vue";
+import { useToast } from "vue-toastification";
+import { useProductStore } from "@/stores/product";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 const API_URL = `${API_BASE_URL}/Product`;
@@ -136,10 +175,13 @@ export default {
   components: { ProductCard },
   setup() {
     const produtos = ref([]);
-    const produtosPertoDeVoce = ref([]);
-    const produtosDestaquePlataforma = ref([]);
+    const produtosPertoDeVoceRef = ref([]);
+
     const paginaAtual = ref(1);
     const itensPorPagina = ref(8);
+    const loading = ref(true);
+    const toast = useToast();
+    const productStore = useProductStore();
 
     const filtroCategoria = ref("");
     const filtroPrecoMin = ref(null);
@@ -148,6 +190,7 @@ export default {
     const categoriasDisponiveis = ref([]);
 
     const carregarProdutos = async () => {
+      loading.value = true;
       try {
         const response = await axios.get(API_URL);
         const data = response.data;
@@ -162,23 +205,73 @@ export default {
             item.mainImageUrl ||
             "https://via.placeholder.com/250x250?text=Sem+Imagem",
           sellerId: item.sellerId,
-
           rating: item.averageRating || 0,
+          state: item.state || "Novo",
         }));
 
-        produtosPertoDeVoce.value = produtos.value.slice(0, 4);
-        produtosDestaquePlataforma.value = produtos.value.slice(4, 8);
+        // Gera "Perto de Você" aleatoriamente para simular descoberta
+        // Fazemos uma cópia e embaralhamos
+        const shuffled = [...produtos.value].sort(() => 0.5 - Math.random());
+        produtosPertoDeVoceRef.value = shuffled.slice(0, 4);
+
         categoriasDisponiveis.value = [
           ...new Set(produtos.value.map((p) => p.category)),
         ];
       } catch (err) {
         console.error("Erro ao carregar produtos:", err);
-        alert("Erro ao carregar produtos. Verifique o servidor!");
+        toast.error("Não foi possível carregar os produtos.");
+      } finally {
+        loading.value = false;
       }
     };
 
+    const funcaoQueRemoveDoBackend = async (idProduto) => {
+      if (!confirm("Tem certeza que deseja apagar este produto?")) return;
+
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          toast.warning("Você precisa estar logado.");
+          return;
+        }
+
+        await axios.delete(`${API_URL}/${idProduto}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // Remove de TODAS as listas locais
+        produtos.value = produtos.value.filter((p) => p.id !== idProduto);
+        produtosPertoDeVoceRef.value = produtosPertoDeVoceRef.value.filter(
+          (p) => p.id !== idProduto
+        );
+
+        toast.success("Produto removido com sucesso!");
+      } catch (error) {
+        console.error("Erro ao deletar:", error);
+        toast.error("Erro ao deletar produto. Verifique se você é o dono.");
+      }
+    };
+
+    // Retorna a ref aleatória que criamos no carregamento
+    const produtosPertoDeVoce = computed(() => {
+      return produtosPertoDeVoceRef.value;
+    });
+
+    // Filtra os Top 4 Melhores Avaliados (Rating)
+    const produtosDestaquePlataforma = computed(() => {
+      // Cria cópia para não mudar a ordem da lista principal
+      const sorted = [...produtos.value].sort((a, b) => b.rating - a.rating);
+      return sorted.slice(0, 4);
+    });
+
     const produtosFiltrados = computed(() => {
       return produtos.value.filter((produto) => {
+        const termo = productStore.termoBuscaGlobal.toLowerCase();
+        const correspondeBusca = termo
+          ? produto.name.toLowerCase().includes(termo) ||
+            produto.description.toLowerCase().includes(termo)
+          : true;
+
         const correspondeCategoria = filtroCategoria.value
           ? produto.category === filtroCategoria.value
           : true;
@@ -192,6 +285,7 @@ export default {
           ? produto.rating >= filtroAvaliacao.value
           : true;
         return (
+          correspondeBusca &&
           correspondeCategoria &&
           correspondePrecoMin &&
           correspondePrecoMax &&
@@ -200,9 +294,9 @@ export default {
       });
     });
 
-    const totalPaginas = computed(() => {
-      return Math.ceil(produtosFiltrados.value.length / itensPorPagina.value);
-    });
+    const totalPaginas = computed(() =>
+      Math.ceil(produtosFiltrados.value.length / itensPorPagina.value)
+    );
 
     const produtosDaPagina = computed(() => {
       const inicio = (paginaAtual.value - 1) * itensPorPagina.value;
@@ -211,19 +305,20 @@ export default {
     });
 
     const paginaAnterior = () => {
-      if (paginaAtual.value > 1) {
-        paginaAtual.value--;
-      }
+      if (paginaAtual.value > 1) paginaAtual.value--;
     };
-
     const proximaPagina = () => {
-      if (paginaAtual.value < totalPaginas.value) {
-        paginaAtual.value++;
-      }
+      if (paginaAtual.value < totalPaginas.value) paginaAtual.value++;
     };
 
     watch(
-      [filtroCategoria, filtroPrecoMin, filtroPrecoMax, filtroAvaliacao],
+      [
+        filtroCategoria,
+        filtroPrecoMin,
+        filtroPrecoMax,
+        filtroAvaliacao,
+        () => productStore.termoBuscaGlobal,
+      ],
       () => {
         paginaAtual.value = 1;
       }
@@ -245,6 +340,8 @@ export default {
       filtroPrecoMax,
       filtroAvaliacao,
       categoriasDisponiveis,
+      loading,
+      funcaoQueRemoveDoBackend,
     };
   },
 };
@@ -255,12 +352,57 @@ export default {
   padding: 40px 20px;
   max-width: 1800px;
   margin: auto;
+  min-height: 100vh;
 }
+
+.estrela-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #ccc;
+}
+.estrela-btn.ativo {
+  color: #ffc107;
+}
+
+.skeleton-section {
+  margin-bottom: 60px;
+}
+.skeleton-title {
+  height: 40px;
+  width: 300px;
+  background: #ddd;
+  margin-bottom: 25px;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite;
+}
+.skeleton-card {
+  height: 350px;
+  background: #eee;
+  border-radius: 10px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
 .layout-container {
   display: flex;
   gap: 30px;
   align-items: flex-start;
 }
+
 .sidebar {
   width: 250px;
   flex-shrink: 0;
@@ -344,11 +486,6 @@ export default {
   align-items: center;
   gap: 5px;
 }
-.estrela {
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #ffc107;
-}
 .limpar-avaliacao {
   margin-left: 10px;
   border: none;
@@ -397,6 +534,7 @@ export default {
   font-weight: 500;
   color: var(--color-text);
 }
+
 @media (max-width: 1400px) {
   .produtos-grid {
     grid-template-columns: repeat(3, 1fr);

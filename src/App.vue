@@ -4,11 +4,16 @@ import { useRoute } from "vue-router";
 import Navbar from "./components/Navbar.vue";
 import Footer from "./components/Footer.vue";
 import MessagesWidget from "@/components/MessagesWidget.vue";
+import Carrinho from "@/components/Carrinho.vue";
 import { useThemeStore } from "@/stores/theme";
+import { useAuthStore } from "@/stores/auth";
+import { useCartStore } from "@/stores/cart";
 import "./assets/main.css";
 
 const route = useRoute();
 const themeStore = useThemeStore();
+const authStore = useAuthStore();
+const cartStore = useCartStore();
 
 const isAuthRoute = computed(() => {
   return route.path === "/login" || route.path === "/cadastro";
@@ -18,15 +23,20 @@ const esconderFooter = computed(() => {
   return (
     route.path === "/login" ||
     route.path === "/cadastro" ||
-    route.path === "/meus-produtos"
+    route.path === "/produtos" ||
+    route.path === "/meus-produtos" ||
+    route.path === "/fidelidade"
   );
 });
 
-onMounted(() => {
+onMounted(async () => {
   themeStore.initTheme();
+
+  if (authStore.isAuthenticated) {
+    await cartStore.fetchCart();
+  }
 });
 </script>
-
 <template>
   <link
     rel="stylesheet"
@@ -48,6 +58,7 @@ onMounted(() => {
 <style scoped>
 #app {
   overflow-x: hidden;
-  overflow-y: unset;
+  min-height: 100vh;
+  position: relative;
 }
 </style>

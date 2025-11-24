@@ -5,9 +5,17 @@ import axios from "axios";
 const API_URL = import.meta.env.VITE_API_URL;
 
 export const useProductStore = defineStore("product", () => {
+  // STATE
   const products = ref({});
   const loading = ref(false);
   const error = ref(null);
+  // Novo estado para a busca global
+  const termoBuscaGlobal = ref("");
+
+  // ACTION: Definir busca (Navbar -> Store -> TelaProdutos)
+  function setTermoBusca(termo) {
+    termoBuscaGlobal.value = termo;
+  }
 
   async function fetchProductById(productId) {
     if (products.value[productId] && !products.value[productId].reviews) {
@@ -50,13 +58,16 @@ export const useProductStore = defineStore("product", () => {
       formData.append("Name", productPayload.name);
       formData.append("Description", productPayload.description);
       formData.append("Price", productPayload.price);
+      // ✅ CORREÇÃO: Adicionados StockQuantity e CompatibleModel
       formData.append("StockQuantity", productPayload.stockQuantity);
+      formData.append("CompatibleModel", productPayload.compatibleModel);
+
       formData.append("Category", productPayload.category);
 
       const response = await axios.post(`${API_URL}/Product`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": undefined,
+          "Content-Type": undefined, // Deixar o navegador definir boundary
         },
       });
 
@@ -65,17 +76,21 @@ export const useProductStore = defineStore("product", () => {
 
       return newProduct;
     } catch (err) {
-      error.value = "Erro ao publicar produto. Verifique sua autenticação.";
+      error.value = "Erro ao publicar produto.";
 
       if (
         err.response &&
         (err.response.status === 401 || err.response.status === 403)
       ) {
-        error.value = "Acesso negado ou sessão expirada. Faça login novamente.";
+        error.value = "Sessão expirada. Faça login novamente.";
       }
 
       if (err.response && err.response.data && err.response.data.errors) {
-        error.value = JSON.stringify(err.response.data.errors);
+        // Tenta pegar o erro específico do backend (ex: "Nome é obrigatório")
+        const firstError = Object.values(err.response.data.errors)[0];
+        error.value = Array.isArray(firstError)
+          ? firstError[0]
+          : JSON.stringify(err.response.data.errors);
       }
 
       throw err;
@@ -84,37 +99,29 @@ export const useProductStore = defineStore("product", () => {
     }
   }
 
-  // NOVO: Função para buscar as avaliações de um produto
   async function fetchReviewsForProduct(productId) {
-    // Evita buscar de novo se já tivermos as avaliações
     if (products.value[productId]?.reviews) {
       return products.value[productId].reviews;
     }
 
     try {
-      // Usamos o endpoint que criámos no back-end
       const response = await axios.get(
         `${API_URL}/review/product/${productId}`
       );
       const reviewsData = response.data;
 
-      // Armazena as avaliações dentro do objeto do produto
       if (products.value[productId]) {
         products.value[productId].reviews = reviewsData;
       }
 
       return reviewsData;
     } catch (err) {
-      // Não define o 'error.value' principal para não bloquear a UI
-      // se só as reviews falharem
       console.error("Falha ao buscar avaliações:", err.message);
       return null;
     }
   }
 
-  // NOVO: Função para adicionar uma nova avaliação
   async function addReview(reviewPayload) {
-    // reviewPayload deve ser: { productId, rating, comment }
     loading.value = true;
     error.value = null;
 
@@ -124,7 +131,6 @@ export const useProductStore = defineStore("product", () => {
         throw new Error("Usuário não autenticado.");
       }
 
-      // Usamos o endpoint POST /api/review
       const response = await axios.post(`${API_URL}/review`, reviewPayload, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -134,12 +140,10 @@ export const useProductStore = defineStore("product", () => {
       const newReview = response.data;
       const productId = newReview.productId;
 
-      // Adiciona a nova avaliação no início da lista no estado da store
       if (products.value[productId]) {
         if (!products.value[productId].reviews) {
           products.value[productId].reviews = [];
         }
-        // unshift() adiciona no início do array
         products.value[productId].reviews.unshift(newReview);
       }
 
@@ -150,12 +154,11 @@ export const useProductStore = defineStore("product", () => {
       if (err.response?.status === 401 || err.response?.status === 403) {
         error.value = "Acesso negado. Faça login novamente.";
       }
-      // Captura o erro "Já avaliaste este produto."
       if (err.response?.data?.message) {
         error.value = err.response.data.message;
       }
 
-      throw err; // Lança o erro para o componente poder tratar
+      throw err;
     } finally {
       loading.value = false;
     }
@@ -165,6 +168,8 @@ export const useProductStore = defineStore("product", () => {
     products,
     loading,
     error,
+    termoBuscaGlobal, // Exporta estado
+    setTermoBusca, // Exporta action
     fetchProductById,
     addProduct,
     fetchReviewsForProduct,

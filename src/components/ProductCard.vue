@@ -1,5 +1,13 @@
 <template>
   <div class="produto-card" @click="irParaProduto(produto.id)">
+    <button
+      v-if="isOwner"
+      class="btn-delete"
+      @click.stop="confirmarDelete"
+      aria-label="Deletar produto"
+    >
+      <i class="fa fa-trash"></i>
+    </button>
     <div class="card-content">
       <div class="imagem-container">
         <img
@@ -7,36 +15,37 @@
           :src="produto.mainImageUrl"
           :alt="produto.name"
           class="produto-imagem"
+          loading="lazy"
+          @error="onImageError"
         />
         <div v-else class="sem-imagem">
-          <span> Sem imagem</span>
+          <i class="fa fa-image"></i>
+          <span>Sem imagem</span>
         </div>
       </div>
       <div class="produto-info">
         <h3>{{ produto.name }}</h3>
-
         <span class="badge-vendedor">{{ sellerName }}</span>
-
         <p class="preco">R$ {{ produto.price.toFixed(2) }}</p>
 
         <div class="avaliacao-estrelas">
           <span
-            v-for="star in 5"
-            :key="star"
-            :class="{ 'estrela-preenchida': star <= produtoRating }"
+            v-for="i in 5"
+            :key="i"
             class="estrela"
+            :class="{ 'estrela-preenchida': i <= rating }"
+            >★</span
           >
-            &#9733;
-          </span>
-          <span class="numero-avaliacoes" v-if="reviewCount > 0">
-            ({{ reviewCount }})
-          </span>
-          <span class="numero-avaliacoes" v-else> (Sem avaliações) </span>
+          <span class="numero-avaliacoes">({{ reviewCount }} avaliações)</span>
         </div>
         <p class="estado">{{ produto.state || "" }}</p>
-        <p class="descricao">{{ produto.description }}</p>
-        <button class="btn-carrinho" @click.stop="adicionarAoCarrinho">
-          Adicionar ao carrinho
+
+        <button
+          class="btn-carrinho"
+          @click.stop="adicionarAoCarrinho"
+          :disabled="isAdding"
+        >
+          {{ isAdding ? "Adicionando..." : "Adicionar ao carrinho" }}
         </button>
       </div>
     </div>
@@ -44,50 +53,107 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
+import { useAuthStore } from "@/stores/auth";
+import { useCartStore } from "@/stores/cart";
 import { useToast } from "vue-toastification";
 
 const props = defineProps({
-  produto: Object,
+  produto: {
+    type: Object,
+    required: true,
+    validator: (value) => {
+      return (
+        value.id &&
+        value.name &&
+        typeof value.price === "number" &&
+        value.sellerId
+      );
+    },
+  },
 });
+
+const emit = defineEmits(["delete"]);
 
 const router = useRouter();
 const userStore = useUserStore();
+const authStore = useAuthStore();
+const cartStore = useCartStore();
 const toast = useToast();
+const isAdding = ref(false);
+const isDeleting = ref(false);
 
-const produtoRating = computed(() => {
-  return props.produto.averageRating
-    ? parseFloat(props.produto.averageRating)
-    : 0;
+const isOwner = computed(() => {
+  if (!authStore.user || !props.produto.sellerId) return false;
+  return String(authStore.user.id) === String(props.produto.sellerId);
 });
 
-const reviewCount = computed(() => {
-  return props.produto.reviewCount ? parseInt(props.produto.reviewCount) : 0;
+const sellerName = computed(() => {
+  if (!props.produto.sellerId) return "Vendedor desconhecido";
+  const seller = userStore.users[props.produto.sellerId];
+  return seller?.name || "Carregando...";
 });
+
+const rating = computed(() => Math.round(props.produto.rating || 0));
+const reviewCount = computed(() => props.produto.reviewCount || 0);
+
+const confirmarDelete = async () => {
+  if (!confirm("Tem certeza que deseja excluir este produto?")) return;
+
+  isDeleting.value = true;
+  try {
+    emit("delete", props.produto.id);
+    toast.success("Produto deletado com sucesso!");
+  } catch (error) {
+    console.error("Erro ao deletar produto:", error);
+    toast.error("Erro ao deletar o produto.");
+  } finally {
+    isDeleting.value = false;
+  }
+};
+
+const irParaProduto = (id) => {
+  router.push(`/produto/${id}`);
+};
+
+const adicionarAoCarrinho = async () => {
+  if (!authStore.user) {
+    router.push("/login");
+    return;
+  }
+
+  isAdding.value = true;
+  try {
+    await cartStore.addToCart(props.produto.id, 1);
+    // TOAST DE SUCESSO REMOVIDO: A sidebar abre como confirmação visual.
+  } catch (error) {
+    console.error("Erro ao adicionar ao carrinho:", error);
+    if (error.response?.status === 401) {
+      router.push("/login");
+    } else {
+      toast.error("Erro ao adicionar ao carrinho.");
+    }
+  } finally {
+    isAdding.value = false;
+  }
+};
+
+const onImageError = (event) => {
+  event.target.style.display = "none";
+  const container = event.target.parentElement;
+  if (container) {
+    const semImagem = container.querySelector(".sem-imagem");
+    if (semImagem) semImagem.style.display = "flex";
+  }
+};
 
 onMounted(() => {
   if (props.produto.sellerId) {
     userStore.fetchUserById(props.produto.sellerId);
   }
 });
-
-const sellerName = computed(() => {
-  if (!props.produto.sellerId) {
-    return "Vendedor desconhecido";
-  }
-  const seller = userStore.users[props.produto.sellerId];
-  return seller ? seller.name : "Vendedor...";
-});
-
-const irParaProduto = (id) => {
-  router.push(`/produto/${id}`);
-};
-
-const adicionarAoCarrinho = () => {
-  toast.success(`"${props.produto.name}" adicionado ao carrinho!`);
-};
 </script>
 
 <style scoped>
@@ -99,11 +165,52 @@ const adicionarAoCarrinho = () => {
   transition: transform 0.3s, box-shadow 0.3s;
   position: relative;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 .produto-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 6px 12px var(--color-card-shadow);
 }
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.btn-delete {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #dc3545;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.btn-delete:hover {
+  background-color: #dc3545;
+  color: white;
+  transform: scale(1.1);
+}
+
+.btn-delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .imagem-container {
   height: 200px;
   width: 100%;
@@ -121,14 +228,23 @@ const adicionarAoCarrinho = () => {
   color: var(--color-text);
   opacity: 0.7;
   font-size: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .produto-info {
   padding: 15px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 .produto-info h3 {
   margin: 0 0 10px;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   color: var(--color-heading);
+  line-height: 1.4;
+  height: 2.8em;
+  overflow: hidden;
 }
 .preco {
   font-size: 1.5rem;
@@ -159,7 +275,9 @@ const adicionarAoCarrinho = () => {
 .estado {
   color: var(--color-text);
   font-size: 0.9rem;
+  margin-bottom: auto;
 }
+
 .descricao {
   color: var(--color-text);
   font-size: 0.9rem;
@@ -178,20 +296,26 @@ const adicionarAoCarrinho = () => {
   font-size: 0.85rem;
   margin: 0.5rem 0;
   font-weight: bold;
+  align-self: flex-start;
 }
 .btn-carrinho {
   background-color: var(--color-primary);
   color: #fff;
   border: none;
   border-radius: 6px;
-  padding: 8px 16px;
-  margin-top: 10px;
+  padding: 12px 16px;
+  margin-top: 15px;
   cursor: pointer;
   font-weight: bold;
   transition: background-color 0.2s;
+  width: 100%;
 }
-.btn-carrinho:hover {
+.btn-carrinho:hover:not(:disabled) {
   background-color: var(--color-primary-hover);
+}
+.btn-carrinho:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
@@ -215,7 +339,7 @@ const adicionarAoCarrinho = () => {
     padding: 0.2rem 0.6rem;
   }
   .btn-carrinho {
-    padding: 7px 14px;
+    padding: 10px 14px;
     font-size: 0.9rem;
   }
 }
@@ -243,7 +367,7 @@ const adicionarAoCarrinho = () => {
   }
   .btn-carrinho {
     width: 100%;
-    margin-top: 8px;
+    margin-top: 10px;
   }
 }
 </style>

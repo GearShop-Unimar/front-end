@@ -22,11 +22,11 @@
           </li>
         </ul>
         <div class="search-container">
-          <form class="search-bar" @submit.prevent="pesquisar">
+          <form class="search-bar" @submit.prevent>
             <i class="fa fa-search search-icon"></i>
             <input
               type="text"
-              v-model="termoBusca"
+              v-model="termoBuscaLocal"
               placeholder="Buscar peças..."
             />
           </form>
@@ -35,11 +35,11 @@
         <ul class="auth-links">
           <template v-if="authStore.isAuthenticated">
             <li>
-              <router-link
-                to="/carrinho"
-                class="icon-link"
+              <a
+                href="#"
+                class="icon-link cart-btn-wrapper"
                 aria-label="Carrinho"
-                @click="isCartOpen = true"
+                @click.prevent="cartStore.toggleCart()"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -59,7 +59,10 @@
                     d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
                   ></path>
                 </svg>
-              </router-link>
+                <span v-if="cartStore.itemsCount > 0" class="cart-badge">
+                  {{ cartStore.itemsCount }}
+                </span>
+              </a>
             </li>
             <li>
               <router-link to="/perfil" class="icon-link" aria-label="Perfil">
@@ -105,117 +108,78 @@
       </div>
     </div>
   </nav>
-  <Carrinho :isOpen="isCartOpen" @close="closeCart" />
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from "vue";
-import { useRouter } from "vue-router";
-import Carrinho from "@/components/Carrinho.vue";
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useThemeStore } from "@/stores/theme";
+import { useCartStore } from "@/stores/cart";
+import { useProductStore } from "@/stores/product";
 
 const authStore = useAuthStore();
 const themeStore = useThemeStore();
+const cartStore = useCartStore();
+const productStore = useProductStore();
 const router = useRouter();
+const route = useRoute();
 
-// URL base da API
 const API_URL = import.meta.env.VITE_API_URL || "";
 
-/**
- * @description Propriedade computada para determinar a URL da foto de perfil do usuário.
- * Usa o campo `Avatar` fornecido pelo backend.
- */
 const userPhoto = computed(() => {
   const u = authStore.user;
   if (!u) return null;
 
-  // ✅ CORREÇÃO: Usamos o campo 'Avatar' (ou o campo que contém a URL/URI)
   const avatarUrl = u.Avatar;
 
   if (avatarUrl) {
-    // 1. Se for uma URL completa (começa com http/https)
     if (/^https?:\/\//i.test(avatarUrl)) {
       return avatarUrl;
     }
-
-    // 2. Se for um caminho relativo, anexamos à API_URL
-    const baseApi = API_URL.replace(/\/$/, ""); // Garante que não termina em '/'
-    const cleanAvatarPath = avatarUrl.replace(/^\//, ""); // Garante que não começa com '/'
-
+    const baseApi = API_URL.replace(/\/$/, "");
+    const cleanAvatarPath = avatarUrl.replace(/^\//, "");
     return `${baseApi}/${cleanAvatarPath}`;
   }
 
-  // 3. Fallback: Se não houver 'Avatar', mas houver o ID, tenta um caminho padrão
   if (u.id) {
-    // Ex: http://api.gearshop.com/images/user/123
     return `${API_URL.replace(/\/$/, "")}/images/user/${u.id}`;
   }
 
   return null;
 });
 
-const isCartOpen = ref(false);
-const termoBusca = ref("");
+const termoBuscaLocal = ref("");
 const menuOpen = ref(false);
 const isScrolled = ref(false);
 
-/**
- * @description Alterna o estado do menu hambúrguer.
- */
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value;
 };
 
-/**
- * @description Fecha o componente do carrinho (se for um modal/sidebar).
- */
-const closeCart = () => {
-  isCartOpen.value = false;
-};
+watch(termoBuscaLocal, (novoValor) => {
+  productStore.setTermoBusca(novoValor);
 
-/**
- * @description Redireciona para a página de produtos com o termo de busca.
- */
-const pesquisar = () => {
-  if (termoBusca.value.trim()) {
-    router.push({
-      name: "Produtos", // Garanta que este é o nome correto da rota
-      query: { busca: termoBusca.value.trim() },
-    });
-    termoBusca.value = "";
-    // Fecha o menu após a busca em mobile
-    menuOpen.value = false;
+  if (novoValor && route.name !== "Produtos") {
+    router.push({ name: "Produtos" });
   }
-};
+});
 
-/**
- * @description Atualiza o estado de rolagem para aplicar estilos na navbar.
- */
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 50;
 };
 
-/**
- * @description Adiciona o listener de scroll ao montar o componente.
- */
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
+  termoBuscaLocal.value = productStore.termoBuscaGlobal;
 });
 
-/**
- * @description Remove o listener de scroll ao desmontar o componente para evitar vazamento de memória.
- */
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
 });
 </script>
 
 <style scoped>
-/* * ESTILOS DE BARRA DE NAVEGAÇÃO
- * Mantidos inalterados do seu código original,
- * pois o foco foi na lógica do JavaScript.
- */
 .navbar {
   background-color: var(--color-navbar-background);
   padding: 0 20px;
@@ -474,6 +438,25 @@ onUnmounted(() => {
 }
 .hamburger.open span:nth-child(3) {
   transform: translateY(-9px) rotate(-45deg);
+}
+
+.cart-btn-wrapper {
+  position: relative;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: var(--color-primary);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 50%;
+  min-width: 18px;
+  text-align: center;
+  border: 1px solid var(--color-navbar-background);
 }
 
 @media (max-width: 1200px) {

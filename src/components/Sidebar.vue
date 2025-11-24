@@ -5,35 +5,37 @@
     <ul class="sidebar-nav">
       <li>
         <router-link to="/">
-          <i class="fas fa-home"></i> <span>Página Inicial</span>
+          <Icon lib="fa" name="home" /> <span>Página Inicial</span>
         </router-link>
       </li>
       <li>
         <router-link to="/produtos">
-          <i class="fas fa-search"></i> <span>Explorar</span>
+          <Icon lib="fa" name="search" /> <span>Explorar</span>
         </router-link>
       </li>
       <li>
         <router-link to="/mensagens">
-          <i class="fas fa-envelope"></i> <span>Mensagens</span>
+          <Icon lib="fa" name="envelope" /> <span>Mensagens</span>
         </router-link>
       </li>
       <li>
         <router-link to="/perfil">
-          <i class="fas fa-user"></i> <span>Perfil</span>
+          <Icon lib="fa" name="user" /> <span>Perfil</span>
         </router-link>
       </li>
     </ul>
 
     <button class="btn btn-primary post-button">
-      <i class="fas fa-feather-alt"></i> <span>Postar</span>
+      <Icon lib="fa" name="feather-alt" /> <span>Postar</span>
     </button>
 
     <div class="sidebar-spacer"></div>
   </nav>
 </template>
 
-<script setup></script>
+<script setup>
+// O script permanece vazio, pois os imports são globais ou automáticos
+</script>
 
 <style scoped>
 /* --- Estilos Gerais --- */
@@ -75,13 +77,18 @@
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* --- Ícones Brancos --- */
-.sidebar-nav li a i {
-  font-size: 2rem;
+/* --- Ícones --- */
+/* Ajuste importante: garante que o ícone esteja centralizado e visível */
+.sidebar-nav li a :deep(i),
+.sidebar-nav li a :deep(svg) {
+  font-size: 1.8rem; /* Tamanho ligeiramente ajustado */
   width: 30px;
   text-align: center;
   margin-right: 15px;
   color: white;
+  display: inline-flex; /* Melhora o alinhamento */
+  justify-content: center;
+  align-items: center;
 }
 
 .sidebar-nav li a:hover {
@@ -94,9 +101,9 @@
   font-weight: 700;
 }
 
-/* Mantém o ícone da página ativa colorido, se preferires branco apaga isto */
-.sidebar-nav li a.router-link-exact-active i {
-  color: var(--color-primary);
+/* Mantém o ícone da página ativa branco */
+.sidebar-nav li a.router-link-exact-active :deep(i) {
+  color: white;
 }
 
 /* Botão Postar */
@@ -120,7 +127,8 @@
   gap: 10px;
 }
 
-.post-button i {
+/* Garante cor branca no ícone do botão */
+.post-button :deep(i) {
   color: white;
 }
 
@@ -157,9 +165,9 @@
   .sidebar-nav li a span {
     display: none;
   }
-  .sidebar-nav li a i {
+  /* Remove margem quando está em modo tablet (apenas ícone) */
+  .sidebar-nav li a :deep(i) {
     margin-right: 0;
-    width: auto;
   }
 
   .post-button {
@@ -170,14 +178,15 @@
     margin: 25px auto 10px auto;
   }
 
-  .post-button i,
+  .post-button :deep(i),
   .post-button span {
     display: none;
   }
 
+  /* Ícone "Pen" (Postar) no modo tablet */
   .post-button::before {
-    content: "\f040";
-    font-family: "Font Awesome 5 Free";
+    content: "\f303"; /* Código unicode para 'pen' no FontAwesome 6, ou f040 no FA 5 */
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free";
     font-weight: 900;
     font-size: 1.5rem;
     color: white;
@@ -223,8 +232,9 @@
     justify-content: center;
   }
 
-  .sidebar-nav li a i {
-    font-size: 1.5rem;
+  /* No mobile, também removemos a margem direita do ícone */
+  .sidebar-nav li a :deep(i) {
+    margin-right: 0;
   }
 
   .post-button {

@@ -2,6 +2,7 @@
   <div>
     <button
       class="chat-fab"
+      :class="{ shifted: cartStore.isOpen }"
       v-if="!isOpen"
       @click="toggleOpen(true)"
       aria-label="Abrir mensagens"
@@ -13,7 +14,11 @@
     <div
       v-else
       class="chat-panel"
-      :class="{ open: isOpen, 'chat-active': selectedId }"
+      :class="{
+        open: isOpen,
+        'chat-active': selectedId,
+        shifted: cartStore.isOpen,
+      }"
     >
       <header class="chat-header">
         <div class="title">
@@ -113,6 +118,7 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import { useCartStore } from "@/stores/cart";
 import {
   fetchConversationsFromBackend,
   fetchMessagesFromBackend,
@@ -120,6 +126,7 @@ import {
 } from "@/services/messagesService";
 
 const auth = useAuthStore();
+const cartStore = useCartStore();
 const currentUserId = computed(() => auth.user?.id || 0);
 
 const isOpen = ref(false);
@@ -216,6 +223,7 @@ async function handleSend() {
 
 onMounted(() => {});
 </script>
+
 <style scoped>
 .chat-fab {
   position: fixed;
@@ -232,8 +240,14 @@ onMounted(() => {});
   cursor: pointer;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
   font-weight: 600;
-  z-index: 9999;
+  z-index: 9990;
+  transition: right 0.3s ease, bottom 0.3s ease;
 }
+
+.chat-fab.shifted {
+  right: 380px;
+}
+
 .chat-fab .label {
   display: none;
   font-size: 16px;
@@ -258,8 +272,14 @@ onMounted(() => {});
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  z-index: 10000;
+  z-index: 9995;
+  transition: right 0.3s ease, width 0.3s ease;
 }
+
+.chat-panel.shifted {
+  right: 380px;
+}
+
 .chat-header {
   height: 54px;
   display: flex;
@@ -453,45 +473,42 @@ onMounted(() => {});
   cursor: pointer;
 }
 
-/* RESPONSIVIDADE PARA DESKTOPS E TABLETS GRANDES */
 @media (max-width: 920px) {
   .chat-body {
-    /* Em telas menores, o layout padrão é a lista de conversas em coluna única */
     grid-template-columns: 1fr;
   }
 
   .chat-panel.chat-active .conversations {
-    /* Se uma conversa está selecionada, esconde a lista e mostra o chat */
     display: none;
   }
 
   .conversations {
-    /* Por padrão, em 920px (e abaixo), a lista é mostrada */
     display: flex;
     border-right: none;
   }
 
   .chat {
-    /* Garante que o chat esteja oculto se uma conversa não estiver ativa no modo mobile */
     display: none;
   }
 
   .chat-panel.chat-active .chat {
-    /* Se uma conversa está selecionada, mostra a seção de chat */
     display: flex;
   }
 
   .chat-panel {
-    /* Reduz o tamanho do painel */
     width: min(400px, 96vw);
     height: 90vh;
     right: 10px;
     bottom: 10px;
   }
+
+  .chat-fab.shifted,
+  .chat-panel.shifted {
+    right: 380px;
+  }
 }
 
-/* RESPONSIVIDADE PARA SMARTPHONES (TELA CHEIA) */
-@media (max-width: 420px) {
+@media (max-width: 480px) {
   .chat-panel {
     width: 100vw;
     height: 100vh;
@@ -504,6 +521,14 @@ onMounted(() => {});
     right: 10px;
     bottom: 10px;
     padding: 14px;
+  }
+
+  .chat-fab.shifted {
+    right: 10px;
+  }
+
+  .chat-panel.shifted {
+    right: 0;
   }
 
   .chat-fab .label {
