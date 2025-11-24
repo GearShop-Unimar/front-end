@@ -94,18 +94,6 @@
 
         <div v-else>
           <section class="secao-destaque">
-            <h2 class="titulo-secao">Destaques Perto de Você</h2>
-            <div class="produtos-grid">
-              <ProductCard
-                v-for="produto in produtosPertoDeVoce"
-                :key="produto.id"
-                :produto="produto"
-                @delete="funcaoQueRemoveDoBackend"
-              />
-            </div>
-          </section>
-
-          <section class="secao-destaque">
             <h2 class="titulo-secao">Destaques da Plataforma</h2>
             <div class="produtos-grid">
               <ProductCard
@@ -175,7 +163,7 @@ export default {
   components: { ProductCard },
   setup() {
     const produtos = ref([]);
-    const produtosPertoDeVoceRef = ref([]);
+    // REMOVIDO: produtosPertoDeVoceRef foi removido
 
     const paginaAtual = ref(1);
     const itensPorPagina = ref(8);
@@ -209,10 +197,7 @@ export default {
           state: item.state || "Novo",
         }));
 
-        // Gera "Perto de Você" aleatoriamente para simular descoberta
-        // Fazemos uma cópia e embaralhamos
-        const shuffled = [...produtos.value].sort(() => 0.5 - Math.random());
-        produtosPertoDeVoceRef.value = shuffled.slice(0, 4);
+        // REMOVIDO: Lógica para gerar "Perto de Você"
 
         categoriasDisponiveis.value = [
           ...new Set(produtos.value.map((p) => p.category)),
@@ -239,11 +224,9 @@ export default {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Remove de TODAS as listas locais
+        // Remove de TODAS as listas locais (apenas 'produtos.value' é relevante agora)
         produtos.value = produtos.value.filter((p) => p.id !== idProduto);
-        produtosPertoDeVoceRef.value = produtosPertoDeVoceRef.value.filter(
-          (p) => p.id !== idProduto
-        );
+        // REMOVIDO: Linha para remover de produtosPertoDeVoceRef.value
 
         toast.success("Produto removido com sucesso!");
       } catch (error) {
@@ -252,10 +235,7 @@ export default {
       }
     };
 
-    // Retorna a ref aleatória que criamos no carregamento
-    const produtosPertoDeVoce = computed(() => {
-      return produtosPertoDeVoceRef.value;
-    });
+    // REMOVIDO: A computed property produtosPertoDeVoce foi removida
 
     // Filtra os Top 4 Melhores Avaliados (Rating)
     const produtosDestaquePlataforma = computed(() => {
@@ -327,7 +307,7 @@ export default {
     onMounted(carregarProdutos);
 
     return {
-      produtosPertoDeVoce,
+      // REMOVIDO: produtosPertoDeVoce
       produtosDestaquePlataforma,
       produtosFiltrados,
       produtosDaPagina,
