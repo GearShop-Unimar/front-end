@@ -6,30 +6,26 @@
 
         <div class="filtro-grupo">
           <h4>Categoria</h4>
-          <ul class="lista-categorias">
-            <li
+          <div class="lista-categorias-container">
+            <button
               :class="{ ativo: filtroCategoria === '' }"
               @click="filtroCategoria = ''"
-              tabindex="0"
-              @keydown.enter="filtroCategoria = ''"
-              role="button"
+              class="categoria-btn"
               aria-label="Todas as categorias"
             >
               Todas
-            </li>
-            <li
+            </button>
+            <button
               v-for="cat in categoriasDisponiveis"
               :key="cat"
               :class="{ ativo: filtroCategoria === cat }"
               @click="filtroCategoria = cat"
-              tabindex="0"
-              @keydown.enter="filtroCategoria = cat"
-              role="button"
+              class="categoria-btn"
               :aria-label="'Filtrar por ' + cat"
             >
               {{ cat }}
-            </li>
-          </ul>
+            </button>
+          </div>
         </div>
 
         <div class="filtro-grupo">
@@ -163,7 +159,6 @@ export default {
   components: { ProductCard },
   setup() {
     const produtos = ref([]);
-    // REMOVIDO: produtosPertoDeVoceRef foi removido
 
     const paginaAtual = ref(1);
     const itensPorPagina = ref(8);
@@ -197,8 +192,6 @@ export default {
           state: item.state || "Novo",
         }));
 
-        // REMOVIDO: Lógica para gerar "Perto de Você"
-
         categoriasDisponiveis.value = [
           ...new Set(produtos.value.map((p) => p.category)),
         ];
@@ -224,9 +217,7 @@ export default {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Remove de TODAS as listas locais (apenas 'produtos.value' é relevante agora)
         produtos.value = produtos.value.filter((p) => p.id !== idProduto);
-        // REMOVIDO: Linha para remover de produtosPertoDeVoceRef.value
 
         toast.success("Produto removido com sucesso!");
       } catch (error) {
@@ -235,11 +226,7 @@ export default {
       }
     };
 
-    // REMOVIDO: A computed property produtosPertoDeVoce foi removida
-
-    // Filtra os Top 4 Melhores Avaliados (Rating)
     const produtosDestaquePlataforma = computed(() => {
-      // Cria cópia para não mudar a ordem da lista principal
       const sorted = [...produtos.value].sort((a, b) => b.rating - a.rating);
       return sorted.slice(0, 4);
     });
@@ -307,7 +294,6 @@ export default {
     onMounted(carregarProdutos);
 
     return {
-      // REMOVIDO: produtosPertoDeVoce
       produtosDestaquePlataforma,
       produtosFiltrados,
       produtosDaPagina,
@@ -428,26 +414,37 @@ export default {
   margin-bottom: 12px;
   color: var(--color-heading);
 }
-.lista-categorias {
-  list-style: none;
+
+.lista-categorias-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
   padding: 0;
   margin: 0;
 }
-.lista-categorias li {
+
+.categoria-btn {
+  text-align: left;
+  width: 100%;
+  border: none;
+  background: none;
   padding: 8px 10px;
   cursor: pointer;
   border-radius: 5px;
   transition: background-color 0.2s;
   color: var(--color-text);
+  font-size: inherit;
+  line-height: normal;
 }
-.lista-categorias li:hover {
+.categoria-btn:hover {
   background-color: var(--color-background-mute);
 }
-.lista-categorias li.ativo {
+.categoria-btn.ativo {
   background-color: var(--color-primary);
   color: white;
   font-weight: bold;
 }
+
 .filtro-preco-inputs {
   display: flex;
   align-items: center;
@@ -541,7 +538,7 @@ export default {
   .filtro-grupo h4 {
     font-size: 1.4rem;
   }
-  .lista-categorias li {
+  .categoria-btn {
     font-size: 1rem;
   }
 }
