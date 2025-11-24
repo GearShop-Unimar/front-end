@@ -5,11 +5,7 @@
     <div class="posts-page-content">
       <div class="create-post-box">
         <img
-          :src="
-            authStore.user?.avatar
-              ? `${baseURL}${authStore.user.avatar}`
-              : 'https://picsum.photos/seed/user/50/50'
-          "
+          :src="getAvatarUrl(authStore.user?.Avatar)"
           alt="Meu Avatar"
           class="create-post-avatar"
         />
@@ -61,11 +57,7 @@
         <article v-for="post in posts" :key="post.id" class="post-item">
           <header class="post-header">
             <img
-              :src="
-                post.author.avatarUrl
-                  ? `${baseURL}${post.author.avatarUrl}`
-                  : 'https://picsum.photos/seed/avatar/50/50'
-              "
+              :src="getAvatarUrl(post.author.Avatar)"
               alt="Avatar"
               class="post-avatar"
             />
@@ -127,6 +119,23 @@ const isSubmitting = ref(false);
 const newPostImage = ref(null);
 const imagePreview = ref(null);
 const fileInputRef = ref(null);
+
+const FALLBACK_AVATAR = "https://picsum.photos/seed/user/50/50";
+
+const getAvatarUrl = (path) => {
+  if (!path) {
+    return FALLBACK_AVATAR;
+  }
+
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+
+  const base = baseURL.replace(/\/$/, "");
+  const cleanPath = path.replace(/^\//, "");
+
+  return `${base}/${cleanPath}`;
+};
 
 const isPostButtonDisabled = computed(() => {
   return newPostText.value.trim() === "" && !newPostImage.value;

@@ -143,8 +143,9 @@ h2 {
 }
 
 input {
+  box-sizing: border-box;
   border-radius: 12px;
-  width: 92%;
+  width: 100%;
   padding: 14px;
   margin-bottom: 0;
   background-color: var(--color-background);

@@ -43,6 +43,11 @@ export const useAuthStore = defineStore("auth", () => {
       router.push("/");
     } catch (error) {
       console.error("Erro no login:", error);
+      token.value = null;
+      user.value = null;
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
       throw error;
     }
   }

@@ -1,34 +1,33 @@
 import axios from "axios";
 import { useAuthStore } from "@/stores/auth";
 
-const apiURL = import.meta.env.VITE_API_URL;
-
-if (!apiURL) {
-  console.error(
-    "Atenção: VITE_API_URL não foi encontrada no ficheiro .env. A API não vai funcionar."
-  );
-}
-
-export const baseURL = apiURL;
+export const baseURL = import.meta.env?.VITE_API_URL;
 
 const api = axios.create({
-  baseURL: baseURL,
+  baseURL,
 });
 
+// INTERCEPTOR DE REQUEST
 api.interceptors.request.use(
   (config) => {
     const authStore = useAuthStore();
-    const token = authStore.token;
+    const token = authStore?.token;
 
     if (token) {
+      // garante que headers sempre existe
+      config.headers = config.headers || {};
       config.headers["Authorization"] = `Bearer ${token}`;
     }
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
+);
+
+// INTERCEPTOR DE RESPONSE
+api.interceptors.response.use(
+  (response) => response,
+  (error) => Promise.reject(error)
 );
 
 export default api;

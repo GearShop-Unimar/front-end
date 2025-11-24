@@ -1,23 +1,23 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import Home from "../views/Home.vue";
-import Posts from "../views/Posts.vue"; // ADICIONADO
+import Posts from "../views/Posts.vue";
 import Contato from "../views/Contato.vue";
 import Login from "../views/Login.vue";
 import Cadastro from "../views/Cadastro.vue";
 import Anunciar from "../views/Anunciar.vue";
-import Carrinho from "../views/CarrinhoPage.vue";
 import MeusProdutos from "../views/MeusProdutos.vue";
 import Produto from "../views/Produto.vue";
 import Pagamento from "../views/Pagamento.vue";
 import Sucesso from "../views/Sucesso.vue";
 import TelaProdutos from "../views/TelaProdutos.vue";
-import Usuario from "../views/Usuario.vue"; // <-- 1. ADICIONAR ESTA LINHA
+import Usuario from "../views/Usuario.vue";
 import Fidelidade from "../views/Fidelidade.vue";
+import FidelidadeRoadmap from "../views/FidelidadeRoadmap.vue";
 
 const routes = [
   { path: "/", component: Home, name: "Home" },
-  { path: "/posts", name: "Posts", component: Posts }, // ADICIONADO
+  { path: "/posts", name: "Posts", component: Posts },
   { path: "/produtos", name: "Produtos", component: TelaProdutos },
   { path: "/contato", name: "Contato", component: Contato },
   { path: "/login", name: "Login", component: Login },
@@ -41,6 +41,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/fidelidade/roadmap",
+    name: "FidelidadeRoadmap",
+    component: FidelidadeRoadmap,
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/pagamento",
     name: "Pagamento",
     component: Pagamento,
@@ -53,25 +59,16 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/carrinho",
-    name: "Carrinho",
-    component: Carrinho,
-  },
-  {
     path: "/produto/:id",
     name: "Produto",
     component: Produto,
   },
-
-  // V 2. ADICIONAR ESTE BLOCO DE CÓDIGO V
   {
     path: "/perfil",
     name: "Perfil",
     component: Usuario,
     meta: { requiresAuth: true },
   },
-  // -------------------------------------
-
   { path: "/:catchAll(.*)", redirect: "/" },
 ];
 

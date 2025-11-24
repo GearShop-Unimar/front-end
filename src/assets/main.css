@@ -176,3 +176,18 @@ html {
     gap: 20px;
   }
 }
+.card-component,
+.form-pagamento,
+.sidebar,
+.carrinho-modal {
+  background-color: var(--color-card-background);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 15px var(--color-card-shadow);
+}
+html.dark-theme .card-component,
+html.dark-theme .form-pagamento,
+html.dark-theme .sidebar,
+html.dark-theme .carrinho-modal {
+  box-shadow: 0 4px 15px var(--color-card-shadow);
+}

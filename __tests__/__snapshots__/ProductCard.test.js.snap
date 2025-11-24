@@ -1,0 +1,16 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ProductCard.vue > mantém a estrutura visual esperada (snapshot) 1`] = `
+"<div data-v-a4cce9c2="" class="produto-card">
+  <!--v-if-->
+  <div data-v-a4cce9c2="" class="card-content">
+    <div data-v-a4cce9c2="" class="imagem-container"><img data-v-a4cce9c2="" src="http://example.com/image.jpg" alt="Produto de Teste" class="produto-imagem" loading="lazy"></div>
+    <div data-v-a4cce9c2="" class="produto-info">
+      <h3 data-v-a4cce9c2="">Produto de Teste</h3><span data-v-a4cce9c2="" class="badge-vendedor">Vendedor Teste</span>
+      <p data-v-a4cce9c2="" class="preco">R$ 99.99</p>
+      <div data-v-a4cce9c2="" class="avaliacao-estrelas"><span data-v-a4cce9c2="" class="estrela estrela-preenchida">★</span><span data-v-a4cce9c2="" class="estrela estrela-preenchida">★</span><span data-v-a4cce9c2="" class="estrela estrela-preenchida">★</span><span data-v-a4cce9c2="" class="estrela estrela-preenchida">★</span><span data-v-a4cce9c2="" class="estrela">★</span><span data-v-a4cce9c2="" class="numero-avaliacoes">(10 avaliações)</span></div>
+      <p data-v-a4cce9c2="" class="estado">Novo</p><button data-v-a4cce9c2="" class="btn-carrinho">Adicionar ao carrinho</button>
+    </div>
+  </div>
+</div>"
+`;

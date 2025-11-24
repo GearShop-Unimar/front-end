@@ -1,172 +1,313 @@
 <template>
-  <div v-if="isOpen" class="carrinho-overlay" @click.self="fecharCarrinho">
-    <div class="carrinho-modal">
-      <header class="carrinho-header">
-        <h2>
-          <i class="fa fa-shopping-cart carrinho-icon"></i>
-          Meu Carrinho
-        </h2>
-        <button @click="fecharCarrinho" class="close-btn">&times;</button>
-      </header>
+  <div
+    v-if="cartStore.isOpen"
+    class="cart-overlay"
+    @click="cartStore.toggleCart"
+  ></div>
 
-      <div v-if="itens.length === 0" class="carrinho-vazio">
-        Seu carrinho está vazio.
+  <div class="cart-sidebar" :class="{ open: cartStore.isOpen }">
+    <div class="cart-header">
+      <h2>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path
+            d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+          ></path>
+        </svg>
+        Meu Carrinho
+      </h2>
+      <button @click="cartStore.toggleCart" class="close-btn">&times;</button>
+    </div>
+
+    <div class="cart-content">
+      <div v-if="cartStore.loading" class="loading-msg">Carregando...</div>
+
+      <div v-else-if="cartStore.items.length === 0" class="empty-msg">
+        <p>Seu carrinho está vazio.</p>
+        <button class="btn-explore" @click="cartStore.toggleCart">
+          Explorar Produtos
+        </button>
       </div>
-      <ul v-else class="carrinho-lista">
-        <li v-for="item in itens" :key="item.id" class="carrinho-item">
-          <span>{{ item.nome }}</span>
-          <span>R$ {{ item.preco.toFixed(2) }}</span>
-        </li>
-      </ul>
 
-      <footer v-if="itens.length > 0" class="carrinho-footer">
-        <button class="checkout-btn">Finalizar Compra</button>
-      </footer>
+      <div v-else class="cart-items">
+        <div
+          v-for="item in cartStore.items"
+          :key="item.id"
+          class="cart-item"
+          @click="goToProduct(item.product?.id)"
+        >
+          <div class="item-info">
+            <h4>{{ item.product?.name }}</h4>
+            <p class="qtd-control">Qtd: {{ item.quantity }}</p>
+          </div>
+          <div class="item-actions">
+            <span class="item-price">
+              R$ {{ (item.product?.price * item.quantity).toFixed(2) }}
+            </span>
+
+            <button
+              class="remove-btn"
+              @click.stop="cartStore.removeItem(item.id)"
+              aria-label="Remover item"
+              title="Remover item"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path
+                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                ></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cart-footer" v-if="cartStore.items.length > 0">
+      <button class="btn-clear-all" @click="confirmarLimpeza">
+        Esvaziar Carrinho
+      </button>
+
+      <div class="total-row">
+        <span>Total:</span>
+        <span>R$ {{ cartStore.totalPrice.toFixed(2) }}</span>
+      </div>
+
+      <button class="checkout-btn" @click="irParaPagamento">
+        Finalizar Compra
+      </button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { useCartStore } from "@/stores/cart";
+import { useRouter } from "vue-router";
 
-// REMOVIDA a atribuição "const props ="
-defineProps({
-  isOpen: {
-    type: Boolean,
-    default: false,
-  },
-});
+const cartStore = useCartStore();
+const router = useRouter();
 
-const emit = defineEmits(["close"]);
-
-const fecharCarrinho = () => {
-  emit("close");
+const irParaPagamento = () => {
+  cartStore.toggleCart();
+  router.push("/pagamento");
 };
 
-const itens = ref([
-  { id: 1, nome: "Placa de Vídeo GTX 3060", preco: 2500.5 },
-  { id: 2, nome: "Memória RAM DDR4 16GB", preco: 450.0 },
-  { id: 3, nome: "SSD NVMe 1TB", preco: 550.99 },
-]);
+const confirmarLimpeza = () => {
+  if (confirm("Tem certeza que deseja esvaziar o carrinho?")) {
+    cartStore.items.forEach((item) => cartStore.removeItem(item.id));
+  }
+};
+
+// NOVA FUNÇÃO: Navega para a página do produto
+const goToProduct = (productId) => {
+  if (!productId) return;
+  cartStore.toggleCart();
+  router.push(`/produto/${productId}`);
+};
 </script>
 
 <style scoped>
-/* Estilos omitidos por brevidade, permanecem inalterados */
-/* ... */
-.carrinho-overlay {
+.cart-overlay {
   position: fixed;
   top: 0;
-  right: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1500;
-  display: flex;
-  justify-content: flex-end;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
 }
 
-.carrinho-modal {
-  width: 100%;
-  max-width: 400px;
-  background: var(--color-background-soft);
-  box-shadow: -4px 0 10px var(--color-card-shadow);
-  padding: 20px;
+.cart-sidebar {
+  position: fixed;
+  top: 0;
+  left: auto;
+  right: -400px;
+  width: 350px;
   height: 100%;
-  transform: translateX(0);
-  transition: transform 0.4s ease-out;
+  background: var(--color-card-background, #1a1a1a);
+  color: var(--color-text, #fff);
+  z-index: 999;
+  transition: right 0.3s ease;
   display: flex;
   flex-direction: column;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
 }
 
-.carrinho-header {
+.cart-sidebar.open {
+  right: 0;
+}
+
+.cart-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--color-border, #333);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--color-border);
 }
 
-.carrinho-header h2 {
+.cart-header h2 {
+  font-size: 1.2rem;
   margin: 0;
-  font-size: 1.5rem;
-  color: var(--color-heading);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .close-btn {
   background: none;
   border: none;
+  color: var(--color-text);
   font-size: 2rem;
   cursor: pointer;
-  color: var(--color-text);
   line-height: 1;
-  transition: color 0.3s;
 }
 
-.close-btn:hover {
-  color: var(--color-primary);
-}
-
-.carrinho-icon {
-  color: var(--color-primary);
-  margin-right: 10px;
-  font-size: 1.5rem;
-}
-
-.carrinho-vazio {
-  color: var(--color-text);
-  opacity: 0.7;
-  font-size: 1.1rem;
-  margin-top: 20px;
-  flex-grow: 1;
-  text-align: center;
-  padding-top: 50px;
-}
-
-.carrinho-lista {
-  list-style: none;
-  padding: 0;
-  margin-top: 20px;
-  flex-grow: 1;
+.cart-content {
+  flex: 1;
   overflow-y: auto;
+  padding: 20px;
 }
 
-.carrinho-item {
+.cart-item {
   display: flex;
   justify-content: space-between;
-  padding: 15px 0;
-  border-bottom: 1px solid var(--color-border);
-  color: var(--color-text);
-  font-size: 1.1rem;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--color-border, #333);
+  cursor: pointer; /* Adicionado para indicar que o item é clicável */
+  transition: background-color 0.2s;
 }
 
-.carrinho-footer {
-  padding-top: 20px;
-  border-top: 1px solid var(--color-border);
-  text-align: center;
+.cart-item:hover {
+  background-color: var(--color-background-mute); /* Feedback visual */
+}
+
+.item-info h4 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+}
+.item-info p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.item-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.item-price {
+  display: block;
+  font-weight: bold;
+  color: var(--color-primary);
+}
+
+.remove-btn {
+  background: transparent;
+  border: 1px solid #e74c3c;
+  color: #e74c3c;
+  border-radius: 4px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.remove-btn:hover {
+  background: #e74c3c;
+  color: white;
+}
+
+.cart-footer {
+  padding: 20px;
+  border-top: 1px solid var(--color-border, #333);
+  background: var(--color-background-mute, #222);
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 15px;
 }
 
 .checkout-btn {
   width: 100%;
-  padding: 15px;
-  background-color: var(--color-primary);
-  color: white;
+  background: var(--color-primary);
+  color: #fff;
   border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
+  padding: 15px;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
   font-weight: bold;
+  border-radius: 5px;
+  font-size: 1rem;
 }
 
-.checkout-btn:hover {
-  background-color: var(--color-primary-hover);
-  transform: translateY(-2px);
+.btn-clear-all {
+  background: transparent;
+  border: none;
+  color: #888;
+  text-decoration: underline;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-bottom: 15px;
+  width: 100%;
+  text-align: right;
+}
+.btn-clear-all:hover {
+  color: #e74c3c;
 }
 
-@media (max-width: 600px) {
-  .carrinho-modal {
+.btn-explore {
+  margin-top: 10px;
+  background: transparent;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.loading-msg,
+.empty-msg {
+  text-align: center;
+  margin-top: 20px;
+  opacity: 0.7;
+}
+
+@media (max-width: 480px) {
+  .cart-sidebar {
     width: 100%;
-    max-width: none;
+    right: -100%;
   }
 }
 </style>

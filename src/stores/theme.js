@@ -37,5 +37,6 @@ export const useThemeStore = defineStore("theme", () => {
     isDarkMode,
     toggleTheme,
     initTheme,
+    applyTheme, // expor para os testes
   };
 });

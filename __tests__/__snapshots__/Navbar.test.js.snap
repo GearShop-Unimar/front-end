@@ -9,6 +9,7 @@ exports[`Navbar.vue > mantém a estrutura visual esperada (snapshot) 1`] = `
         <li data-v-4d808a77=""><a data-v-4d808a77="" href="/posts" class="">Posts</a></li>
         <li data-v-4d808a77=""><a data-v-4d808a77="" href="/produtos" class="">Produtos</a></li>
         <li data-v-4d808a77=""><a data-v-4d808a77="" href="/anunciar" class="">Anunciar</a></li>
+        <li data-v-4d808a77=""><a data-v-4d808a77="" href="/fidelidade" class="">Fidelidade</a></li>
       </ul>
       <div data-v-4d808a77="" class="search-container">
         <form data-v-4d808a77="" class="search-bar"><i data-v-4d808a77="" class="fa fa-search search-icon"></i><input data-v-4d808a77="" type="text" placeholder="Buscar peças..."></form>
@@ -20,6 +21,5 @@ exports[`Navbar.vue > mantém a estrutura visual esperada (snapshot) 1`] = `
       </ul>
     </div>
   </div>
-</nav>
-<carrinho-stub data-v-4d808a77="" isopen="false"></carrinho-stub>"
+</nav>"
 `;

@@ -22,11 +22,11 @@
           </li>
         </ul>
         <div class="search-container">
-          <form class="search-bar" @submit.prevent="pesquisar">
+          <form class="search-bar" @submit.prevent>
             <i class="fa fa-search search-icon"></i>
             <input
               type="text"
-              v-model="termoBusca"
+              v-model="termoBuscaLocal"
               placeholder="Buscar peças..."
             />
           </form>
@@ -35,13 +35,34 @@
         <ul class="auth-links">
           <template v-if="authStore.isAuthenticated">
             <li>
-              <router-link
-                to="/carrinho"
-                class="icon-link"
+              <a
+                href="#"
+                class="icon-link cart-btn-wrapper"
                 aria-label="Carrinho"
+                @click.prevent="cartStore.toggleCart()"
               >
-                <i class="fa fa-shopping-cart"></i>
-              </router-link>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="feather feather-shopping-cart"
+                >
+                  <circle cx="9" cy="21" r="1"></circle>
+                  <circle cx="20" cy="21" r="1"></circle>
+                  <path
+                    d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+                  ></path>
+                </svg>
+                <span v-if="cartStore.itemsCount > 0" class="cart-badge">
+                  {{ cartStore.itemsCount }}
+                </span>
+              </a>
             </li>
             <li>
               <router-link to="/perfil" class="icon-link" aria-label="Perfil">
@@ -87,52 +108,40 @@
       </div>
     </div>
   </nav>
-  <Carrinho :isOpen="isCartOpen" @close="closeCart" />
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from "vue";
-import { useRouter } from "vue-router";
-import Carrinho from "@/components/Carrinho.vue";
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useThemeStore } from "@/stores/theme";
+import { useCartStore } from "@/stores/cart";
+import { useProductStore } from "@/stores/product";
 
 const authStore = useAuthStore();
 const themeStore = useThemeStore();
+const cartStore = useCartStore();
+const productStore = useProductStore();
 const router = useRouter();
+const route = useRoute();
 
-// Base API URL to resolve relative image paths (useful when backend returns a relative path)
 const API_URL = import.meta.env.VITE_API_URL || "";
 
-// Computed URL for the user's profile photo — follow the same rules used in `Usuario.vue`:
-// - If `user.profilePicture` exists and starts with '/api', prefix with API_URL and remove '/api'
-// - If `user.profilePicture` is an absolute URL, use as-is
-// - If no profilePicture but user.id exists, use `${API_URL}/images/user/{id}` as fallback
 const userPhoto = computed(() => {
   const u = authStore.user;
   if (!u) return null;
 
-  const profilePicture = u.profilePicture;
+  const avatarUrl = u.Avatar;
 
-  if (profilePicture) {
-    // absolute URL
-    if (/^https?:\/\//i.test(profilePicture)) return profilePicture;
-
-    // backend returns a path starting with /api — mirror Usuario.vue behavior
-    if (profilePicture.startsWith("/api")) {
-      // remove '/api' and prefix API_URL
-      return API_URL
-        ? `${API_URL}${profilePicture.replace(/^\/api/, "")}`
-        : profilePicture.replace(/^\/api/, "");
+  if (avatarUrl) {
+    if (/^https?:\/\//i.test(avatarUrl)) {
+      return avatarUrl;
     }
-
-    // other relative path — try to prefix with API_URL
-    return API_URL
-      ? `${API_URL.replace(/\/$/, "")}/${profilePicture.replace(/^\//, "")}`
-      : profilePicture;
+    const baseApi = API_URL.replace(/\/$/, "");
+    const cleanAvatarPath = avatarUrl.replace(/^\//, "");
+    return `${baseApi}/${cleanAvatarPath}`;
   }
 
-  // fallback: use images endpoint by user id (same as in Usuario.vue.resetForm)
   if (u.id) {
     return `${API_URL.replace(/\/$/, "")}/images/user/${u.id}`;
   }
@@ -140,8 +149,7 @@ const userPhoto = computed(() => {
   return null;
 });
 
-const isCartOpen = ref(false);
-const termoBusca = ref("");
+const termoBuscaLocal = ref("");
 const menuOpen = ref(false);
 const isScrolled = ref(false);
 
@@ -149,19 +157,13 @@ const toggleMenu = () => {
   menuOpen.value = !menuOpen.value;
 };
 
-const closeCart = () => {
-  isCartOpen.value = false;
-};
+watch(termoBuscaLocal, (novoValor) => {
+  productStore.setTermoBusca(novoValor);
 
-const pesquisar = () => {
-  if (termoBusca.value.trim()) {
-    router.push({
-      name: "Produtos",
-      query: { busca: termoBusca.value.trim() },
-    });
-    termoBusca.value = "";
+  if (novoValor && route.name !== "Produtos") {
+    router.push({ name: "Produtos" });
   }
-};
+});
 
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 50;
@@ -169,6 +171,7 @@ const handleScroll = () => {
 
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
+  termoBuscaLocal.value = productStore.termoBuscaGlobal;
 });
 
 onUnmounted(() => {
@@ -177,13 +180,12 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Seu CSS existente */
 .navbar {
   background-color: var(--color-navbar-background);
   padding: 0 20px;
   position: sticky;
   width: 100%;
-top: 0;
+  top: 0;
   z-index: 1000;
   height: 80px;
   transition: height 0.4s ease, box-shadow 0.4s ease, background-color 0.3s ease;
@@ -351,6 +353,8 @@ top: 0;
   color: var(--color-text);
   font-size: 1.5rem;
   transition: color 0.3s ease, transform 0.3s ease;
+  display: flex;
+  align-items: center;
 }
 .icon-link:hover {
   color: var(--color-primary);
@@ -436,7 +440,24 @@ top: 0;
   transform: translateY(-9px) rotate(-45deg);
 }
 
-/* --- REGRAS DE RESPONSIVIDADE (JÁ EXISTENTES) --- */
+.cart-btn-wrapper {
+  position: relative;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: var(--color-primary);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 50%;
+  min-width: 18px;
+  text-align: center;
+  border: 1px solid var(--color-navbar-background);
+}
 
 @media (max-width: 1200px) {
   .nav-menu {
@@ -462,6 +483,7 @@ top: 0;
   .auth-links {
     flex-direction: column;
     gap: 30px;
+    align-items: center;
   }
 
   .nav-links li a,
@@ -479,43 +501,35 @@ top: 0;
   }
 }
 
-/* --- REGRAS DE RESPONSIVIDADE (NOVAS ADIÇÕES PARA SMARTPHONES) --- */
-
 @media (max-width: 768px) {
-  /* Diminui o tamanho do logo para telas menores */
   .navbar-logo {
     font-size: 2rem;
   }
 
-  /* Reduz o padding horizontal da navbar */
   .navbar {
     padding: 0 15px;
   }
 
-  /* Ajusta os tamanhos de fonte dos links dentro do menu (que já abre a 1200px) */
   .nav-links li a,
   .auth-links li a,
   .welcome-message,
   .logout-btn,
   .btn {
-    font-size: 1.4rem; /* Um pouco menor para mobile */
+    font-size: 1.4rem;
   }
 
-  /* Ajusta o tamanho da barra de pesquisa dentro do menu */
   .search-bar input {
-    width: 150px; /* Largura inicial menor */
+    width: 150px;
     font-size: 1.4rem;
   }
   .search-bar input:focus {
-    width: 200px; /* Largura de foco ajustada */
+    width: 200px;
   }
 
-  /* Ajusta o padding dos botões */
   .btn {
     padding: 8px 18px;
   }
 
-  /* Ajusta os ícones e a foto de perfil */
   .icon-link,
   .theme-toggle-btn {
     font-size: 1.4rem;
@@ -528,30 +542,27 @@ top: 0;
 
 @media (max-width: 600px) {
   .navbar-logo {
-    font-size: 1.8rem; /* Redução adicional do logo */
+    font-size: 1.8rem;
   }
 
-  /* No menu aberto, a barra de pesquisa precisa de mais largura */
   .search-container {
-    width: 80%; /* Garante que o contêiner de busca ocupe mais espaço no menu */
+    width: 80%;
   }
 
   .nav-menu.open .search-bar input {
-    width: 90%; /* Ocupa quase a largura total do menu deslizante */
+    width: 90%;
     max-width: 250px;
   }
   .nav-menu.open .search-bar input:focus {
     width: 90%;
   }
 
-  /* Garantir que o contêiner do menu se ajuste bem */
   .nav-menu {
-    width: 100%; /* Ocupa toda a tela em larguras muito pequenas */
+    width: 100%;
     max-width: none;
   }
 }
 
-/* Sua media query original para 480px, mantida para 100% de largura */
 @media (max-width: 480px) {
   .nav-menu {
     width: 100%;

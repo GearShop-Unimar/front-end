@@ -30,18 +30,12 @@
       <div v-if="currentStep === 1" class="step-content">
         <h2>Revise seus Produtos</h2>
         <div class="produtos-revisao-grid">
-          <div
+          <ReviewProductCard
             v-for="item in cartItems"
             :key="item.id"
-            class="produto-revisao-item"
-          >
-            <img :src="item.imagem" :alt="item.nome" />
-            <div class="info">
-              <span class="nome">{{ item.nome }}</span>
-              <span class="preco">R$ {{ item.preco.toFixed(2) }}</span>
-            </div>
-            <button @click="removerItem(item.id)" class="btn-remover">×</button>
-          </div>
+            :item="item"
+            @remove="removerItem"
+          />
         </div>
         <div class="total-container">
           <span>Total:</span>
@@ -58,11 +52,16 @@
         <h2>Escolha a Forma de Pagamento</h2>
         <div class="payment-methods">
           <div class="method" @click="selectPaymentMethod('credit')">
-            💳 Cartão de Crédito
+            <Icon lib="fa" name="credit-card" size="20" />
+            <span style="margin-left: 8px">Cartão de Crédito</span>
           </div>
-          <div class="method" @click="selectPaymentMethod('pix')">✨ PIX</div>
+          <div class="method" @click="selectPaymentMethod('pix')">
+            <Icon lib="material" name="qr_code" size="20" />
+            <span style="margin-left: 8px">PIX</span>
+          </div>
           <div class="method" @click="selectPaymentMethod('boleto')">
-            📄 Boleto
+            <Icon lib="fa" name="file-invoice" size="20" />
+            <span style="margin-left: 8px">Boleto</span>
           </div>
         </div>
         <div class="navigation-buttons">
@@ -100,7 +99,15 @@
       </div>
 
       <div v-if="currentStep === 4" class="step-content success-step">
-        <h2>🎉 Pagamento Realizado!</h2>
+        <h2>
+          <Icon
+            lib="fa"
+            name="check-circle"
+            size="28"
+            color="var(--color-primary)"
+          />
+          &nbsp;Pagamento Realizado!
+        </h2>
         <p>
           Obrigado por comprar na GearShop! Seu pedido foi confirmado e em breve
           será preparado para envio.
@@ -116,42 +123,43 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useCartStore } from "@/stores/cart";
 import CreditCardForm from "@/components/CreditCardForm.vue";
+import Icon from "@/components/Icon.vue";
+import ReviewProductCard from "@/components/ReviewProductCard.vue";
+
+const cartStore = useCartStore();
+const router = useRouter();
 
 const currentStep = ref(1);
 const paymentMethod = ref(null);
 
-const cartItems = ref([
-  {
-    id: 1,
-    nome: "Amortecedor Dianteiro",
-    preco: 450.0,
-    imagem:
-      "https://http2.mlstatic.com/D_NQ_NP_960144-MLB70451878345_072023-O.webp",
-  },
-  {
-    id: 2,
-    nome: "Lâmpada de Farol H4",
-    preco: 65.9,
-    imagem:
-      "https://d15p9s482i31ww.cloudfront.net/images/produtos/64193NL-1.png",
-  },
-  {
-    id: 3,
-    nome: "Jogo de Tapetes Carpete",
-    preco: 129.99,
-    imagem:
-      "https://http2.mlstatic.com/D_NQ_NP_864272-MLB47915729792_102021-O.webp",
-  },
-]);
+onMounted(() => {
+  if (cartStore.items.length === 0) {
+    router.push("/produtos");
+  }
+});
 
-const total = computed(() =>
-  cartItems.value.reduce((acc, item) => acc + item.preco, 0)
-);
+const cartItems = computed(() => {
+  return cartStore.items.map((item) => ({
+    id: item.id,
+    nome: item.product.name,
+    preco: item.product.price * item.quantity,
+    imagem: item.product.mainImageUrl || "https://via.placeholder.com/80",
+    quantidade: item.quantity,
+    descricao: item.product.description || "",
+  }));
+});
+
+const total = computed(() => cartStore.totalPrice);
 
 const removerItem = (id) => {
-  cartItems.value = cartItems.value.filter((item) => item.id !== id);
+  cartStore.removeItem(id);
+  if (cartStore.items.length === 0) {
+    router.push("/produtos");
+  }
 };
 
 const goToNextStep = () => {
@@ -261,25 +269,27 @@ const handlePayment = async () => {
 .produtos-revisao-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  max-height: 300px;
+  gap: 18px;
+  max-height: 360px;
   overflow-y: auto;
   padding-right: 10px;
 }
 .produto-revisao-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   background-color: var(--color-background-soft);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: 10px;
+  padding: 14px;
   position: relative;
+  min-height: 140px;
 }
 .produto-revisao-item img {
-  width: 50px;
-  height: 50px;
-  object-fit: contain;
-  margin-right: 10px;
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  margin-right: 14px;
+  border-radius: 6px;
 }
 .produto-revisao-item .info {
   display: flex;
@@ -287,16 +297,37 @@ const handlePayment = async () => {
   flex-grow: 1;
 }
 .produto-revisao-item .nome {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-heading);
-  font-size: 0.9rem;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  font-size: 1rem;
+  margin-bottom: 6px;
 }
-.produto-revisao-item .preco {
+.produto-revisao-item .descricao {
   color: var(--color-text);
   font-size: 0.9rem;
+  margin: 0 0 10px 0;
+  line-clamp: 3;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.produto-revisao-item .meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: auto;
+}
+.produto-revisao-item .preco {
+  color: var(--color-heading);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.produto-revisao-item .qtd {
+  font-size: 0.9rem;
+  color: var(--color-text);
+  opacity: 0.9;
 }
 .btn-remover {
   position: absolute;
@@ -393,8 +424,6 @@ button:disabled {
   color: var(--color-text);
   margin-bottom: 30px;
 }
-
-/* RESPONSIVIDADE */
 
 @media (max-width: 768px) {
   .pagamento-page {
