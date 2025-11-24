@@ -16,14 +16,19 @@ export const useProductStore = defineStore("product", () => {
   function setTermoBusca(termo) {
     termoBuscaGlobal.value = termo;
   }
-
   async function fetchProductById(productId) {
+    // Já existe mas sem reviews: busca as reviews e retorna O PRODUTO
     if (products.value[productId] && !products.value[productId].reviews) {
-      fetchReviewsForProduct(productId);
-    } else if (products.value[productId]) {
+      await fetchReviewsForProduct(productId);
+      return products.value[productId]; // 🔥 necessário para o teste passar
+    }
+
+    // Já existe com reviews
+    else if (products.value[productId]) {
       return products.value[productId];
     }
 
+    // Buscar produto do backend
     try {
       const response = await axios.get(`${API_URL}/Product/${productId}`);
       const productData = response.data;
@@ -31,7 +36,7 @@ export const useProductStore = defineStore("product", () => {
 
       await fetchReviewsForProduct(productId);
 
-      return productData;
+      return products.value[productId];
     } catch (err) {
       error.value = "Falha ao buscar produto: " + err.message;
       return null;

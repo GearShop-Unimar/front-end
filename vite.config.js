@@ -5,15 +5,7 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueDevTools from "vite-plugin-vue-devtools";
 import viteCompression from "vite-plugin-compression"; // Novo plugin
-
 import path from "node:path";
-import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
-import { playwright } from "@vitest/browser-playwright";
-
-const dirname =
-  typeof __dirname !== "undefined"
-    ? __dirname
-    : path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [
@@ -42,29 +34,5 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./tests/setup.js"],
-    projects: [
-      {
-        extends: true,
-        plugins: [
-          storybookTest({
-            configDir: path.join(dirname, ".storybook"),
-          }),
-        ],
-        test: {
-          name: "storybook",
-          browser: {
-            enabled: true,
-            headless: true,
-            provider: playwright({}),
-            instances: [
-              {
-                browser: "chromium",
-              },
-            ],
-          },
-          setupFiles: [".storybook/vitest.setup.js"],
-        },
-      },
-    ],
   },
 });

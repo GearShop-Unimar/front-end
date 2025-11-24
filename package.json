@@ -4,15 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev:vite": "vite --open",
-    "dev": "concurrently \"npm:dev:vite\" \"npm:storybook\"",
+    "dev": "vite --open",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .js,.vue",
     "lint:fix": "eslint . --ext .js,.vue --fix",
-    "test:unit": "vitest",
-    "storybook": "storybook dev -p 6006 ",
-    "build-storybook": "storybook build"
+    "test:unit": "vitest"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
@@ -30,13 +27,7 @@
   "devDependencies": {
     "@babel/generator": "^7.28.5",
     "@babel/parser": "^7.28.5",
-    "@chromatic-com/storybook": "^4.1.2",
     "@eslint/js": "^9.38.0",
-    "@storybook/addon-a11y": "^10.0.6",
-    "@storybook/addon-docs": "^10.0.6",
-    "@storybook/addon-onboarding": "^10.0.6",
-    "@storybook/addon-vitest": "^10.0.6",
-    "@storybook/vue3-vite": "^10.0.6",
     "@types/estree": "^1.0.8",
     "@types/json-schema": "^7.0.15",
     "@types/mdx": "^2.0.13",
@@ -46,7 +37,6 @@
     "@vue/test-utils": "^2.4.6",
     "concurrently": "^9.2.1",
     "eslint": "^9.38.0",
-    "eslint-plugin-storybook": "^10.0.6",
     "eslint-plugin-vue": "^10.5.1",
     "glob": "^13.0.0",
     "globals": "^16.4.0",

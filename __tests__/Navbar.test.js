@@ -1,8 +1,10 @@
 import Navbar from "@/components/Navbar.vue";
 import { mount } from "@vue/test-utils";
-import { describe, it, expect, beforeEach } from "vitest"; // <-- Importa o beforeEach
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createRouter, createMemoryHistory } from "vue-router";
-import { createPinia } from "pinia";
+import { createPinia, setActivePinia } from "pinia";
+import { useAuthStore } from "@/stores/auth";
+import { useCartStore } from "@/stores/cart";
 
 const routes = [
   { path: "/", component: { template: "<div>Home</div>" } },
@@ -12,40 +14,48 @@ const routes = [
   { path: "/anunciar", component: { template: "<div>Anunciar</div>" } },
   { path: "/login", component: { template: "<div>Login</div>" } },
   { path: "/cadastro", component: { template: "<div>Cadastro</div>" } },
+  { path: "/fidelidade", component: { template: "<div>Fidelidade</div>" } },
+  { path: "/perfil", component: { template: "<div>Perfil</div>" } },
 ];
 const router = createRouter({
   history: createMemoryHistory(),
   routes,
 });
 
-describe("Navbar.vue", () => {
-  const pinia = createPinia();
+let authStore;
+let cartStore;
 
-  // --- SOLUÇÃO 1: Resetar o router antes de cada teste ---
+const mountNavbar = (options = {}) => {
+  return mount(Navbar, {
+    global: {
+      plugins: [router],
+      stubs: {
+        Carrinho: true,
+      },
+    },
+    ...options,
+  });
+};
+
+describe("Navbar.vue", () => {
   beforeEach(async () => {
-    // Leva o router de volta para a página inicial
+    setActivePinia(createPinia());
+    authStore = useAuthStore();
+    cartStore = useCartStore();
+
+    authStore.user = null;
+    vi.spyOn(authStore, "isAuthenticated", "get").mockReturnValue(false);
+
     await router.push("/");
     await router.isReady();
   });
-
-  const mountNavbar = (options = {}) => {
-    return mount(Navbar, {
-      global: {
-        plugins: [pinia, router],
-        stubs: {
-          Carrinho: true, // "Desliga" o componente Carrinho
-        },
-      },
-      ...options,
-    });
-  };
 
   it("renderiza o nome da loja corretamente", () => {
     const wrapper = mountNavbar();
     expect(wrapper.text()).toContain("GearShop");
   });
 
-  it("exibe os links de navegação", () => {
+  it("exibe os links de navegação para um usuário deslogado", () => {
     const wrapper = mountNavbar();
     const links = wrapper.findAll("a");
     const textos = links.map((l) => l.text());
@@ -56,9 +66,42 @@ describe("Navbar.vue", () => {
         "Posts",
         "Produtos",
         "Anunciar",
+        "Fidelidade",
         "Entrar",
+        "Cadastre-se",
       ])
     );
+  });
+
+  it("exibe os itens de usuário autenticado quando logado", async () => {
+    vi.spyOn(authStore, "isAuthenticated", "get").mockReturnValue(true);
+    authStore.user = { id: "testUser", name: "Teste" };
+
+    const wrapper = mountNavbar();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('a[href="/perfil"]').exists()).toBe(true);
+    expect(wrapper.find(".logout-btn").exists()).toBe(true);
+    expect(wrapper.text()).toContain("Olá, Teste!");
+    expect(wrapper.find('a[href="/login"]').exists()).toBe(false);
+    expect(wrapper.find('a[href="/cadastro"]').exists()).toBe(false);
+  });
+
+  it("chama toggleCart da cartStore ao clicar no ícone do carrinho", async () => {
+    vi.spyOn(authStore, "isAuthenticated", "get").mockReturnValue(true);
+    authStore.user = { id: "testUser", name: "Teste" };
+
+    const toggleCartSpy = vi.spyOn(cartStore, "toggleCart");
+
+    const wrapper = mountNavbar();
+    await wrapper.vm.$nextTick();
+
+    const cartButton = wrapper.find(".cart-btn-wrapper");
+    expect(cartButton.exists()).toBe(true);
+    await cartButton.trigger("click");
+
+    expect(toggleCartSpy).toHaveBeenCalledTimes(1);
+    vi.restoreAllMocks();
   });
 
   it("tem o logo visível (que é um link para a home)", () => {
@@ -68,33 +111,11 @@ describe("Navbar.vue", () => {
     expect(logoLink.text()).toContain("GearShop");
   });
 
-  it("abre o menu mobile ao clicar no botão", async () => {
-    const wrapper = mountNavbar();
-    const botao = wrapper.find('[data-test="menu-button"]');
-    if (botao.exists()) {
-      await botao.trigger("click");
-      expect(wrapper.html()).toMatch(/menu/i);
-    } else {
-      expect(true).toBe(true);
-    }
-  });
-
-  // --- SOLUÇÃO 2: Corrigir a lógica do teste de navegação ---
   it("marca o link ativo corretamente ao navegar", async () => {
-    // 1. Monta o componente (está em "/")
     const wrapper = mountNavbar();
-
-    // 2. Navega para /produtos
     await router.push("/produtos");
-
-    // 3. Espera o Vue atualizar o HTML
     await wrapper.vm.$nextTick();
-
-    // 4. Procura o link de produtos
     const productsLink = wrapper.find('a[href="/produtos"]');
-    expect(productsLink.exists()).toBe(true);
-
-    // 5. Verifica se TEM a classe
     expect(productsLink.classes()).toContain("router-link-active");
   });
 

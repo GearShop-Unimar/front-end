@@ -106,10 +106,23 @@ const faClass = computed(() => {
 const biClass = computed(() => {
   if (!props.name) return props.customClass;
   let iconClass = props.name;
-  if (!iconClass.includes(" ") && !iconClass.startsWith("bi")) {
-    iconClass = `bi bi-${iconClass}`;
+
+  // Garante que a classe base 'bi' esteja presente
+  const classes = iconClass.split(" ");
+  if (!classes.includes("bi")) {
+    classes.unshift("bi");
   }
-  return `${iconClass} ${props.customClass}`.trim();
+
+  // Se for um nome simples (ex: "house"), adiciona o prefixo "bi-"
+  if (classes.length === 1 && !classes[0].startsWith("bi-")) {
+    classes[1] = `bi-${classes[0]}`;
+    classes[0] = "bi";
+  } else if (!iconClass.startsWith("bi-") && !iconClass.includes(" ")) {
+    iconClass = `bi bi-${iconClass}`;
+    return `${iconClass} ${props.customClass}`.trim();
+  }
+
+  return `${classes.join(" ")} ${props.customClass}`.trim();
 });
 
 // --- INJEÇÃO DE CSS ---

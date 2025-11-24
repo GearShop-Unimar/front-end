@@ -96,7 +96,7 @@
       <div
         v-for="review in reviews"
         :key="review.id"
-        class="border-t border-gray-200 py-4"
+        class="border-t border-gray-200 py-4 review-item"
       >
         <div class="flex items-center justify-between mb-1">
           <span class="font-medium text-gray-700 text-base">{{
@@ -123,11 +123,11 @@
         <div
           class="flex items-center space-x-4 text-gray-500 text-xs sm:text-sm"
         >
-          <button @click="vote(review.id, 'up')">
-            👍 {{ review.upvotes }}
+          <button @click="vote(review.id, 'up')" data-test="upvote-button">
+            👍 <span data-test="upvote-count">{{ review.upvotes }}</span>
           </button>
-          <button @click="vote(review.id, 'down')">
-            👎 {{ review.downvotes }}
+          <button @click="vote(review.id, 'down')" data-test="downvote-button">
+            👎 <span data-test="downvote-count">{{ review.downvotes }}</span>
           </button>
         </div>
       </div>
