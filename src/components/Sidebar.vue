@@ -186,7 +186,6 @@
   /* Ícone "Pen" (Postar) no modo tablet */
   .post-button::before {
     content: "\f303"; /* Código unicode para 'pen' no FontAwesome 6, ou f040 no FA 5 */
-    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free";
     font-weight: 900;
     font-size: 1.5rem;
     color: white;
