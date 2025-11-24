@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useAuthStore } from "@/stores/auth";
-import { useRouter } from "vue-router";
-import { useToast } from "vue-toastification";
 
 const routerMock = { push: vi.fn() };
 const toastMock = { success: vi.fn(), error: vi.fn() };
@@ -30,8 +28,6 @@ describe("useAuthStore", () => {
     vi.clearAllMocks();
     localStorage.clear();
     fetch.mockReset();
-
-    // CORREÇÃO: Removendo a inicialização global para que cada teste controle o estado
   });
 
   afterAll(() => {
@@ -39,7 +35,7 @@ describe("useAuthStore", () => {
   });
 
   it("should initialize with no token and user", () => {
-    authStore = useAuthStore(); // Inicializa aqui
+    authStore = useAuthStore();
     expect(authStore.token).toBeNull();
     expect(authStore.user).toBeNull();
     expect(authStore.isAuthenticated).toBe(false);
@@ -50,7 +46,6 @@ describe("useAuthStore", () => {
     localStorage.setItem("token", "initial-token");
     localStorage.setItem("user", JSON.stringify(mockUser));
 
-    // CORREÇÃO: Inicializa após setar o localStorage
     authStore = useAuthStore();
 
     expect(authStore.token).toBe("initial-token");
@@ -66,7 +61,7 @@ describe("useAuthStore", () => {
     };
 
     beforeEach(() => {
-      authStore = useAuthStore(); // Inicializa authStore
+      authStore = useAuthStore();
     });
 
     it("should successfully log in a user", async () => {
@@ -96,8 +91,6 @@ describe("useAuthStore", () => {
     });
 
     it("should throw an error for failed authentication", async () => {
-      // CORREÇÃO: Define um token *antes* para verificar se a lógica de login o limpa
-      // em caso de falha da API. Isto resolve a Assertion Error.
       localStorage.setItem("token", "token-to-be-removed");
       authStore.token = "token-to-be-removed";
       authStore.user = { id: "temp" };
@@ -105,14 +98,13 @@ describe("useAuthStore", () => {
       fetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
-        json: () => Promise.resolve({ message: "Credenciais inválidas" }), // Simula resposta de erro
+        json: () => Promise.resolve({ message: "Credenciais inválidas" }),
       });
 
       await expect(authStore.login(credentials)).rejects.toThrow(
         "Falha na autenticação"
       );
 
-      // O token deve ser limpo na falha
       expect(authStore.token).toBeNull();
       expect(authStore.isAuthenticated).toBe(false);
       expect(localStorage.getItem("token")).toBeNull();
@@ -136,7 +128,7 @@ describe("useAuthStore", () => {
 
   describe("logout", () => {
     beforeEach(() => {
-      authStore = useAuthStore(); // Inicializa authStore
+      authStore = useAuthStore();
       authStore.token = "some-token";
       authStore.user = { id: 1, name: "Test" };
       localStorage.setItem("token", "some-token");
@@ -160,7 +152,7 @@ describe("useAuthStore", () => {
     const updatedData = { name: "Updated User", email: "updated@example.com" };
 
     beforeEach(() => {
-      authStore = useAuthStore(); // Inicializa authStore
+      authStore = useAuthStore();
       authStore.token = "valid-token";
       authStore.user = { id: userId, name: "Old Name" };
       localStorage.setItem("token", "valid-token");

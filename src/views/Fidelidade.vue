@@ -60,8 +60,6 @@
       </div>
     </section>
 
-    <!-- payment modal mounted at the end of template to avoid breaking v-if chain -->
-
     <div v-else class="content-grid">
       <section class="plan-overview card">
         <div class="plan-header">
@@ -124,7 +122,6 @@
         </div>
       </section>
 
-      <!-- Ações do plano -->
       <section class="plan-actions card">
         <div class="section-header">
           <h2>Gerenciamento do plano</h2>
@@ -476,7 +473,6 @@ const getPaymentType = (type) => {
   return PAYMENT_TYPE_MAP[type] || "Outro";
 };
 
-// Dados mockados para desenvolvimento/testes
 const getMockLoyaltyData = () => {
   const now = new Date();
   const nextMonth = new Date(now);
@@ -486,12 +482,12 @@ const getMockLoyaltyData = () => {
     {
       id: 1,
       userId: 1,
-      status: 1, // Ativa
+      status: 1,
       monthlyAmount: 49.9,
       startDate: new Date(
         now.getTime() - 30 * 24 * 60 * 60 * 1000
-      ).toISOString(), // 30 dias atrás
-      endDate: null, // Plano contínuo
+      ).toISOString(),
+      endDate: null,
       nextPaymentDate: nextMonth.toISOString(),
       createdAt: new Date(
         now.getTime() - 30 * 24 * 60 * 60 * 1000
@@ -511,11 +507,11 @@ const getMockLoyaltyData = () => {
       id: 1,
       subscriptionId: 1,
       amount: 49.9,
-      status: 3, // Aprovado
-      paymentType: 1, // Cartão de crédito
+      status: 3,
+      paymentType: 1,
       createdAt: new Date(
         now.getTime() - 15 * 24 * 60 * 60 * 1000
-      ).toISOString(), // 15 dias atrás
+      ).toISOString(),
       processedAt: new Date(
         now.getTime() - 15 * 24 * 60 * 60 * 1000
       ).toISOString(),
@@ -524,11 +520,11 @@ const getMockLoyaltyData = () => {
       id: 2,
       subscriptionId: 1,
       amount: 49.9,
-      status: 3, // Aprovado
-      paymentType: 1, // Cartão de crédito
+      status: 3,
+      paymentType: 1,
       createdAt: new Date(
         now.getTime() - 45 * 24 * 60 * 60 * 1000
-      ).toISOString(), // 45 dias atrás
+      ).toISOString(),
       processedAt: new Date(
         now.getTime() - 45 * 24 * 60 * 60 * 1000
       ).toISOString(),
@@ -571,10 +567,8 @@ const loadLoyaltyData = async () => {
   }
 
   try {
-    // Primeiro, consultamos a rota /api/premiumaccount/status que retorna { IsPremium: bool }
     const headers = { Authorization: `Bearer ${token}` };
     try {
-      // Use premiumService (axios) to avoid duplicar '/api' quando o baseURL já contém '/api'
       const statusJson = await premiumService.getStatus();
       hasPremium.value = !!statusJson?.IsPremium;
     } catch (sErr) {
@@ -582,7 +576,6 @@ const loadLoyaltyData = async () => {
       hasPremium.value = false;
     }
 
-    // Carrega pagamentos (se houver) — endpoint já existente
     let paymentsData = [];
     try {
       const paymentsResponse = await fetch(
@@ -632,14 +625,10 @@ const loadLoyaltyData = async () => {
       ? paymentsData.map(normalizePayment)
       : [];
 
-    // Se a rota /details não existe, confiamos apenas em hasPremium para saber se o usuário possui plano
-    // Criamos uma assinatura mínima quando sabemos que o usuário é premium,
-    // já que o endpoint de detalhes foi removido. Isso permite que a UI
-    // mostre que o usuário possui o plano mesmo sem todos os dados.
     const minimalSubscription = {
-      id: 0, // ID 0 para indicar uma assinatura mínima sem detalhes completos
+      id: 0,
       userId,
-      status: 1, // Assumimos status ativo para um premium
+      status: 1,
       monthlyAmount: 0,
       startDate: null,
       endDate: null,
@@ -651,12 +640,10 @@ const loadLoyaltyData = async () => {
     };
     subscriptions.value = [minimalSubscription];
 
-    // Se o usuário é premium (hasPremium é true) e a assinatura é a mínima (id === 0),
-    // redirecionamos para a página do roadmap.
     if (hasPremium.value && minimalSubscription.id === 0) {
       router.push("/fidelidade/roadmap");
-      loading.value = false; // Parar o estado de carregamento desta página
-      return; // Encerrar a execução de loadLoyaltyData para esta página
+      loading.value = false;
+      return;
     }
   } catch (err) {
     console.error("Erro ao carregar dados de fidelidade:", err);
@@ -690,14 +677,7 @@ onMounted(() => {
   loadLoyaltyData();
 });
 
-// Ações do plano (API real e modo mock)
-const withAuthHeaders = () => ({
-  Authorization: `Bearer ${authStore.token}`,
-  "Content-Type": "application/json",
-});
-
 const goToPayment = () => {
-  // Encaminha para a tela de pagamento/atualização de método
   window.location.href = "/pagamento";
 };
 
@@ -716,7 +696,6 @@ const pausePlan = async () => {
   const subId = activeSubscription.value?.id;
   if (!subId) return;
   try {
-    // Pause/Resume não implementado no backend atual.
     if (localStorage.getItem("mock_mode") === "true") {
       mutateSubscriptionStatusLocally(2);
       toast.success("Plano pausado (modo teste).");
@@ -736,7 +715,6 @@ const resumePlan = async () => {
   const subId = activeSubscription.value?.id;
   if (!subId) return;
 
-  // Não há endpoint de resume no backend — apenas suporte mock
   if (localStorage.getItem("mock_mode") === "true") {
     mutateSubscriptionStatusLocally(1);
     toast.success("Plano retomado (modo teste).");
@@ -782,7 +760,6 @@ const activatePlan = async () => {
 
   try {
     if (localStorage.getItem("mock_mode") === "true") {
-      // cria/atualiza uma assinatura mock localmente
       const now = new Date();
       const end = new Date(now);
       end.setDate(end.getDate() + days);
@@ -825,7 +802,6 @@ const activatePlan = async () => {
 };
 
 const subscribeToDefaultPlan = async () => {
-  // Plano padrão: 30 dias por mês a R$15,99
   const days = 30;
   const price = 15.99;
 
@@ -854,7 +830,6 @@ const subscribeToDefaultPlan = async () => {
       return;
     }
 
-    // Em produção, chamamos o endpoint de ativação
     await premiumService.activate(days);
     toast.success("Plano ativado com sucesso.");
     await loadLoyaltyData();
@@ -864,15 +839,12 @@ const subscribeToDefaultPlan = async () => {
   }
 };
 
-// Modal control (we mount PaymentModal component)
 const showPaymentModal = ref(false);
 const openPaymentModal = () => {
   showPaymentModal.value = true;
 };
 
-const onPaymentConfirmed = async (paymentInfo) => {
-  // paymentInfo: { paymentMethod, card }
-  // Neste projeto não temos integração com gateway; reaproveitamos subscribeToDefaultPlan
+const onPaymentConfirmed = async () => {
   try {
     await subscribeToDefaultPlan();
   } catch (e) {
@@ -885,7 +857,7 @@ const onPaymentConfirmed = async (paymentInfo) => {
 .loyalty-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 20px 100px; /* mais espaço do footer */
+  padding: 40px 20px 100px;
   min-height: calc(100vh - 80px);
 }
 
@@ -1355,7 +1327,7 @@ const onPaymentConfirmed = async (paymentInfo) => {
 .default-price {
   font-size: 2.6rem;
   font-weight: 900;
-  color: #ff8c42; /* laranja chamativo padrão */
+  color: #ff8c42;
   line-height: 1;
 }
 .default-price-sub {

@@ -12,6 +12,9 @@
           <select v-model="paymentMethod">
             <option value="pix">PIX</option>
             <option value="boleto">Boleto</option>
+            <option value="card" disabled>
+              Cartão de Crédito (Indisponível)
+            </option>
           </select>
         </label>
 
@@ -56,8 +59,14 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "confirmed"]);
 
-const paymentMethod = ref("pix"); // PIX como padrão agora
+const paymentMethod = ref("pix");
 const loading = ref(false);
+
+// Declarações adicionadas para resolver os erros no-undef
+const cardName = ref("");
+const cardNumber = ref("");
+const cardExpiry = ref("");
+const cardCvv = ref("");
 
 const priceDisplay = computed(() => {
   if (typeof props.price === "number")
@@ -73,7 +82,6 @@ const onCancel = () => {
 const onConfirm = async () => {
   loading.value = true;
   try {
-    // Emitir evento para o pai processar (ex: chamar premiumService)
     emit("confirmed", {
       paymentMethod: paymentMethod.value,
       card: {
