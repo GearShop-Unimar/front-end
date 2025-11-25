@@ -10,10 +10,6 @@ const computeBasePath = () => {
 const basePath = computeBasePath();
 
 export default {
-  async getDetails() {
-    const res = await api.get(`${basePath}/details`);
-    return res.data;
-  },
 
   async getStatus() {
     const res = await api.get(`${basePath}/status`);
@@ -27,6 +23,11 @@ export default {
 
   async cancel() {
     const res = await api.post(`${basePath}/cancel`);
+    return res.data;
+  },
+
+  async getPaymentHistory() {
+    const res = await api.get(`${basePath}/payment-history`);
     return res.data;
   },
 };

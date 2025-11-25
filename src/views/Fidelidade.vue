@@ -273,8 +273,6 @@ import { useRouter } from "vue-router";
 import premiumService from "@/services/premiumService";
 import PaymentModal from "@/components/PaymentModal.vue";
 
-const API_URL = import.meta.env.VITE_API_URL;
-
 const authStore = useAuthStore();
 const router = useRouter();
 const toast = useToast();
@@ -536,9 +534,8 @@ const getMockLoyaltyData = () => {
 
 const loadLoyaltyData = async () => {
   const token = authStore.token;
-  const userId = authStore.user?.id;
 
-  if (!token || !userId) {
+  if (!token) {
     error.value = "Você precisa estar autenticado para visualizar seu plano.";
     loading.value = false;
     return;
@@ -547,103 +544,36 @@ const loadLoyaltyData = async () => {
   loading.value = true;
   error.value = "";
 
-  const isMockMode = localStorage.getItem("mock_mode") === "true";
-
-  if (isMockMode) {
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      const mockData = getMockLoyaltyData();
-      subscriptions.value = mockData.subscriptions;
-      payments.value = mockData.payments;
-      hasPremium.value = mockData.subscriptions?.length > 0;
-      console.log("📦 Modo Mock: Dados de fidelidade mockados carregados");
-    } catch (err) {
-      console.error("Erro ao carregar dados mockados:", err);
-      error.value = "Erro ao carregar dados mockados.";
-    } finally {
-      loading.value = false;
-    }
-    return;
-  }
-
   try {
-    const headers = { Authorization: `Bearer ${token}` };
-    try {
-      const statusJson = await premiumService.getStatus();
-      hasPremium.value = !!statusJson?.IsPremium;
-    } catch (sErr) {
-      console.warn("Erro ao consultar status do plano de fidelidade:", sErr);
-      hasPremium.value = false;
-    }
+    const statusResponse = await premiumService.getStatus();
+    hasPremium.value = statusResponse?.isPremium || false;
 
-    let paymentsData = [];
-    try {
-      const paymentsResponse = await fetch(
-        `${API_URL}/Payment/user/${userId}`,
+    if (hasPremium.value) {
+      // Se o usuário é premium, criamos uma assinatura com dados padrão e buscamos o histórico de pagamentos.
+      const now = new Date();
+      const nextMonth = new Date(new Date().setMonth(now.getMonth() + 1));
+
+      subscriptions.value = [
         {
-          headers,
-        }
-      );
-      if (paymentsResponse.ok) {
-        paymentsData = await paymentsResponse.json();
-      } else {
-        console.warn("Falha ao carregar pagamentos do plano de fidelidade.");
-        paymentsData = [];
-      }
-    } catch (pErr) {
-      console.warn("Erro ao buscar pagamentos:", pErr);
-      paymentsData = [];
-    }
-
-    const normalizePayment = (p) => {
-      const id = p.id ?? p.Id;
-      const amount = p.amount ?? p.Amount;
-      const status = p.status ?? p.Status;
-      const paymentType = p.paymentType ?? p.PaymentType ?? p.paymentTypeId;
-      const createdAt = p.createdAt ?? p.CreatedAt;
-      const processedAt = p.processedAt ?? p.ProcessedAt;
-      const premiumAccountId =
-        p.premiumAccountId ??
-        p.PremiumAccountId ??
-        (p.premiumAccount
-          ? p.premiumaccount?.id ?? p.premiumAccount?.Id ?? p.premiumAccount?.id
-          : undefined);
-
-      return {
-        ...p,
-        id,
-        amount,
-        status,
-        paymentType,
-        createdAt,
-        processedAt,
-        subscriptionId: premiumAccountId,
-      };
-    };
-
-    payments.value = Array.isArray(paymentsData)
-      ? paymentsData.map(normalizePayment)
-      : [];
-
-    const minimalSubscription = {
-      id: 0,
-      userId,
-      status: 1,
-      monthlyAmount: 0,
-      startDate: null,
-      endDate: null,
-      nextPaymentDate: null,
-      createdAt: null,
-      updatedAt: null,
-      notes: "Plano GearShop (Premium Básico)",
-      product: { id: 0, name: "Plano de Fidelidade Básico" },
-    };
-    subscriptions.value = [minimalSubscription];
-
-    if (hasPremium.value && minimalSubscription.id === 0) {
-      router.push("/fidelidade/roadmap");
-      loading.value = false;
-      return;
+          id: 1, // Usando um ID estático, pois não temos dados reais.
+          userId: authStore.user?.id,
+          status: 1, // Ativa
+          monthlyAmount: 15.99,
+          startDate: now.toISOString(),
+          endDate: null,
+          nextPaymentDate: nextMonth.toISOString(),
+          createdAt: now.toISOString(),
+          updatedAt: now.toISOString(),
+          notes: "Plano Fidelidade GearShop",
+          product: { id: 0, name: "Plano Fidelidade GearShop" },
+        },
+      ];
+      // Buscamos o histórico de pagamentos real.
+      payments.value = await premiumService.getPaymentHistory();
+    } else {
+      // Se não for premium, limpamos os dados.
+      subscriptions.value = [];
+      payments.value = [];
     }
   } catch (err) {
     console.error("Erro ao carregar dados de fidelidade:", err);
@@ -652,15 +582,20 @@ const loadLoyaltyData = async () => {
       (err.message?.includes("Failed to fetch") ||
         err.message?.includes("NetworkError"))
     ) {
-      console.warn("⚠️ Erro de rede. Usando dados mockados...");
+      console.warn("⚠️ Erro de rede. Usando dados mockados para fallback...");
       const mockData = getMockLoyaltyData();
       subscriptions.value = mockData.subscriptions;
       payments.value = mockData.payments;
       hasPremium.value = mockData.subscriptions?.length > 0;
       toast.info("API não disponível. Exibindo dados de exemplo para testes.");
+    } else if (err.response && err.response.status === 401) {
+      error.value = "Sua sessão expirou. Por favor, faça login novamente.";
+      authStore.logout();
+      router.push("/login");
     } else {
       error.value =
-        err?.message ||
+        err.response?.data?.message ||
+        err.message ||
         "Ocorreu um erro inesperado ao carregar o plano de fidelidade.";
       toast.error(error.value);
     }
@@ -668,7 +603,6 @@ const loadLoyaltyData = async () => {
     loading.value = false;
   }
 };
-
 const retryLoad = () => {
   loadLoyaltyData();
 };
@@ -678,7 +612,7 @@ onMounted(() => {
 });
 
 const goToPayment = () => {
-  window.location.href = "/pagamento";
+  router.push("/pagamento");
 };
 
 const mutateSubscriptionStatusLocally = (newStatus) => {
@@ -747,12 +681,12 @@ const cancelPlan = async () => {
 
 const activatePlan = async () => {
   const defaultDays = 30;
-  const input = window.prompt(
+  const input = globalThis.prompt(
     "Quantos dias deseja ativar/renovar o plano? (dias)",
     String(defaultDays)
   );
   if (!input) return;
-  const days = parseInt(input, 10);
+  const days = Number.parseInt(input, 10);
   if (Number.isNaN(days) || days <= 0) {
     toast.error("Duração inválida.");
     return;
@@ -963,7 +897,7 @@ const onPaymentConfirmed = async () => {
 
 .btn-danger {
   background-color: #dc2626;
-  color: #fff;
+  color: #f8f8f8; /* Cor mais clara para melhor contraste */
 }
 
 .btn-success {

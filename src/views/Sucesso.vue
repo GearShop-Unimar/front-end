@@ -6,4 +6,14 @@
 </template>
 
 <script setup>
+import { onMounted } from "vue";
+import { useCartStore } from "@/stores/cart";
+
+const cartStore = useCartStore();
+
+onMounted(() => {
+  if (cartStore.items.length > 0) {
+    cartStore.clearCart();
+  }
+});
 </script>

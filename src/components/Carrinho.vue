@@ -243,7 +243,7 @@ const goToProduct = (productId) => {
 
 .remove-btn:hover {
   background: #e74c3c;
-  color: white;
+  color: rgb(226, 226, 226);
 }
 
 .cart-footer {

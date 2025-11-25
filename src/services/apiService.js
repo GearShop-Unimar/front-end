@@ -7,7 +7,6 @@ const api = axios.create({
   baseURL,
 });
 
-// INTERCEPTOR DE REQUEST
 api.interceptors.request.use(
   (config) => {
     const authStore = useAuthStore();

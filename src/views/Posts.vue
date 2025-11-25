@@ -5,10 +5,12 @@
     <div class="posts-page-content">
       <div class="create-post-box">
         <img
-          :src="getAvatarUrl(authStore.user?.Avatar)"
+          v-if="getAvatarUrl(authStore.user)"
+          :src="getAvatarUrl(authStore.user)"
           alt="Meu Avatar"
           class="create-post-avatar"
         />
+        <i v-else class="fa fa-user-circle create-post-avatar"></i>
         <div class="create-post-content-inner">
           <textarea
             v-model="newPostText"
@@ -57,10 +59,12 @@
         <article v-for="post in posts" :key="post.id" class="post-item">
           <header class="post-header">
             <img
-              :src="getAvatarUrl(post.author.Avatar)"
+              v-if="getAvatarUrl(post.author)"
+              :src="getAvatarUrl(post.author)"
               alt="Avatar"
               class="post-avatar"
             />
+            <i v-else class="fa fa-user-circle post-avatar"></i>
             <div class="author-info">
               <span class="author-name">{{ post.author.name }}</span>
               <span class="post-timestamp">{{
@@ -73,8 +77,8 @@
             <p>{{ post.content }}</p>
             <img
               v-if="post.imageUrl"
-              :src="`${baseURL}${post.imageUrl}`"
-              alt="Imagem do post"
+              :src="getPostImageUrl(post.imageUrl)"
+              alt="Arquivo da Postagem"
               class="post-image"
             />
           </div>
@@ -103,12 +107,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
-import {
-  getFeed,
-  createPost,
-  toggleLike as apiToggleLike,
-} from "@/services/postService";
-import { baseURL } from "@/services/apiService";
+import { getFeed, createPost, toggleLike as apiToggleLike } from "@/services/postService";
 import Sidebar from "@/components/Sidebar.vue";
 
 const authStore = useAuthStore();
@@ -120,26 +119,30 @@ const newPostImage = ref(null);
 const imagePreview = ref(null);
 const fileInputRef = ref(null);
 
-const FALLBACK_AVATAR = "https://picsum.photos/seed/user/50/50";
+const API_URL = import.meta.env.VITE_API_URL || "";
 
-const getAvatarUrl = (path) => {
-  if (!path) {
-    return FALLBACK_AVATAR;
+const getAvatarUrl = (user) => {
+  if (!user) return null;
+  const avatarUrl = user.Avatar;
+  if (avatarUrl) {
+    if (/^https?:\/\//i.test(avatarUrl)) return avatarUrl;
+    const baseApi = API_URL.replace(/\/$/, "");
+    const clean = avatarUrl.replace(/^\//, "");
+    return `${baseApi}/${clean}`;
   }
-
-  if (/^https?:\/\//i.test(path)) {
-    return path;
-  }
-
-  const base = baseURL.replace(/\/$/, "");
-  const cleanPath = path.replace(/^\//, "");
-
-  return `${base}/${cleanPath}`;
+  if (user.id) return `${API_URL.replace(/\/$/, "")}/images/user/${user.id}`;
+  return null;
 };
 
 const isPostButtonDisabled = computed(() => {
   return newPostText.value.trim() === "" && !newPostImage.value;
 });
+
+const getPostImageUrl = (path) => {
+  if (!path) return null;
+  const server = API_URL.replace("/api", "");
+  return `${server}${path}`;
+};
 
 onMounted(async () => {
   try {
@@ -251,6 +254,13 @@ const formatTimestamp = (dateString) => {
   border-radius: 50%;
   object-fit: cover;
 }
+.create-post-avatar.fa-user-circle {
+  font-size: 50px;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .create-post-content-inner {
   flex: 1;
   display: flex;
@@ -341,6 +351,13 @@ const formatTimestamp = (dateString) => {
   height: 50px;
   border-radius: 50%;
   object-fit: cover;
+}
+.post-avatar.fa-user-circle {
+  font-size: 50px;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .author-info {
   display: flex;

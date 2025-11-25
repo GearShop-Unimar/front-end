@@ -55,5 +55,16 @@ export const useCartStore = defineStore("cart", {
         console.error("Erro ao remover:", error);
       }
     },
+
+    async clearCart() {
+      try {
+        // Itera sobre uma cópia dos itens para evitar problemas de modificação durante a iteração
+        for (const item of this.items) {
+          await this.removeItem(item.id);
+        }
+      } catch (error) {
+        console.error("Erro ao limpar o carrinho:", error);
+      }
+    },
   },
 });

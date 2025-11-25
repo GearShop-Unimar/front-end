@@ -17,10 +17,9 @@
           <li><router-link to="/posts">Posts</router-link></li>
           <li><router-link to="/produtos">Produtos</router-link></li>
           <li><router-link to="/anunciar">Anunciar</router-link></li>
-          <li>
-            <router-link to="/fidelidade">Fidelidade</router-link>
-          </li>
+          <li><router-link to="/fidelidade">Fidelidade</router-link></li>
         </ul>
+
         <div class="search-container">
           <form class="search-bar" @submit.prevent>
             <i class="fa fa-search search-icon"></i>
@@ -59,11 +58,12 @@
                     d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
                   ></path>
                 </svg>
-                <span v-if="cartStore.itemsCount > 0" class="cart-badge">
-                  {{ cartStore.itemsCount }}
-                </span>
+                <span v-if="cartStore.itemsCount > 0" class="cart-badge">{{
+                  cartStore.itemsCount
+                }}</span>
               </a>
             </li>
+
             <li>
               <router-link to="/perfil" class="icon-link" aria-label="Perfil">
                 <template v-if="userPhoto">
@@ -78,6 +78,7 @@
                 </template>
               </router-link>
             </li>
+
             <li class="welcome-container">
               <span class="welcome-message"
                 >Olá, {{ authStore.user?.name }}!</span
@@ -85,6 +86,7 @@
               <button @click="authStore.logout" class="logout-btn">Sair</button>
             </li>
           </template>
+
           <template v-else>
             <li>
               <router-link to="/login" class="btn btn-secondary"
@@ -98,12 +100,7 @@
             </li>
           </template>
 
-          <li>
-            <button @click="themeStore.toggleTheme" class="theme-toggle-btn">
-              <i v-if="themeStore.isDarkMode" class="bi bi-sun-fill"></i>
-              <i v-else class="bi bi-moon-stars-fill"></i>
-            </button>
-          </li>
+          <li></li>
         </ul>
       </div>
     </div>
@@ -130,22 +127,14 @@ const API_URL = import.meta.env.VITE_API_URL || "";
 const userPhoto = computed(() => {
   const u = authStore.user;
   if (!u) return null;
-
   const avatarUrl = u.Avatar;
-
   if (avatarUrl) {
-    if (/^https?:\/\//i.test(avatarUrl)) {
-      return avatarUrl;
-    }
+    if (/^https?:\/\//i.test(avatarUrl)) return avatarUrl;
     const baseApi = API_URL.replace(/\/$/, "");
-    const cleanAvatarPath = avatarUrl.replace(/^\//, "");
-    return `${baseApi}/${cleanAvatarPath}`;
+    const clean = avatarUrl.replace(/^\//, "");
+    return `${baseApi}/${clean}`;
   }
-
-  if (u.id) {
-    return `${API_URL.replace(/\/$/, "")}/images/user/${u.id}`;
-  }
-
+  if (u.id) return `${API_URL.replace(/\/$/, "")}/images/user/${u.id}`;
   return null;
 });
 
@@ -157,13 +146,19 @@ const toggleMenu = () => {
   menuOpen.value = !menuOpen.value;
 };
 
-watch(termoBuscaLocal, (novoValor) => {
-  productStore.setTermoBusca(novoValor);
-
-  if (novoValor && route.name !== "Produtos") {
+watch(termoBuscaLocal, (v) => {
+  productStore.setTermoBusca(v);
+  if (v && route.name !== "Produtos") {
     router.push({ name: "Produtos" });
   }
 });
+
+watch(
+  () => route.fullPath,
+  () => {
+    window.scrollTo(0, 0);
+  }
+);
 
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 50;

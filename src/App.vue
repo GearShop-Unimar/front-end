@@ -49,7 +49,7 @@ onMounted(async () => {
 
     <Footer v-if="!esconderFooter" />
 
-    <MessagesWidget />
+    <MessagesWidget v-if="authStore.isAuthenticated" />
 
     <Carrinho />
   </div>

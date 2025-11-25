@@ -1,10 +1,7 @@
 <template>
   <div class="login-container">
     <div class="left-column">
-      <h2>
-        <span class="gear-logo">Gear</span><span class="shop-logo">Shop</span>
-      </h2>
-      <p class="slogan">A sua loja favorita <br />No conforto da sua casa.</p>
+      <img src="@/assets/img/Logo.png" alt="Logo GearShop" class="logo-image" />
     </div>
 
     <div class="right-column">
@@ -92,13 +89,19 @@ const login = async () => {
 
 .left-column {
   flex: 1;
-  background: var(--color-background-soft);
+  background: black;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 40px;
   text-align: center;
+}
+
+.logo-image {
+  width: 450px; /* Ajuste o tamanho conforme necessário */
+  height: auto;
+  margin-bottom: 20px; /* Espaçamento entre a imagem e o título */
 }
 
 .right-column {
@@ -118,6 +121,19 @@ const login = async () => {
 
 .right-column h2 {
   display: none;
+}
+
+.mobile-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.mobile-logo .logo-image {
+  width: 100px;
+  margin-right: 10px;
+  margin-bottom: 0;
 }
 
 .input-group label {
@@ -244,15 +260,10 @@ button[disabled] {
     width: 100%;
   }
   .right-column h2 {
-    display: block;
-    margin-bottom: 30px;
-    text-align: center;
+    display: none; /* Oculta o h2 principal no mobile */
   }
-  form {
-    max-width: 90%;
-  }
-  input {
-    width: 100%;
+  .mobile-logo {
+    display: flex; /* Exibe a div do logo mobile */
   }
 }
 
