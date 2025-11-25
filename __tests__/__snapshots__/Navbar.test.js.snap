@@ -12,12 +12,12 @@ exports[`Navbar.vue > mantém a estrutura visual esperada (snapshot) 1`] = `
         <li data-v-4d808a77=""><a data-v-4d808a77="" href="/fidelidade" class="">Fidelidade</a></li>
       </ul>
       <div data-v-4d808a77="" class="search-container">
-        <form data-v-4d808a77="" class="search-bar"><i data-v-4d808a77="" class="fa fa-search search-icon"></i><input data-v-4d808a77="" type="text" placeholder="Buscar peças..."></form>
+        <form data-v-4d808a77="" class="search-bar"><i data-v-4d808a77="" class="fa fa-search search-icon"></i><input data-v-4d808a77="" type="text" placeholder="Buscar produtos..." value=""></form>
       </div>
       <ul data-v-4d808a77="" class="auth-links">
         <li data-v-4d808a77=""><a data-v-4d808a77="" href="/login" class="btn btn-secondary">Entrar</a></li>
         <li data-v-4d808a77=""><a data-v-4d808a77="" href="/cadastro" class="btn btn-primary">Cadastre-se</a></li>
-        <li data-v-4d808a77=""><button data-v-4d808a77="" class="theme-toggle-btn"><i data-v-4d808a77="" class="bi bi-moon-stars-fill"></i></button></li>
+        <li data-v-4d808a77=""></li>
       </ul>
     </div>
   </div>

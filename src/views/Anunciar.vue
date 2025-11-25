@@ -2,7 +2,7 @@
   <div class="anunciar-container">
     <h1>Anuncie seu Produto</h1>
     <p class="subtitle">
-      Preencha os dados técnicos para que o comprador encontre a peça certa.
+      Preencha os dados técnicos para que o comprador encontre o produto certo.
     </p>
 
     <div v-if="loading" class="loading-overlay">
@@ -11,127 +11,136 @@
     </div>
 
     <form @submit.prevent="anunciarProduto" class="anuncio-form">
-      <div class="form-group">
-        <label for="nome">Nome da Peça*</label>
-        <input
-          v-model="produto.nome"
-          id="nome"
-          type="text"
-          placeholder="Ex: Jogo de Velas NGK"
-          required
-          maxlength="100"
-        />
-        <span class="char-counter">{{ produto.nome.length }}/100</span>
-      </div>
-
-      <div class="form-group-inline">
-        <div class="form-group">
-          <label for="categoria">Categoria*</label>
-          <select v-model="produto.categoria" id="categoria" required>
-            <option value="" disabled selected>Selecione</option>
-            <option>Motor e Ignição</option>
-            <option>Suspensão</option>
-            <option>Freios</option>
-            <option>Transmissão</option>
-            <option>Elétrica</option>
-            <option>Iluminação</option>
-            <option>Arrefecimento</option>
-            <option>Filtros e Óleos</option>
-            <option>Baterias</option>
-            <option>Direção</option>
-          </select>
-        </div>
-
-        <div class="form-group small-group">
-          <label for="estoque">Estoque*</label>
-          <input
-            v-model.number="produto.estoque"
-            id="estoque"
-            type="number"
-            min="1"
-            placeholder="Qtd"
-            required
-          />
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="modelo">Modelo Compatível (Aplicação)*</label>
-        <input
-          v-model="produto.modelo"
-          id="modelo"
-          type="text"
-          placeholder="Ex: VW Gol G5/G6 1.0 e 1.6"
-          required
-        />
-        <span class="hint">Descreva os veículos e anos compatíveis.</span>
-      </div>
-
-      <div class="form-group-inline">
-        <div class="form-group">
-          <label for="preco">Preço (R$)*</label>
-          <input
-            id="preco"
-            type="text"
-            :value="precoVisual"
-            @input="formatarMoeda"
-            placeholder="0,00"
-            required
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="estado">Condição da Peça*</label>
-          <select v-model="produto.estado" id="estado" required>
-            <option value="" disabled selected>Selecione</option>
-            <option value="Nova">Nova</option>
-            <option value="Usada">Usada (Original)</option>
-            <option value="Recondicionada">Recondicionada</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="descricao">Descrição Detalhada*</label>
-        <textarea
-          v-model="produto.descricao"
-          id="descricao"
-          rows="5"
-          placeholder="Detalhes técnicos, marca, número da peça, etc..."
-          required
-          maxlength="1000"
-        ></textarea>
-        <span class="char-counter">{{ produto.descricao.length }}/1000</span>
-      </div>
-
-      <div class="form-group">
-        <label for="imagem">Foto da Peça*</label>
-        <div class="image-upload-wrapper">
-          <input
-            type="file"
-            @change="selecionarImagem"
-            id="imagem"
-            accept="image/*"
-            required
-          />
-
-          <div v-if="imagemPreview" class="img-preview-container">
-            <img :src="imagemPreview" alt="Preview" />
-            <button type="button" @click="removerImagem" class="remove-btn">
-              <i class="bi bi-trash"></i>
-            </button>
+      <div class="form-grid">
+        <!-- Coluna Esquerda -->
+        <div class="form-column">
+          <div class="form-group">
+            <label for="nome">Nome do Produto*</label>
+            <input
+              v-model="produto.nome"
+              id="nome"
+              type="text"
+              placeholder="Ex: Jogo de Velas NGK"
+              required
+              maxlength="100"
+            />
+            <span class="char-counter">{{ produto.nome.length }}/100</span>
           </div>
 
-          <div v-else class="upload-placeholder" @click="triggerFileInput">
-            <i class="bi bi-camera"></i>
-            <span>Clique para adicionar foto</span>
+          <div class="form-group-inline">
+            <div class="form-group">
+              <label for="categoria">Categoria*</label>
+              <select v-model="produto.categoria" id="categoria" required>
+                <option value="" disabled selected>Selecione</option>
+                <option>Motor e Ignição</option>
+                <option>Suspensão</option>
+                <option>Freios</option>
+                <option>Transmissão</option>
+                <option>Elétrica</option>
+                <option>Iluminação</option>
+                <option>Arrefecimento</option>
+                <option>Filtros e Óleos</option>
+                <option>Baterias</option>
+                <option>Direção</option>
+              </select>
+            </div>
+
+            <div class="form-group small-group">
+              <label for="estoque">Estoque*</label>
+              <input
+                v-model.number="produto.estoque"
+                id="estoque"
+                type="number"
+                min="1"
+                placeholder="Qtd"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="modelo">Modelo Compatível (Aplicação)*</label>
+            <input
+              v-model="produto.modelo"
+              id="modelo"
+              type="text"
+              placeholder="Ex: VW Gol G5/G6 1.0 e 1.6"
+              required
+            />
+            <span class="hint">Descreva os veículos e anos compatíveis.</span>
+          </div>
+          <div class="form-group-inline">
+            <div class="form-group">
+              <label for="preco">Preço (R$)*</label>
+              <input
+                id="preco"
+                type="text"
+                :value="precoVisual"
+                @input="formatarMoeda"
+                placeholder="0,00"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="estado">Condição do Produto*</label>
+              <select v-model="produto.estado" id="estado" required>
+                <option value="" disabled selected>Selecione</option>
+                <option value="Nova">Nova</option>
+                <option value="Usada">Usada (Original)</option>
+                <option value="Recondicionada">Recondicionada</option>
+              </select>
+            </div>
           </div>
         </div>
-        <p v-if="imagemError" class="error-message">{{ imagemError }}</p>
+
+        <!-- Coluna Direita -->
+        <div class="form-column">
+          <div class="form-group">
+            <label for="descricao">Descrição Detalhada*</label>
+            <textarea
+              v-model="produto.descricao"
+              id="descricao"
+              rows="5"
+              placeholder="Detalhes técnicos, marca, número do produto, etc..."
+              required
+              maxlength="1000"
+            ></textarea>
+            <span class="char-counter"
+              >{{ produto.descricao.length }}/1000</span
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="imagem">Foto do Produto*</label>
+            <div class="image-upload-wrapper">
+              <input
+                type="file"
+                @change="selecionarImagem"
+                id="imagem"
+                accept="image/*"
+                required
+              />
+
+              <div v-if="imagemPreview" class="img-preview-container">
+                <img :src="imagemPreview" alt="Preview" />
+                <button type="button" @click="removerImagem" class="remove-btn">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+
+              <div v-else class="upload-placeholder" @click="triggerFileInput">
+                <i class="bi bi-camera"></i>
+                <span>Clique para adicionar foto</span>
+              </div>
+            </div>
+            <p v-if="imagemError" class="error-message">{{ imagemError }}</p>
+          </div>
+        </div>
       </div>
 
       <button type="submit" :disabled="loading" class="btn-submit">
-        <span v-if="!loading">Publicar Peça</span>
+        <span v-if="!loading">Publicar Produto</span>
         <span v-else>Enviando...</span>
       </button>
 
@@ -249,7 +258,7 @@ const anunciarProduto = async () => {
     errorMessage.value = null;
     // O Store deve tratar a conversão para FormData
     await productStore.addProduct(payload);
-    alert("Peça anunciada com sucesso!");
+    alert("Produto anunciado com sucesso!");
     router.push("/produtos");
   } catch (error) {
     console.error("Erro:", error);
@@ -261,7 +270,7 @@ const anunciarProduto = async () => {
 
 <style scoped>
 .anunciar-container {
-  max-width: 700px;
+  width: 1200px;
   margin: 40px auto;
   padding: 40px;
   background-color: var(--color-card-background);
@@ -288,6 +297,23 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.anuncio-form .btn-submit {
+  width: 50%;
+  margin: 20px auto 0;
 }
 
 .form-group {
@@ -360,7 +386,7 @@ input[type="file"] {
 .upload-placeholder {
   border: 2px dashed var(--color-border);
   border-radius: 8px;
-  height: 150px;
+  height: 175px;
   display: flex;
   flex-direction: column;
   align-items: center;

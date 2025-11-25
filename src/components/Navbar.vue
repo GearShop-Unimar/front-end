@@ -25,8 +25,9 @@
             <i class="fa fa-search search-icon"></i>
             <input
               type="text"
-              v-model="termoBuscaLocal"
-              placeholder="Buscar peças..."
+              :value="termoBuscaLocal"
+              @input="handleSearch"
+              placeholder="Buscar produtos..."
             />
           </form>
         </div>
@@ -146,12 +147,14 @@ const toggleMenu = () => {
   menuOpen.value = !menuOpen.value;
 };
 
-watch(termoBuscaLocal, (v) => {
-  productStore.setTermoBusca(v);
-  if (v && route.name !== "Produtos") {
+const handleSearch = (event) => {
+  const searchTerm = event.target.value;
+  termoBuscaLocal.value = searchTerm;
+  productStore.setTermoBusca(searchTerm);
+  if (searchTerm && route.name !== "Produtos") {
     router.push({ name: "Produtos" });
   }
-});
+};
 
 watch(
   () => route.fullPath,

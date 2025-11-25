@@ -126,7 +126,7 @@ body {
 /* Estilos de HTML/Body e Estrutura */
 html,
 body {
-  font-size: 12px; /* Priorizado o 12px, é mais específico. Isto define o tamanho base para unidades 'rem'. */
+  font-size: 15px; /* Priorizado o 12px, é mais específico. Isto define o tamanho base para unidades 'rem'. */
   height: 100%;
   margin: 0;
   display: flex;

@@ -198,7 +198,7 @@ describe("Anunciar.vue", () => {
       imageFile: file,
     });
 
-    expect(alertSpy).toHaveBeenCalledWith("Peça anunciada com sucesso!");
+    expect(alertSpy).toHaveBeenCalledWith("Produto anunciado com sucesso!");
     expect(pushSpy).toHaveBeenCalledWith("/produtos");
 
     alertSpy.mockRestore();

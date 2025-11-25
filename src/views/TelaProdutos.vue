@@ -89,7 +89,7 @@
         </div>
 
         <div v-else>
-          <section class="secao-destaque">
+          <section v-if="!productStore.termoBuscaGlobal" class="secao-destaque">
             <h2 class="titulo-secao">Destaques da Plataforma</h2>
             <div class="produtos-grid">
               <ProductCard
@@ -308,6 +308,7 @@ export default {
       categoriasDisponiveis,
       loading,
       funcaoQueRemoveDoBackend,
+      productStore,
     };
   },
 };
@@ -377,6 +378,8 @@ export default {
   border-radius: 15px;
   position: sticky;
   top: 120px;
+  height: calc(100vh - 140px);
+  overflow-y: auto;
 }
 .conteudo-principal {
   flex: 1;
@@ -530,6 +533,8 @@ export default {
     width: 100%;
     position: static;
     margin-bottom: 30px;
+    height: auto;
+    overflow-y: visible;
   }
   .produtos-grid {
     grid-template-columns: repeat(2, 1fr);

@@ -24,9 +24,9 @@ describe("premiumService", () => {
     const mockDetails = { status: "active", expiry: "2025-12-31" };
     api.get.mockResolvedValue({ data: mockDetails });
 
-    const result = await premiumService.getDetails();
+    const result = await premiumService.getStatus();
 
-    expect(api.get).toHaveBeenCalledWith(`${expectedRelativeBasePath}/details`);
+    expect(api.get).toHaveBeenCalledWith(`${expectedRelativeBasePath}/status`);
     expect(result).toEqual(mockDetails);
   });
 
@@ -65,11 +65,11 @@ describe("premiumService", () => {
   });
 
   it("should handle errors in getDetails", async () => {
-    const error = new Error("Failed to get details");
+    const error = new Error("Failed to get status");
     api.get.mockRejectedValue(error);
 
-    await expect(premiumService.getDetails()).rejects.toThrow(
-      "Failed to get details"
+    await expect(premiumService.getStatus()).rejects.toThrow(
+      "Failed to get status"
     );
   });
 
