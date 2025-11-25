@@ -70,7 +70,7 @@ export const useAuthStore = defineStore("auth", () => {
 
     try {
       const response = await fetch(`${API_BASE_URL}/User/${userId}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token.value}`,

@@ -64,7 +64,7 @@
     --color-heading: #ffffff;
     --color-text: #e0e0e0;
 
-    --color-primary: #ff771a;
+    --color-primary: #ff1a1a;
     --color-primary-hover: #ff8d40;
 
     --color-card-background: #1e1e1e;
@@ -87,8 +87,8 @@ html.dark-theme {
   --color-heading: #ffffff;
   --color-text: #e0e0e0;
 
-  --color-primary: #ff771a;
-  --color-primary-hover: #ff8d40;
+  --color-primary: #ff1a1a;
+  --color-primary-hover: #df1111;
 
   --color-card-background: #1e1e1e;
   --color-card-shadow: rgba(0, 0, 0, 0.4);
