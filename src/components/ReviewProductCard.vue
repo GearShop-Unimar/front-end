@@ -1,31 +1,40 @@
 <template>
   <div class="review-card">
-    <button class="btn-remove" @click.stop="emitRemove" aria-label="Remover item">
+    <button
+      class="btn-remove"
+      @click.stop="emitRemove"
+      aria-label="Remover item"
+    >
       <i class="fa fa-times"></i>
     </button>
 
-      <div class="review-content">
-        <div class="thumb">
-          <img v-if="item.imagem" :src="item.imagem" :alt="item.nome" @error="onImageError" />
-          <div v-else class="thumb-fallback">
-            <i class="fa fa-image"></i>
-          </div>
-        </div>
-
-        <div class="info">
-          <h3 class="nome">{{ item.nome }}</h3>
-          <p class="descricao" v-if="item.descricao">{{ item.descricao }}</p>
-          <div class="meta">
-            <span class="preco">R$ {{ formattedPrice }}</span>
-            <span class="qtd">Qtd: {{ item.quantidade }}</span>
-          </div>
+    <div class="review-content">
+      <div class="thumb">
+        <img
+          v-if="item.imagem"
+          :src="item.imagem"
+          :alt="item.nome"
+          @error="onImageError"
+        />
+        <div v-else class="thumb-fallback">
+          <i class="fa fa-image"></i>
         </div>
       </div>
+
+      <div class="info">
+        <h3 class="nome">{{ item.nome }}</h3>
+        <p class="descricao" v-if="item.descricao">{{ item.descricao }}</p>
+        <div class="meta">
+          <span class="preco">R$ {{ formattedPrice }}</span>
+          <span class="qtd">Qtd: {{ item.quantidade }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed } from "vue";
 
 const props = defineProps({
   item: {
@@ -34,19 +43,22 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['remove']);
+const emit = defineEmits(["remove"]);
 
 const formattedPrice = computed(() => {
+  // Formata o preço do item para duas casas decimais.
   const value = Number(props.item.preco || 0);
   return value.toFixed(2);
 });
 
 const emitRemove = () => {
-  emit('remove', props.item.id);
+  // Emite um evento 'remove' com o ID do item.
+  emit("remove", props.item.id);
 };
 
 const onImageError = (ev) => {
-  ev.target.style.display = 'none';
+  // Esconde a imagem se houver erro de carregamento.
+  ev.target.style.display = "none";
 };
 </script>
 
@@ -68,7 +80,7 @@ const onImageError = (ev) => {
   width: 30px;
   height: 30px;
   border: none;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -139,7 +151,9 @@ const onImageError = (ev) => {
 }
 
 @media (max-width: 768px) {
-  .thumb { width: 80px; height: 80px; }
+  .thumb {
+    width: 80px;
+    height: 80px;
+  }
 }
-
 </style>

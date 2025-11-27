@@ -53,15 +53,21 @@
 </template>
 
 <script setup>
+// Importa funções reativas e de ciclo de vida do Vue
 import { computed, onMounted, ref } from "vue";
+// Importa o roteador para navegação
 import { useRouter } from "vue-router";
+// Importa stores Pinia para gerenciamento de estado
 import { useUserStore } from "@/stores/user";
 import { useAuthStore } from "@/stores/auth";
 import { useCartStore } from "@/stores/cart";
+// Importa a biblioteca de notificações
 import { useToast } from "vue-toastification";
 
+// Define as propriedades que o componente ProductCard pode receber
 const props = defineProps({
   produto: {
+    // Objeto do produto a ser exibido
     type: Object,
     required: true,
     validator: (value) => {
@@ -75,31 +81,42 @@ const props = defineProps({
   },
 });
 
+// Define os eventos que o componente ProductCard pode emitir
 const emit = defineEmits(["delete"]);
 
+// Inicializa o roteador do Vue
 const router = useRouter();
+// Inicializa os stores Pinia
 const userStore = useUserStore();
 const authStore = useAuthStore();
 const cartStore = useCartStore();
+// Inicializa a instância do toast para notificações
 const toast = useToast();
-const isAdding = ref(false);
-const isDeleting = ref(false);
+// Variáveis reativas para controlar o estado dos botões
+const isAdding = ref(false); // Indica se o produto está sendo adicionado ao carrinho
+const isDeleting = ref(false); // Indica se o produto está sendo deletado
 
+// Propriedade computada para verificar se o usuário logado é o proprietário do produto
 const isOwner = computed(() => {
   if (!authStore.user || !props.produto.sellerId) return false;
   return String(authStore.user.id) === String(props.produto.sellerId);
 });
 
+// Propriedade computada para obter o nome do vendedor do produto
 const sellerName = computed(() => {
   if (!props.produto.sellerId) return "Vendedor desconhecido";
   const seller = userStore.users[props.produto.sellerId];
   return seller?.name || "Carregando...";
 });
 
+// Propriedade computada para obter a avaliação média do produto
 const rating = computed(() => Math.round(props.produto.rating || 0));
+// Propriedade computada para obter o número de avaliações do produto
 const reviewCount = computed(() => props.produto.reviewCount || 0);
 
+// Função para confirmar e deletar o produto
 const confirmarDelete = async () => {
+  // Solicita confirmação antes de deletar
   if (!confirm("Tem certeza que deseja excluir este produto?")) return;
 
   isDeleting.value = true;
@@ -114,11 +131,14 @@ const confirmarDelete = async () => {
   }
 };
 
+// Função para navegar para a página de detalhes do produto
 const irParaProduto = (id) => {
   router.push(`/produto/${id}`);
 };
 
+// Função para adicionar o produto ao carrinho
 const adicionarAoCarrinho = async () => {
+  // Redireciona para o login se o usuário não estiver autenticado
   if (!authStore.user) {
     router.push("/login");
     return;
@@ -140,16 +160,19 @@ const adicionarAoCarrinho = async () => {
   }
 };
 
+// Função para lidar com erros no carregamento da imagem do produto
 const onImageError = (event) => {
-  event.target.style.display = "none";
+  event.target.style.display = "none"; // Esconde a imagem quebrada
   const container = event.target.parentElement;
   if (container) {
     const semImagem = container.querySelector(".sem-imagem");
-    if (semImagem) semImagem.style.display = "flex";
+    if (semImagem) semImagem.style.display = "flex"; // Mostra o placeholder "Sem imagem"
   }
 };
 
+// Hook de ciclo de vida: executa quando o componente é montado
 onMounted(() => {
+  // Busca informações do vendedor se o sellerId estiver disponível
   if (props.produto.sellerId) {
     userStore.fetchUserById(props.produto.sellerId);
   }

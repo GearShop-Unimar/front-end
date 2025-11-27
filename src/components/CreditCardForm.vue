@@ -100,8 +100,10 @@
 <script setup>
 import { ref, computed } from "vue";
 
+// Define os eventos que o componente pode emitir
 const emit = defineEmits(["submit"]);
 
+// Variáveis de estado para os campos do formulário
 const nomeCartao = ref("");
 const numeroCartao = ref("");
 const mesValidade = ref("");
@@ -111,6 +113,7 @@ const cpfTitular = ref("");
 const erro = ref("");
 const loading = ref(false);
 
+// Determina a bandeira do cartão com base no número
 const bandeiraCartao = computed(() => {
   const num = numeroCartao.value.replace(/\s/g, "");
   if (num.length >= 4) {
@@ -121,19 +124,23 @@ const bandeiraCartao = computed(() => {
   return null;
 });
 
+// Formata o número do cartão com espaços
 const formatarCartao = () => {
   let num = numeroCartao.value.replace(/\D/g, "").slice(0, 16);
   numeroCartao.value = num.replace(/(.{4})/g, "$1 ").trim();
 };
 
+// Formata o mês de validade para conter apenas números
 const formatarMes = () => {
   mesValidade.value = mesValidade.value.replace(/\D/g, "").slice(0, 2);
 };
 
+// Formata o ano de validade para conter apenas números
 const formatarAno = () => {
   anoValidade.value = anoValidade.value.replace(/\D/g, "").slice(0, 2);
 };
 
+// Formata o CPF com pontos e traço
 const formatarCPF = () => {
   let cpf = cpfTitular.value.replace(/\D/g, "").slice(0, 11);
   if (cpf.length > 9) {
@@ -146,9 +153,13 @@ const formatarCPF = () => {
   cpfTitular.value = cpf;
 };
 
+// Valida o número do cartão
 const validarNumeroCartao = (num) => /^\d{16}$/.test(num.replace(/\s/g, ""));
+// Valida o código de segurança (CVV)
 const validarCVV = (cvv) => /^\d{3,4}$/.test(cvv);
+// Valida o formato do CPF
 const validarCPF = (cpf) => /^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(cpf);
+// Valida a data de validade do cartão
 const validarValidade = (mes, ano) => {
   if (!/^\d{2}$/.test(mes) || !/^\d{2}$/.test(ano)) return false;
   const mesNum = parseInt(mes);
@@ -162,6 +173,7 @@ const validarValidade = (mes, ano) => {
   return true;
 };
 
+// Verifica se o formulário está preenchido e válido
 const formularioValido = computed(() => {
   return (
     nomeCartao.value.length > 0 &&
@@ -173,6 +185,7 @@ const formularioValido = computed(() => {
   );
 });
 
+// Submete o formulário após validação
 const submitForm = () => {
   erro.value = "";
   if (!formularioValido.value) {

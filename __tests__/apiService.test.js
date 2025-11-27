@@ -19,14 +19,12 @@ vi.mock("@/stores/auth", () => ({
   })),
 }));
 
-// Usamos vi.doMock para garantir que o mock do axios é registrado
 vi.doMock("axios", () => ({
   default: {
     create: vi.fn(() => mockAxiosInstance),
   },
 }));
 
-// 🛑 VALOR CORRIGIDO: Deve corresponder ao que é carregado do .env no Vitest
 const EXPECTED_BASE_URL = "http://localhost:5282/api";
 
 describe("apiService", () => {
@@ -35,19 +33,16 @@ describe("apiService", () => {
     mockToken = "fake-token";
   });
 
-  // Helper para importar o módulo sob teste
   async function importApiService() {
     vi.resetModules();
     return await import("@/services/apiService");
   }
 
   it("deve criar instância do axios com baseURL correta", async () => {
-    // Importamos o axios APÓS o mock ter sido registrado, para obter a versão mockada
     const axiosMocked = (await import("axios")).default;
 
     await importApiService();
 
-    // Agora 'axiosMocked.create' é um spy e a asserção funciona
     expect(axiosMocked.create).toHaveBeenCalledWith(
       expect.objectContaining({ baseURL: EXPECTED_BASE_URL })
     );

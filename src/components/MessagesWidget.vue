@@ -125,18 +125,28 @@ import {
   sendMessageToBackend,
 } from "@/services/messagesService";
 
+// Obtém as stores de autenticação e carrinho
 const auth = useAuthStore();
 const cartStore = useCartStore();
+// ID do usuário logado
 const currentUserId = computed(() => auth.user?.id || 0);
 
+// Controla a visibilidade do widget de chat
 const isOpen = ref(false);
+// Termo de busca para as conversas
 const query = ref("");
+// Lista de conversas carregadas
 const conversations = ref([]);
+// ID da conversa selecionada
 const selectedId = ref("");
+// Mensagens da conversa selecionada
 const messages = ref([]);
+// Texto da nova mensagem a ser enviada
 const draft = ref("");
+// Referência para o contêiner de mensagens (para scroll)
 const messagesRef = ref(null);
 
+// Filtra as conversas com base na busca do usuário
 const filteredConversations = computed(() => {
   const q = query.value.toLowerCase().trim();
   if (!q) return conversations.value;
@@ -147,14 +157,17 @@ const filteredConversations = computed(() => {
   );
 });
 
+// Encontra a conversa atualmente selecionada na lista
 const selectedConversation = computed(() =>
   conversations.value.find((c) => c.id === selectedId.value)
 );
 
+// Define o título do cabeçalho do chat
 const headerTitle = computed(
   () => selectedConversation.value?.otherUser?.name || "Mensagens"
 );
 
+// Abre ou fecha o painel de mensagens
 function toggleOpen(v) {
   isOpen.value = v;
   if (v === true && conversations.value.length === 0) {
@@ -162,6 +175,7 @@ function toggleOpen(v) {
   }
 }
 
+// Formata um timestamp para tempo relativo (ex: "5 min atrás")
 function timeAgo(ts) {
   const diff = Date.now() - ts;
   const m = Math.floor(diff / 60000);
@@ -173,11 +187,13 @@ function timeAgo(ts) {
   return `${d} d`;
 }
 
+// Formata um timestamp para hora local (ex: "14:30")
 function formatTime(ts) {
   const d = new Date(ts);
   return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
+// Carrega a lista de conversas do backend
 async function loadConversations() {
   try {
     conversations.value = await fetchConversationsFromBackend();
@@ -186,6 +202,7 @@ async function loadConversations() {
   }
 }
 
+// Seleciona uma conversa e carrega suas mensagens
 async function selectConversation(id) {
   selectedId.value = id;
   messages.value = [];
@@ -198,11 +215,13 @@ async function selectConversation(id) {
   }
 }
 
+// Rola a visualização de mensagens para o final
 function scrollToBottom() {
   const el = messagesRef.value;
   if (el) el.scrollTop = el.scrollHeight;
 }
 
+// Envia a mensagem digitada para o backend
 async function handleSend() {
   const text = draft.value.trim();
   if (!text || !selectedId.value) return;
@@ -221,6 +240,7 @@ async function handleSend() {
   }
 }
 
+// Hook do ciclo de vida, executado quando o componente é montado
 onMounted(() => {});
 </script>
 

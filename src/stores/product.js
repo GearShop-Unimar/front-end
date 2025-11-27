@@ -1,40 +1,46 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import axios from "axios";
+import axios from "axios"; // Usando axios para chamadas HTTP
 
+// Define a URL base da API
 const API_URL = import.meta.env.VITE_API_URL;
 
+// Cria e exporta o store Pinia para o gerenciamento de produtos e avaliações
 export const useProductStore = defineStore("product", () => {
-  // STATE
-  const products = ref({});
-  const loading = ref(false);
-  const error = ref(null);
-  // Novo estado para a busca global
+  // --- Estado Reativo (State) ---
+  const products = ref({}); // Objeto de cache para armazenar produtos por ID (ex: {1: {...}, 2: {...}})
+  const loading = ref(false); // Indicador de que uma operação assíncrona está em andamento
+  const error = ref(null); // Armazena mensagens de erro de operações
+  // Estado para armazenar o termo de busca global digitado pelo usuário
   const termoBuscaGlobal = ref("");
 
-  // ACTION: Definir busca (Navbar -> Store -> TelaProdutos)
+  // --- Ações (Actions) ---
+
+  // Define o termo de busca global, usado para comunicação entre componentes (Navbar -> Store -> TelaProdutos)
   function setTermoBusca(termo) {
     termoBuscaGlobal.value = termo;
   }
+
+  // Busca um produto pelo ID (com lógica de cache) e busca suas avaliações
   async function fetchProductById(productId) {
-    // Já existe mas sem reviews: busca as reviews e retorna O PRODUTO
+    // 1. Já existe, mas sem reviews: busca reviews e retorna o produto em cache
     if (products.value[productId] && !products.value[productId].reviews) {
       await fetchReviewsForProduct(productId);
-      return products.value[productId]; // 🔥 necessário para o teste passar
+      return products.value[productId];
     }
 
-    // Já existe com reviews
+    // 2. Já existe com reviews: retorna o produto em cache
     else if (products.value[productId]) {
       return products.value[productId];
     }
 
-    // Buscar produto do backend
+    // 3. Buscar produto do backend
     try {
       const response = await axios.get(`${API_URL}/Product/${productId}`);
       const productData = response.data;
-      products.value[productId] = productData;
+      products.value[productId] = productData; // Adiciona ao cache
 
-      await fetchReviewsForProduct(productId);
+      await fetchReviewsForProduct(productId); // Busca e anexa as reviews
 
       return products.value[productId];
     } catch (err) {
@@ -43,6 +49,7 @@ export const useProductStore = defineStore("product", () => {
     }
   }
 
+  // Adiciona um novo produto através de um formulário multipart
   async function addProduct(productPayload) {
     loading.value = true;
     error.value = null;
@@ -55,43 +62,40 @@ export const useProductStore = defineStore("product", () => {
       }
 
       const formData = new FormData();
-
+      // Anexa todos os campos do produto, incluindo o arquivo de imagem
       if (productPayload.imageFile) {
         formData.append("ImageFile", productPayload.imageFile);
       }
-
       formData.append("Name", productPayload.name);
       formData.append("Description", productPayload.description);
       formData.append("Price", productPayload.price);
-      // ✅ CORREÇÃO: Adicionados StockQuantity e CompatibleModel
       formData.append("StockQuantity", productPayload.stockQuantity);
       formData.append("CompatibleModel", productPayload.compatibleModel);
-
       formData.append("Category", productPayload.category);
 
+      // Envio POST com token e cabeçalho 'multipart/form-data' (Content-Type: undefined)
       const response = await axios.post(`${API_URL}/Product`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": undefined, // Deixar o navegador definir boundary
+          "Content-Type": undefined,
         },
       });
 
       const newProduct = response.data;
-      products.value[newProduct.id] = newProduct;
+      products.value[newProduct.id] = newProduct; // Adiciona o novo produto ao cache
 
       return newProduct;
     } catch (err) {
       error.value = "Erro ao publicar produto.";
 
+      // Lógica para extrair mensagens de erro específicas da API
       if (
         err.response &&
         (err.response.status === 401 || err.response.status === 403)
       ) {
         error.value = "Sessão expirada. Faça login novamente.";
       }
-
       if (err.response && err.response.data && err.response.data.errors) {
-        // Tenta pegar o erro específico do backend (ex: "Nome é obrigatório")
         const firstError = Object.values(err.response.data.errors)[0];
         error.value = Array.isArray(firstError)
           ? firstError[0]
@@ -104,7 +108,9 @@ export const useProductStore = defineStore("product", () => {
     }
   }
 
+  // Busca as avaliações de um produto na API e anexa ao objeto do produto em cache
   async function fetchReviewsForProduct(productId) {
+    // Retorna reviews se já estiverem em cache
     if (products.value[productId]?.reviews) {
       return products.value[productId].reviews;
     }
@@ -115,6 +121,7 @@ export const useProductStore = defineStore("product", () => {
       );
       const reviewsData = response.data;
 
+      // Anexa os dados das avaliações ao produto no cache
       if (products.value[productId]) {
         products.value[productId].reviews = reviewsData;
       }
@@ -126,6 +133,7 @@ export const useProductStore = defineStore("product", () => {
     }
   }
 
+  // Adiciona uma nova avaliação a um produto
   async function addReview(reviewPayload) {
     loading.value = true;
     error.value = null;
@@ -136,6 +144,7 @@ export const useProductStore = defineStore("product", () => {
         throw new Error("Usuário não autenticado.");
       }
 
+      // Envio POST para a API de avaliação
       const response = await axios.post(`${API_URL}/review`, reviewPayload, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -145,6 +154,7 @@ export const useProductStore = defineStore("product", () => {
       const newReview = response.data;
       const productId = newReview.productId;
 
+      // Adiciona a nova review ao topo da lista de reviews do produto em cache (se existir)
       if (products.value[productId]) {
         if (!products.value[productId].reviews) {
           products.value[productId].reviews = [];
@@ -156,6 +166,7 @@ export const useProductStore = defineStore("product", () => {
     } catch (err) {
       error.value = "Erro ao publicar avaliação.";
 
+      // Lógica para tratamento de erros de autenticação ou mensagens da API
       if (err.response?.status === 401 || err.response?.status === 403) {
         error.value = "Acesso negado. Faça login novamente.";
       }
@@ -169,12 +180,14 @@ export const useProductStore = defineStore("product", () => {
     }
   }
 
+  // --- Exportação ---
+
   return {
     products,
     loading,
     error,
-    termoBuscaGlobal, // Exporta estado
-    setTermoBusca, // Exporta action
+    termoBuscaGlobal, // Estado de busca global
+    setTermoBusca, // Ação para definir o termo de busca
     fetchProductById,
     addProduct,
     fetchReviewsForProduct,

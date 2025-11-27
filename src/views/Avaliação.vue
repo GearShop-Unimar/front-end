@@ -139,41 +139,55 @@
 </template>
 
 <script>
-import axios from "axios";
+import axios from "axios"; // Importa o Axios para fazer chamadas HTTP
 
 export default {
+  // --- Dados Reativos (State) ---
   data() {
     return {
-      reviews: [],
-      showModal: false,
+      reviews: [], // Array que armazena todas as avaliações carregadas
+      showModal: false, // Controla a visibilidade do modal de "Avaliar Produto"
       newReview: {
-        rating: 0,
-        comment: "",
+        rating: 0, // Nota (estrelas) da nova avaliação a ser enviada
+        comment: "", // Texto do comentário da nova avaliação
       },
     };
   },
+
+  // --- Propriedades Calculadas (Getters) ---
   computed: {
+    // Calcula a nota média de todas as avaliações
     averageRating() {
-      if (!this.reviews.length) return 0;
-      const sum = this.reviews.reduce((a, r) => a + r.rating, 0);
-      return sum / this.reviews.length;
+      if (!this.reviews.length) return 0; // Retorna 0 se não houver reviews
+      const sum = this.reviews.reduce((a, r) => a + r.rating, 0); // Soma todas as notas
+      return sum / this.reviews.length; // Retorna a média
     },
   },
+
+  // --- Métodos (Actions) ---
   methods: {
+    // Busca todas as avaliações na API e atualiza o estado 'reviews'
     async fetchReviews() {
       try {
+        // Assume-se que o endpoint deve ser dinâmico (ex: /api/reviews/product/{id})
         const res = await axios.get("/api/reviews");
         this.reviews = res.data;
       } catch (err) {
         console.error("Erro ao buscar avaliações", err);
       }
     },
+
+    // Envia a nova avaliação para a API
     async submitReview() {
+      // Valida se a nota e o comentário foram preenchidos
       if (!this.newReview.rating || !this.newReview.comment.trim()) return;
 
       try {
+        // Envia a nova avaliação via POST
         const res = await axios.post("/api/reviews", this.newReview);
-        this.reviews.push(res.data);
+        this.reviews.push(res.data); // Adiciona a nova review à lista local
+
+        // Limpa o formulário e fecha o modal
         this.newReview.rating = 0;
         this.newReview.comment = "";
         this.showModal = false;
@@ -181,22 +195,30 @@ export default {
         console.error("Erro ao enviar avaliação", err);
       }
     },
+
+    // Envia o voto (upvote/downvote) para a API
     async vote(reviewId, type) {
       try {
+        // Envia o tipo de voto (type) para o endpoint específico
         const res = await axios.post(`/api/reviews/${reviewId}/vote`, { type });
+
+        // Encontra o índice da review votada
         const index = this.reviews.findIndex((r) => r.id === reviewId);
+        // Substitui a review antiga pela nova (com os votos atualizados)
         this.reviews[index] = res.data;
       } catch (err) {
         console.error("Erro ao votar", err);
       }
     },
   },
+
+  // --- Ciclo de Vida ---
   mounted() {
+    // Chama a função de busca de reviews assim que o componente é montado
     this.fetchReviews();
   },
 };
 </script>
-
 <style scoped>
 textarea {
   resize: none;

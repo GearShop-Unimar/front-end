@@ -8,7 +8,6 @@ const router = createRouter({
   routes: [{ path: "/login", component: { template: "<div>Login</div>" } }],
 });
 
-// Mock fetch
 global.fetch = vi.fn();
 
 describe("Cadastro.vue", () => {
@@ -115,10 +114,12 @@ describe("Cadastro.vue", () => {
     });
     await router.isReady();
 
-    // CORREÇÃO: Preencher o CPF com valor válido para que a validação de senha seja a primeira a falhar
-    await wrapper.find('input[placeholder="CPF (apenas números)"]').setValue("123.456.789-00");
-    // CORREÇÃO: Preencher o CEP com valor válido para que a validação de senha seja a primeira a falhar
-    await wrapper.find('input[placeholder="CEP (00000-000)"]').setValue("12345-678");
+    await wrapper
+      .find('input[placeholder="CPF (apenas números)"]')
+      .setValue("123.456.789-00");
+    await wrapper
+      .find('input[placeholder="CEP (00000-000)"]')
+      .setValue("12345-678");
     await wrapper.find('input[placeholder^="Senha"]').setValue("password123");
     await wrapper
       .find('input[placeholder="Confirme sua senha"]')

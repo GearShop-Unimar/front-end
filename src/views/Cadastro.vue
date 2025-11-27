@@ -111,7 +111,9 @@
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 
+// --- Dados Estáticos ---
 const estadosBrasileiros = [
+  // Lista de objetos { sigla: 'UF', nome: 'Estado' } para o <select>
   { sigla: "AC", nome: "Acre" },
   { sigla: "AL", nome: "Alagoas" },
   { sigla: "AP", nome: "Amapá" },
@@ -141,6 +143,7 @@ const estadosBrasileiros = [
   { sigla: "TO", nome: "Tocantins" },
 ];
 
+// --- Estado do Formulário (Reativo) ---
 const fullName = ref("");
 const cpf = ref("");
 const telefone = ref("");
@@ -152,25 +155,32 @@ const numeroCasa = ref("");
 const email = ref("");
 const password = ref("");
 const confirmPassword = ref("");
-const erro = ref("");
-const loading = ref(false);
-const enderecoBuscado = ref(false);
-const passwordVisible = ref(false);
+const erro = ref(""); // Mensagem de erro exibida ao usuário
+const loading = ref(false); // Indica o estado de envio do formulário
+const enderecoBuscado = ref(false); // Indica se o endereço foi preenchido pelo ViaCEP
+const passwordVisible = ref(false); // Controla a visibilidade da senha
 
-const router = useRouter();
+const router = useRouter(); // Instância para navegação após o cadastro
 
+// --- Lógica de Senha (Computed) ---
+// Alterna o tipo do campo de senha (text/password)
 const passwordFieldType = computed(() =>
   passwordVisible.value ? "text" : "password"
 );
+// Alterna o ícone de visibilidade (olho aberto/fechado)
 const passwordIconClass = computed(() =>
   passwordVisible.value ? "fa fa-eye-slash" : "fa fa-eye"
 );
+// Alterna o estado de visibilidade da senha
 const togglePasswordVisibility = () => {
   passwordVisible.value = !passwordVisible.value;
 };
 
+// --- Funções Utilitárias e Máscaras ---
+// Remove todos os caracteres não numéricos de uma string
 const onlyNumbers = (str) => str.replace(/\D/g, "");
 
+// Aplica a máscara de CPF (000.000.000-00)
 const maskCPF = () => {
   let val = onlyNumbers(cpf.value);
   if (val.length > 11) val = val.substring(0, 11);
@@ -180,6 +190,7 @@ const maskCPF = () => {
   cpf.value = val;
 };
 
+// Aplica a máscara de CEP (00000-000)
 const maskCEP = () => {
   let val = onlyNumbers(cep.value);
   if (val.length > 8) val = val.substring(0, 8);
@@ -187,6 +198,7 @@ const maskCEP = () => {
   cep.value = val;
 };
 
+// Aplica a máscara de Telefone (XX) XXXXX-XXXX
 const maskTelefone = () => {
   let val = onlyNumbers(telefone.value);
   if (val.length > 11) val = val.substring(0, 11);
@@ -195,6 +207,7 @@ const maskTelefone = () => {
   telefone.value = val;
 };
 
+// Busca o endereço automaticamente usando o CEP (ViaCEP)
 const buscarEndereco = async () => {
   const cepLimpo = onlyNumbers(cep.value);
   if (cepLimpo.length !== 8) {
@@ -207,11 +220,14 @@ const buscarEndereco = async () => {
     const data = await response.json();
 
     if (!data.erro) {
+      // Preenche os campos do endereço e marca como buscado
       cidade.value = data.localidade;
       rua.value = data.logradouro;
       estado.value = data.uf;
       enderecoBuscado.value = true;
+      erro.value = "";
     } else {
+      // Limpa os campos e permite preenchimento manual
       enderecoBuscado.value = false;
       cidade.value = "";
       rua.value = "";
@@ -220,43 +236,48 @@ const buscarEndereco = async () => {
   } catch (error) {
     enderecoBuscado.value = false;
     console.error("Erro na busca de CEP:", error);
+    erro.value = "Erro de rede ao buscar CEP.";
   }
 };
 
+// Funções de Validação
 const validarCPF = (cpfStr) => onlyNumbers(cpfStr).length === 11;
 const validarCEP = (cepStr) => onlyNumbers(cepStr).length === 8;
 
+// --- Envio do Formulário ---
+// Lógica principal de validação e envio dos dados de cadastro
 const cadastrar = async () => {
-  erro.value = "";
+  erro.value = ""; // Limpa erros anteriores
 
+  // 1. Validações locais
   if (!validarCPF(cpf.value)) {
     erro.value = "CPF inválido. O campo deve ter 11 números.";
     return;
   }
-
   if (!validarCEP(cep.value)) {
     erro.value = "CEP inválido. O campo deve ter 8 números.";
     return;
   }
-
   if (password.value !== confirmPassword.value) {
     erro.value = "As senhas não coincidem.";
     return;
   }
 
-  loading.value = true;
+  loading.value = true; // Ativa o estado de carregamento
 
+  // 2. Limpeza dos dados para envio (apenas números)
   const cepLimpo = onlyNumbers(cep.value);
   const cpfLimpo = onlyNumbers(cpf.value);
   const telefoneLimpo = onlyNumbers(telefone.value);
 
+  // 3. Montagem do payload (dados a serem enviados para o Backend)
   const userData = {
     Name: fullName.value,
     Email: email.value,
     Password: password.value,
-    passconfirm: confirmPassword.value,
+    passconfirm: confirmPassword.value, // Nome do campo conforme o DTO do Backend
     PhoneNumber: telefoneLimpo,
-    ProfilePicture: "https://example.com/default-profile.png",
+    ProfilePicture: "https://example.com/default-profile.png", // Valor padrão
     Cpf: cpfLimpo,
     Estado: estado.value,
     Cidade: cidade.value,
@@ -265,12 +286,10 @@ const cadastrar = async () => {
     NumeroCasa: numeroCasa.value,
   };
 
-  console.log("Iniciando cadastro...");
-  console.log("Dados a serem enviados:", userData);
-
   try {
-    const API_URL = "http://localhost:5282/api/User";
+    const API_URL = "http://localhost:5282/api/User"; // Endpoint do Backend
 
+    // 4. Envio dos dados via Fetch API (POST)
     const response = await fetch(API_URL, {
       method: "POST",
       headers: {
@@ -279,17 +298,15 @@ const cadastrar = async () => {
       body: JSON.stringify(userData),
     });
 
-    console.log("Resposta da API recebida. Status:", response.status);
-
     if (response.ok) {
-      const data = await response.json();
-      console.log("Cadastro realizado com sucesso! Dados do usuário:", data);
+      // Sucesso
       alert("Conta criada com sucesso!");
-      router.push("/login");
+      router.push("/login"); // Redireciona para a tela de login
     } else {
+      // Falha (erros de validação ou servidor)
       const errorData = await response.json();
-      console.error("Erro ao cadastrar. Detalhes do Erro:", errorData);
 
+      // Tenta extrair erros de validação do formato ModelState (ASP.NET Core)
       if (errorData.errors) {
         const errorMessages = Object.entries(errorData.errors)
           .map(([key, messages]) => `${key}: ${messages.join("; ")}`)
@@ -297,17 +314,18 @@ const cadastrar = async () => {
 
         erro.value = `Erros de validação: ${errorMessages}`;
       } else {
+        // Erro geral do servidor
         erro.value = `Erro ao criar conta. Status: ${
           response.status
         }. Detalhes: ${errorData.title || JSON.stringify(errorData)}`;
       }
     }
   } catch (error) {
-    console.error("Erro de conexão ou requisição (fetch error):", error);
+    // Erro de rede (falha na comunicação)
+    console.error("Erro de conexão ou requisição:", error);
     erro.value = "Erro de rede. Verifique se a API está online.";
   } finally {
-    loading.value = false;
-    console.log("Processo de cadastro finalizado.");
+    loading.value = false; // Desativa o carregamento
   }
 };
 </script>

@@ -125,6 +125,7 @@ const route = useRoute();
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
+// Propriedade computada para determinar a URL da foto de perfil do usuário.
 const userPhoto = computed(() => {
   const u = authStore.user;
   if (!u) return null;
@@ -139,14 +140,16 @@ const userPhoto = computed(() => {
   return null;
 });
 
-const termoBuscaLocal = ref("");
-const menuOpen = ref(false);
-const isScrolled = ref(false);
+const termoBuscaLocal = ref(""); // Ref para armazenar o termo de busca local.
+const menuOpen = ref(false); // Ref para controlar o estado de abertura do menu mobile.
+const isScrolled = ref(false); // Ref para controlar se a barra de navegação foi rolada.
 
+// Alterna o estado de abertura do menu mobile.
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value;
 };
 
+// Lida com a entrada de busca e atualiza o termo de busca global.
 const handleSearch = (event) => {
   const searchTerm = event.target.value;
   termoBuscaLocal.value = searchTerm;
@@ -156,6 +159,7 @@ const handleSearch = (event) => {
   }
 };
 
+// Observa mudanças na rota e rola a janela para o topo.
 watch(
   () => route.fullPath,
   () => {
@@ -163,10 +167,12 @@ watch(
   }
 );
 
+// Lida com o evento de rolagem da janela para aplicar estilos condicionalmente.
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 50;
 };
 
+// Adiciona event listeners ao montar o componente e remove ao desmontar.
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
   termoBuscaLocal.value = productStore.termoBuscaGlobal;

@@ -42,6 +42,8 @@
                 <option>Filtros e Óleos</option>
                 <option>Baterias</option>
                 <option>Direção</option>
+                <option>Estética</option>
+                <option>Outros</option>
               </select>
             </div>
 
@@ -157,29 +159,51 @@ import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useProductStore } from "../stores/product.js";
 
-const router = useRouter();
-const productStore = useProductStore();
+const router = useRouter(); // Instância para navegação programática
+const productStore = useProductStore(); // Instância do store de produtos
+// Pega o estado 'loading' do store para desabilitar o botão de envio
 const { loading } = storeToRefs(productStore);
 
-// Estado do Formulário
+// --- Estado do Formulário (Reativo) ---
 const produto = ref({
   nome: "",
   categoria: "",
-  modelo: "", // Mapeia para CompatibleModel
-  preco: null,
+  modelo: "", // Mapeia para CompatibleModel no Backend
+  preco: null, // Valor numérico real (ex: 289.90)
   estoque: 1, // Mapeia para StockQuantity
-  estado: "", // Vai para a Descrição
+  estado: "", // Valor temporário para a condição do produto
   descricao: "",
-  arquivoImagem: null,
+  arquivoImagem: null, // Objeto File()
 });
-const precoVisual = ref("");
-const imagemPreview = ref(null);
-const imagemError = ref(null);
-const errorMessage = ref(null);
+const precoVisual = ref(""); // Valor do preço formatado para exibição no input (ex: 289,90)
+const imagemPreview = ref(null); // URL temporária para pré-visualização da imagem
+const imagemError = ref(null); // Mensagem de erro de validação da imagem
+const errorMessage = ref(null); // Mensagem de erro geral do formulário/API
 
-// Funções de Imagem
+// --- Lógica de Notificação (Toast) ---
+// Nota: Em um projeto real, 'useToast' do 'vue-toastification' seria usado diretamente aqui.
+const showToast = ref(false);
+const toastMessage = ref("");
+const toastType = ref(""); // 'success' ou 'error'
+
+// Exibe uma mensagem de notificação temporária (simulação de toast)
+const showToastMessage = (message, type) => {
+  toastMessage.value = message;
+  toastType.value = type;
+  showToast.value = true;
+  // Oculta o toast após 3 segundos
+  setTimeout(() => {
+    showToast.value = false;
+    toastMessage.value = "";
+    toastType.value = "";
+  }, 3000);
+};
+
+// --- Funções de Imagem ---
+// Simula o clique no input de arquivo oculto
 const triggerFileInput = () => document.getElementById("imagem").click();
 
+// Limpa o estado da imagem e o input de arquivo
 const removerImagem = () => {
   imagemPreview.value = null;
   produto.value.arquivoImagem = null;
@@ -187,6 +211,7 @@ const removerImagem = () => {
   if (fileInput) fileInput.value = "";
 };
 
+// Lida com a seleção de arquivo, valida o tipo/tamanho e gera preview
 const selecionarImagem = (event) => {
   const file = event.target.files[0];
   imagemError.value = null;
@@ -194,30 +219,35 @@ const selecionarImagem = (event) => {
   if (!file) return;
 
   const validTypes = ["image/jpeg", "image/png", "image/webp"];
-  const maxSize = 2 * 1024 * 1024; // Aumentei para 2MB
+  const maxSize = 2 * 1024 * 1024; // Tamanho máximo de 2MB
 
+  // Validação de tipo de arquivo
   if (!validTypes.includes(file.type)) {
     imagemError.value = "Apenas JPG, PNG ou WEBP.";
     removerImagem();
     return;
   }
 
+  // Validação de tamanho
   if (file.size > maxSize) {
     imagemError.value = "Imagem muito grande (Max 2MB).";
     removerImagem();
     return;
   }
 
-  produto.value.arquivoImagem = file;
+  produto.value.arquivoImagem = file; // Armazena o objeto File
   const reader = new FileReader();
   reader.onload = (e) => {
-    imagemPreview.value = e.target.result;
+    imagemPreview.value = e.target.result; // Gera a URL para a pré-visualização
   };
   reader.readAsDataURL(file);
 };
+
+// --- Formatação de Moeda ---
+// Garante que o input mostre o formato brasileiro e salve o valor float real
 const formatarMoeda = (event) => {
-  // 1. Pega o valor digitado e remove tudo que NÃO for número
-  let valor = event.target.value.replace(/\D/g, "");
+  // 1. Limpa o valor, deixando apenas números
+  let valor = event.target.value.replaceAll(/\D/g, "");
 
   if (!valor) {
     produto.value.preco = 0;
@@ -225,45 +255,52 @@ const formatarMoeda = (event) => {
     return;
   }
 
-  // 2. Converte para Decimal/Float (divide por 100 para considerar os centavos)
-  // Exemplo: Se digitou "28990", vira 289.90
-  const numero = parseFloat(valor) / 100;
+  // 2. Converte para o valor float real (divide por 100 para centavos)
+  const numero = Number.parseFloat(valor) / 100;
 
-  // 3. Salva o número REAL no objeto que vai para o Backend (formato americano: 289.90)
+  // 3. Salva o número REAL que será enviado ao Backend (ex: 289.90)
   produto.value.preco = numero;
 
-  // 4. Atualiza o visual do input para o formato brasileiro (289,90)
+  // 4. Atualiza o input com o valor formatado (ex: 289,90)
   precoVisual.value = numero.toLocaleString("pt-BR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 };
-// Envio do Formulário
+
+// --- Envio do Formulário ---
+// Função principal chamada ao submeter o formulário
 const anunciarProduto = async () => {
-  // Combinamos o Estado com a Descrição para não perder a informação
+  // Concatena a Condição com a Descrição para enviar ao Backend em um único campo
   const descricaoCompleta = `Condição: ${produto.value.estado}.\n${produto.value.descricao}`;
 
-  // Construção do Payload conforme o Backend espera
+  // Prepara o objeto payload com os nomes de campo esperados pelo Backend
   const payload = {
     name: produto.value.nome,
     description: descricaoCompleta,
     price: produto.value.preco,
-    stockQuantity: produto.value.estoque, // Novo campo
+    stockQuantity: produto.value.estoque,
     category: produto.value.categoria,
-    compatibleModel: produto.value.modelo, // Novo campo
+    compatibleModel: produto.value.modelo,
     imageFile: produto.value.arquivoImagem,
   };
 
   try {
     errorMessage.value = null;
-    // O Store deve tratar a conversão para FormData
+    // Chama a action do store, que trata a conversão para FormData e o envio
     await productStore.addProduct(payload);
-    alert("Produto anunciado com sucesso!");
-    router.push("/produtos");
+    showToastMessage("Produto anunciado com sucesso!", "success");
+    router.push("/produtos"); // Redireciona para a lista de produtos
   } catch (error) {
     console.error("Erro:", error);
-    errorMessage.value =
-      "Erro ao publicar. Verifique os dados e tente novamente.";
+
+    const msg = "Erro ao publicar. Verifique os dados e tente novamente.";
+
+    // 1. Mostra o Toast
+    showToastMessage(msg, "error");
+
+    // 2. ATUALIZA A VARIÁVEL DO DOM (Isso fará o teste passar)
+    errorMessage.value = msg;
   }
 };
 </script>

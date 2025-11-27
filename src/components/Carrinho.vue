@@ -1,3 +1,4 @@
+<!-- Template principal do componente de carrinho -->
 <template>
   <div
     v-if="cartStore.isOpen"
@@ -101,25 +102,29 @@
   </div>
 </template>
 
+<!-- Lógica do componente -->
 <script setup>
+// Importações
 import { useCartStore } from "@/stores/cart";
 import { useRouter } from "vue-router";
 
 const cartStore = useCartStore();
 const router = useRouter();
 
+// Redireciona para a página de pagamento e fecha o carrinho
 const irParaPagamento = () => {
   cartStore.toggleCart();
   router.push("/pagamento");
 };
 
+// Confirma e esvazia todos os itens do carrinho
 const confirmarLimpeza = () => {
   if (confirm("Tem certeza que deseja esvaziar o carrinho?")) {
     cartStore.items.forEach((item) => cartStore.removeItem(item.id));
   }
 };
 
-// NOVA FUNÇÃO: Navega para a página do produto
+// Navega para a página de detalhes do produto e fecha o carrinho
 const goToProduct = (productId) => {
   if (!productId) return;
   cartStore.toggleCart();
@@ -127,6 +132,7 @@ const goToProduct = (productId) => {
 };
 </script>
 
+<!-- Estilos específicos do componente -->
 <style scoped>
 .cart-overlay {
   position: fixed;
@@ -243,7 +249,7 @@ const goToProduct = (productId) => {
 
 .remove-btn:hover {
   background: #e74c3c;
-  color: rgb(226, 226, 226);
+  color: #FFFFFF; /* Cor ajustada para melhor contraste */
 }
 
 .cart-footer {

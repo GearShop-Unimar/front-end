@@ -68,17 +68,20 @@ const cardNumber = ref("");
 const cardExpiry = ref("");
 const cardCvv = ref("");
 
+// Formata o preço para exibição
 const priceDisplay = computed(() => {
   if (typeof props.price === "number")
     return props.price.toFixed(2).replace(".", ",");
   return String(props.price);
 });
 
+// Fecha o modal ao cancelar
 const onCancel = () => {
   if (loading.value) return;
   emit("update:modelValue", false);
 };
 
+// Processa a confirmação do pagamento
 const onConfirm = async () => {
   loading.value = true;
   try {
